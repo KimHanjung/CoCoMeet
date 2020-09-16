@@ -1,3 +1,9 @@
 # CoCoMeet
 
-Temp ReadMe
+README
+
+installation
+
+npm install --save react-splitter-layout
+
+
