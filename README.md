@@ -8,6 +8,7 @@ Use npm to install additional library to run.
 
 ```bash
 npm install --save react-splitter-layout
+npm install node-sass
 ```
 
 ## Usage
