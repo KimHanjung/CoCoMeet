@@ -10,6 +10,7 @@
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-scripts": "3.4.3",
+    "react-sortable-tree": "^2.8.0",
     "react-splitter-layout": "^4.0.0"
   },
   "scripts": {
