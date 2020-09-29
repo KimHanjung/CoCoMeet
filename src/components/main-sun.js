@@ -16,7 +16,7 @@ class Main extends Component {
         <SplitterLayout primaryIndex={1} secondaryInitialSize={200}>
           <Tools />
           <SplitterLayout secondaryInitialSize={350}>
-            <Board />
+            <SplitterLayout percentage='true'><Board /><Board /></SplitterLayout>
             <AppChat/>
           </SplitterLayout>
         </SplitterLayout>

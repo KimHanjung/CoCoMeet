@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import SortableTree from 'react-sortable-tree';
 import 'react-sortable-tree/style.css';
-import Text from './Text';
 import EditableText from './EditableText';
 
 class Board extends Component {
