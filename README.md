@@ -10,6 +10,7 @@ Use npm to install additional library to run.
 npm install --save react-splitter-layout
 npm install node-sass
 npm install react-sortable-tree --save
+npm install socket.io
 ```
 
 ## Usage
