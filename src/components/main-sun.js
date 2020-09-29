@@ -2,7 +2,9 @@ import React, { Component } from 'react';
 import Tools from './tools/Tools';
 import Board from './board/Board';
 import MenuBar from "./menu/menu-bar-sun";
-import AppChat from "./chat/AppChat";
+import ChatView from './chat/ChatView';
+import Channel from './chat/Channel';
+import Name from './chat/Name';
 import HeaderBar from "./header/header-bar-sun";
 import SplitterLayout from 'react-splitter-layout';
 import 'react-splitter-layout/lib/index.css';
@@ -30,10 +32,13 @@ class Main extends Component {
         <HeaderBar />
         <MenuBar />
         <SplitterLayout primaryIndex={1} secondaryInitialSize={200}>
-          <Tools uname={this.state.uname} channel={this.state.channel} connected={this.state.connected} onUpdate_channel={this.updateChannel} onUpdate_connect={this.updateConnected} onUpdate_name={this.updateName}/>
+          <div>
+            <h2><Name uname = {this.state.uname} onUpdate_name2={this.updateName} /></h2>
+            <h3><Channel channel={this.state.channel} connected={this.state.connected} onUpdate_channel2={this.updateChannel} onUpdate_connect2={this.updateConnected} /> </h3>
+          </div>
           <SplitterLayout secondaryInitialSize={350}>
             <SplitterLayout percentage='true'><Board /><Board /></SplitterLayout>
-            <AppChat uname = {this.state.uname} channel={this.state.channel} connected={this.state.connected}/>
+            <ChatView uname = {this.state.uname} channel={this.state.channel} connected={this.state.connected}/>
           </SplitterLayout>
         </SplitterLayout>
       </div>
