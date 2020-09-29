@@ -12,24 +12,22 @@ class AppChannel extends Component {
     this.keyUpdateChannel = this.keyUpdateChannel.bind(this);
 }
   updateConnected(){
-    if(this.props.connected==='False') this.props.onUpdate_connect('True')
+    if(this.props.connected==='False') this.props.onUpdate_connect2('True');
   }
   updateChannel(event){
-    if(event.target.value!==this.props.channel) this.props.onUpdate_channel(event.target.value);
+    if(event.target.value!==this.props.channel) this.props.onUpdate_channel2(event.target.value);
   }
   keyUpdateChannel(event){
     if(event.keyCode===13) {
-        if(event.target.value!==this.props.channel) this.props.onUpdate_channel(event.target.value);
+        if(event.target.value!==this.props.channel) this.props.onUpdate_channel2(event.target.value);
     }
   }
   render() {
     return (
-        <header className="Channel-header">
-          <input type="text" className="channel" placeholder="channel name" onBlur={this.updateChannel} onKeyDown={this.keyUpdateChannel}/>
-          <button type="button" className="btn btn-primary" onClick={this.updateConnected(this)}>입장</button>
-        </header>
+      <input type="text" className="channel" placeholder="# Channel" onBlur={this.updateChannel} onKeyDown={this.keyUpdateChannel}/>
+ 
     );
   }
 }
-
+/*<button type="button" className="btn btn-primary" onClick={() => this.updateConnected(this)}>Enter</button>*/
 export default AppChannel;

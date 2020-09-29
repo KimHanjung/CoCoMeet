@@ -1,5 +1,7 @@
 import React, { Component } from 'react';
 import SortableTree from 'react-sortable-tree';
+//import BMSTheme from 'react-sortable-tree-theme-bms';
+import CustomTheme from 'react-sortable-tree-smartweb';
 import 'react-sortable-tree/style.css';
 import EditableText from './EditableText';
 
@@ -28,7 +30,6 @@ class Board extends Component {
   render() {
     return (
       <div style={{ height: 600 }}>
-        Board Box
         <button onClick={this.add} >Add</button> 
         
         <SortableTree
