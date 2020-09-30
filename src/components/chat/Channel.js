@@ -2,7 +2,8 @@ import React, { Component } from 'react';
 import { Input } from 'react-bootstrap';
 import './Channel.css';
 import openSocket from 'socket.io-client';
-const socket = openSocket('http://localhost:4002');
+//const socket = openSocket('http://localhost:4002');
+const socket = openSocket('http://3.34.138.234:4000');
 
 class AppChannel extends Component {
   constructor(props) {

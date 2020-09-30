@@ -6,9 +6,9 @@ import img from './chuchuchu.jpg';
 import io from 'socket.io-client';
 
 // local host의 chat_server와 연결하려고 할 때
-// const socket = io('http://localhost:4002/');
+ //const socket = io('http://localhost:4002/');
 // aws의 chat_server와 연결하려고 할 떄
-const socket = io('http://http://54.180.143.90/:4000/');
+const socket = io('http://3.34.138.234:4000/');
 
 class ChatView extends Component {
     constructor(props) {
