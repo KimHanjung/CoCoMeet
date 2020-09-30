@@ -1,7 +1,16 @@
-import React from 'react';
+import React, { Component } from 'react';
+import Name from '../chat/Name'
+import Channel from '../chat/Channel';
 
-function Tools() {
-  return <div>Tools</div>
+class Tools extends Component { 
+
+  render() {
+      return (
+        <div>
+          
+        </div>
+      );
+  }
 }
 
 export default Tools;

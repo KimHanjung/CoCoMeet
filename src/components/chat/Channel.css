@@ -1,8 +1,7 @@
-.Channel-header {
-    background-color: #222;
-    height: 90px;
-    padding: 10px;
-    color: white;
+input.channel{
+    width: 150px;
+    margin-left: 20px;
+    text-indent: 5px;
 }
 
 .Channel-title {
