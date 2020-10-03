@@ -10,6 +10,8 @@ Use npm to install additional library to run.
 npm install --save react-splitter-layout
 npm install node-sass
 npm install react-sortable-tree --save
+npm install --save react-sortable-tree-theme-solverboard
+npm install react-error-overlay
 ```
 
 ## Usage
