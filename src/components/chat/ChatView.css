@@ -29,7 +29,8 @@
 .chattingView-chat{
     position: absolute;
     bottom: 0px;
-    max-height: 600px;
+    max-height: 500px;
+    max-width: 400px;
     padding-top: 10px;
     overflow-y: auto;
     overflow-x:hidden;
@@ -50,12 +51,13 @@ div.chattingView-msg{
     text-align: left;
     margin-bottom: 10px;
     margin-left: 10px;
+    margin-right: 5px;
     padding: 5px;
     font-size: 15px;
     background: rgba(146, 146, 146, 0.301);
     border-radius: 10px;
     font-weight: bold;
-    max-width:380px;
+    max-width:300px;
     overflow-wrap: break-word;
     width: -webkit-fit-content;
     width: -moz-fit-content;
@@ -68,6 +70,11 @@ div.chattingView-msg{
     display: flex;
     margin: 1px auto;
     width: 400px;
+}
+input.form-control{
+    width: 298px;
+    height: 73px;
+    text-indent: 10px;
 }
 
 input.form-control-inputMsg{

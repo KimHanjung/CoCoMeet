@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
-import { Input } from 'react-bootstrap';
+//import { Input } from 'react-bootstrap';
 import './ChatView.css';
-import img from './chuchuchu.jpg';
+//import img from './chuchuchu.jpg';
 
 import io from 'socket.io-client';
 
@@ -17,7 +17,7 @@ class ChatView extends Component {
     }
     componentDidMount(){
         let cursor=this;
-        socket.emit('channelJoin', {channel:this.state.channel, uname:this.state.uname});
+        socket.emit('channelJoin', {channel:this.props.channel, uname:this.props.uname});
         socket.on('receive', function (data) {
             cursor.setState({chatList:cursor.state.chatList.concat([data])});
             document.querySelector(".chattingView-chat").scrollTo(0,document.querySelector(".chattingView-chat").scrollHeight);
@@ -27,7 +27,7 @@ class ChatView extends Component {
         socket.emit('channelLeave', {channel:this.state.channel, uname:this.state.uname});
         this.setState({channel:changeProps.channel, uname:changeProps.uname},()=>{
             this.setState({chatList:[]});
-            socket.emit('channelJoin', {channel:this.state.channel, uname:this.state.uname});
+            socket.emit('channelJoin', {channel:this.props.channel, uname:this.props.uname});
         });
     }
     send(){
@@ -64,8 +64,8 @@ class ChatView extends Component {
                 <div className="chattingView-chatbox">
                 <div className="chattingView-chat">{list}</div>
                 </div>
-                <div className="input-group chattingView-input">
-                    <input type="text" className="form-control inputMsg" placeholder="input message..."  onChange={this.inputMSG} onKeyDown={this.keysend}/>
+                <div className="chattingView-input">
+                    <input type="text" className="form-control inputMsg" placeholder="Input message..."  onChange={this.inputMSG} onKeyDown={this.keysend}/>
                     <button type="button" className="btn btn-primary" onClick={this.send}>입력</button>
                 </div>
             </div>
