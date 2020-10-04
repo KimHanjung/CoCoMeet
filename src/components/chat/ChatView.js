@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
-import { Input } from 'react-bootstrap';
+//import { Input } from 'react-bootstrap';
 import './ChatView.css';
-import img from './chuchuchu.jpg';
+//import img from './chuchuchu.jpg';
 
 import io from 'socket.io-client';
 
