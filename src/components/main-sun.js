@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-//import Tools from './tools/Tools';
+import ColorTools from './tools/ColorTools';
 import Board from './board/Board';
 import BoardExternal from './board/BoardExternal';
 //import BoardInternal from './board/BoardInternal';
@@ -37,9 +37,10 @@ class Main extends Component {
           <div>
             <h2><Name uname = {this.state.uname} onUpdate_name2={this.updateName} /></h2>
             <h3><Channel channel={this.state.channel} connected={this.state.connected} onUpdate_channel2={this.updateChannel} onUpdate_connect2={this.updateConnected} /> </h3>
+            <ColorTools/>
           </div>
           <SplitterLayout secondaryInitialSize={350}>
-            <SplitterLayout percentage='true'><Board /><BoardExternal /></SplitterLayout>
+            <SplitterLayout percentage='true'><BoardExternal /></SplitterLayout>
             <ChatView uname = {this.state.uname} channel={this.state.channel} connected={this.state.connected}/>
           </SplitterLayout>
         </SplitterLayout>
