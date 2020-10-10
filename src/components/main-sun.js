@@ -7,6 +7,8 @@ import AppChat from "./chat/AppChat";
 import HeaderBar from "./header/header-bar-sun";
 import SplitterLayout from 'react-splitter-layout';
 import 'react-splitter-layout/lib/index.css';
+import { HTML5Backend } from 'react-dnd-html5-backend'
+import { DndProvider } from 'react-dnd'
 
 class Main extends Component {
   constructor(props){
@@ -47,22 +49,38 @@ class Main extends Component {
     this.setState({trees: this.state.trees.concat(this.newTreeData(tree_num-1))});
     console.log(this.state);
   }
+  changeLeftTree = (id) => {
+    console.log('left tree changing to ' + id);
+    this.setState({tree1: id})
+  }
+  changeRightTree = (id) => {
+    console.log('right tree changing to ' + id);
+    //this.setState({tree2: id})
+  }
+  addNode = (id) => {
+    console.log('adding new node to tree ' + id);
+    //this.setState()
+  }
   render() {
     return (
       <div>
         <HeaderBar />
         <MenuBar />
-        <button onClick={this.addTree} >Add Tree</button> 
-        <SplitterLayout primaryIndex={1} secondaryInitialSize={200}>
-          <Tools howManyTrees={this.state.treenum} tree1={this.state.tree1} tree2={this.state.tree2}/>
-          <SplitterLayout secondaryInitialSize={350}>
-            <SplitterLayout percentage='true'>
-              <Board tree={this.state.trees[this.state.tree1]}/>
-              <Board tree={this.state.trees[this.state.tree2]}/>
+        <button onClick={this.addTree} >Add Tree</button>
+        <span>Left tree is {this.state.tree1}</span>
+        <DndProvider backend={HTML5Backend}>
+          <SplitterLayout primaryIndex={1} secondaryInitialSize={200}>
+            <Tools trees={this.state.trees} treenum={this.state.treenum} tree1={this.state.tree1} tree2={this.state.tree2} 
+              handler1={this.changeLeftTree} handler2={this.changeRightTree}/>
+            <SplitterLayout secondaryInitialSize={350}>
+              <SplitterLayout percentage='true'>
+                <Board tree={this.state.trees[this.state.tree1]}/>
+                <Board tree={this.state.trees[this.state.tree2]}/>
+              </SplitterLayout>
+              <AppChat/>
             </SplitterLayout>
-            <AppChat/>
           </SplitterLayout>
-        </SplitterLayout>
+        </DndProvider>
       </div>
     );
   }

@@ -2,6 +2,16 @@ import React, { Component } from 'react';
 import SortableTree from 'react-sortable-tree';
 import 'react-sortable-tree/style.css';
 import EditableText from './EditableText';
+import { DropTarget } from 'react-dnd';
+
+
+function collect(connect, monitor) {
+  return {
+    connectDropTarget: connect.dropTarget(),
+    hovered: monitor.isOver(),
+    item: monitor.getItem(),
+  }
+}
 
 class Board extends Component {
   constructor(props) {
@@ -16,6 +26,10 @@ class Board extends Component {
   add(){
     this.setState({treeData: this.state.treeData.concat([{ title: <EditableText initialValue='new text box'/>, children: []}])});
   }
+  componentWillReceiveProps(nextProps) {
+    this.setState({ treeData: nextProps.tree.treeData });
+  }
+
   /*showinfo(){
     alert(this.state.treeData);
   }
@@ -23,18 +37,23 @@ class Board extends Component {
     alert(' click');
   }*/
   render() {
-    return (
+    const { connectDropTarget, hovered, item } = this.props;
+    const backgroundColor = hovered ? 'lightgreen' : 'white';
+    return connectDropTarget(
+      <div className="Board" style={{ background: backgroundColor }}>
       <div style={{ height: 600 }}>
         Board Box
         <button onClick={this.add} >Add</button> 
         
         <SortableTree
-          treeData={this.state.treeData}
+          treeData={this.props.tree.treeData}
           onChange={treeData => this.setState({ treeData })}
         />
+      </div>
       </div>
     );
   }
 }
 
-export default Board;
+//export default Board;
+export default DropTarget('tree', {}, collect)(Board);

@@ -28,6 +28,9 @@ class EditableText extends Component{
   // 만약 입력된 값을 상위 컴포넌트에서 저장/관리한다면, 저장하는 함수를 여기서 실행한다.
     }
   }
+  componentWillReceiveProps(nextProps) {
+    this.setState({ text: nextProps.initialValue });
+  }
   render(){
     return(
       <div className="row list">
