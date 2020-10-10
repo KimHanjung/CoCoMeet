@@ -32,7 +32,11 @@ class Board extends Component {
     //this.edit = this.edit.bind(this)
   }
   add(){
+    console.log('adding new node to tree ' + this.props.treeId);
     this.setState({treeData: this.state.treeData.concat([{ title: <EditableText initialValue='new text box'/>, children: []}])});
+    //const newtree = treeData.concat([{ title: <EditableText initialValue='new text box'/>, children: []}])
+    let newtreeData = this.state.treeData
+    this.props.addNode(this.props.treeId, newtreeData)
   }
   componentWillReceiveProps(nextProps) {
     this.setState({ treeData: nextProps.tree.treeData });
@@ -45,16 +49,16 @@ class Board extends Component {
     alert(' click');
   }*/
   render() {
-    const { connectDropTarget, hovered, item } = this.props;
+    const { connectDropTarget, hovered } = this.props;
     const backgroundColor = hovered ? 'lightgreen' : 'white';
     return connectDropTarget(
       <div className="Board" style={{ background: backgroundColor }}>
       <div style={{ height: 600 }}>
         Board Box
-        <button onClick={this.add} >Add</button> 
+        <button onClick={this.props.addNode} >Add</button> 
         
         <SortableTree
-          treeData={this.props.tree.treeData}
+          treeData={this.state.treeData}
           onChange={treeData => this.setState({ treeData })}
         />
       </div>

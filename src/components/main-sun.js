@@ -30,6 +30,8 @@ class Main extends Component {
     };
     this.onDropLeft = this.onDropLeft.bind(this);
     this.onDropRight = this.onDropRight.bind(this);
+    this.addNodeLeft = this.addNodeLeft.bind(this);
+    this.addNodeRight = this.addNodeRight.bind(this);
   }
   newTree = (id) => {
     var init_val = 'hello tree ID '+id;
@@ -51,17 +53,27 @@ class Main extends Component {
     this.setState({trees: this.state.trees.concat(this.newTreeData(tree_num-1))});
     console.log(this.state);
   }
-  /*changeLeftTree = (id) => {
-    console.log('left tree changing to ' + id);
-    this.setState({tree1: id})
+  addNodeLeft = () => {
+    //console.log('adding new node to tree ' + id);
+    const id = this.state.tree1
+    const elementsIndex = this.state.trees.findIndex(tree => tree.treeId == id )
+    let newtrees = [...this.state.trees]
+    newtrees[elementsIndex] = {...newtrees[elementsIndex], 
+      treeData: newtrees[elementsIndex].treeData.concat([{ title: <EditableText initialValue='new text box'/>, children: []}])}
+    this.setState({
+      trees: newtrees
+    });
   }
-  changeRightTree = (id) => {
-    console.log('right tree changing to ' + id);
-    //this.setState({tree2: id})
-  }*/
-  addNode = (id) => {
-    console.log('adding new node to tree ' + id);
-    //this.setState()
+  addNodeRight = () => {
+    //console.log('adding new node to tree ' + id);
+    const id = this.state.tree2
+    const elementsIndex = this.state.trees.findIndex(tree => tree.treeId == id )
+    let newtrees = [...this.state.trees]
+    newtrees[elementsIndex] = {...newtrees[elementsIndex], 
+      treeData: newtrees[elementsIndex].treeData.concat([{ title: <EditableText initialValue='new text box'/>, children: []}])}
+    this.setState({
+      trees: newtrees
+    });
   }
   onDropLeft(tree_id){
     this.setState({tree1: tree_id})
@@ -81,8 +93,10 @@ class Main extends Component {
             <Tools trees={this.state.trees} treenum={this.state.treenum} tree1={this.state.tree1} tree2={this.state.tree2}/>
             <SplitterLayout secondaryInitialSize={350}>
               <SplitterLayout percentage='true'>
-                <Board tree={this.state.trees[this.state.tree1]} onDrop={this.onDropLeft}/>
-                <Board tree={this.state.trees[this.state.tree2]} onDrop={this.onDropRight}/>
+                <Board tree={this.state.trees[this.state.tree1]} treeId={this.state.tree1} 
+                          onDrop={this.onDropLeft} addNode={this.addNodeLeft}/>
+                <Board tree={this.state.trees[this.state.tree2]} treeId={this.state.tree2} 
+                          onDrop={this.onDropRight} addNode={this.addNodeRight}/>
               </SplitterLayout>
               <AppChat/>
             </SplitterLayout>
