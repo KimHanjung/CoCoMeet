@@ -14,6 +14,8 @@
     "react-sortable-tree": "^2.8.0",
     "react-sortable-tree-smartweb": "^1.1.1",
     "react-sortable-tree-theme-bms": "^1.0.11",
+    "react-sortable-tree-theme-full-node-drag": "^1.1.0",
+    "react-sortable-tree-theme-minimal": "0.0.14",
     "react-splitter-layout": "^4.0.0",
     "socket.io": "^2.3.0"
   },

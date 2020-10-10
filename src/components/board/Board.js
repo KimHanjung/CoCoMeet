@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import SortableTree from 'react-sortable-tree';
 //import BMSTheme from 'react-sortable-tree-theme-bms';
 import CustomTheme from 'react-sortable-tree-smartweb';
+import FileExplorerTheme from 'react-sortable-tree-theme-minimal';
 import 'react-sortable-tree/style.css';
 import EditableText from './EditableText';
 
@@ -35,6 +36,7 @@ class Board extends Component {
         <SortableTree
           treeData={this.state.treeData}
           onChange={treeData => this.setState({ treeData })}
+          theme={FileExplorerTheme}
         />
       </div>
     );

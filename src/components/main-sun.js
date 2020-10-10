@@ -35,6 +35,7 @@ class Main extends Component {
           <div>
             <h2><Name uname = {this.state.uname} onUpdate_name2={this.updateName} /></h2>
             <h3><Channel channel={this.state.channel} connected={this.state.connected} onUpdate_channel2={this.updateChannel} onUpdate_connect2={this.updateConnected} /> </h3>
+            <Tools/>
           </div>
           <SplitterLayout secondaryInitialSize={350}>
             <SplitterLayout percentage='true'><Board /><Board /></SplitterLayout>
