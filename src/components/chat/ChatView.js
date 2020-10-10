@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
-import { Input } from 'react-bootstrap';
+//import { Input } from 'react-bootstrap';
 import './ChatView.css';
-import img from './chuchuchu.jpg';
+//import img from './chuchuchu.jpg';
 
 import io from 'socket.io-client';
 
@@ -14,6 +14,8 @@ class ChatView extends Component {
         this.send = this.send.bind(this);
         this.keysend = this.keysend.bind(this);
         this.inputMSG = this.inputMSG.bind(this);
+        this.select_msg_to_block= this.select_msg_to_block.bind(this);
+        this.handleClick= this.handleClick.bind(this);
     }
     componentDidMount(){
         let cursor=this;
@@ -45,7 +47,18 @@ class ChatView extends Component {
     inputMSG(event) {
         this.setState({ msg: event.target.value });
     }
+    select_msg_to_block(msg){
+        //alert(msg);
+        this.props.onUpdate_msg_to_block(msg);
+    }
+    handleClick(event){
+        event.preventDefault();
+        alert(event.target.value);
+        this.props.onUpdate_msg_to_block(event.target.value);
+    }
+
     render() {
+       // alert('rendering chatview!');
         let list = this.state.chatList.map((item, index) =>{
             let date= new Date(item.chat.date);
             return(
@@ -55,7 +68,7 @@ class ChatView extends Component {
                         <div>{item.chat.uname}</div>
                         <div>{date.getFullYear()}년 {date.getMonth()+1}월 {date.getDate()}일 {date.getHours()}:{date.getMinutes()}:{date.getSeconds()}</div>
                     </div>:null}
-                    <div className="chattingView-msg">{item.chat.msg}</div>
+                    <button type="button" className="chattingView-msg" value={item.chat.msg} onClick={(e) => {e.preventDefault(); this.props.onUpdate_msg_to_block(item.chat.msg)}}>{item.chat.msg}</button>
                 </div>
             )
         });

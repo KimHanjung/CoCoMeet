@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
-import { Input } from 'react-bootstrap';
+//import { Input } from 'react-bootstrap';
 import './Channel.css';
-import openSocket from 'socket.io-client';
-const socket = openSocket('http://localhost:4002');
+//import openSocket from 'socket.io-client';
+//const socket = openSocket('http://localhost:4002');
 
 class AppChannel extends Component {
   constructor(props) {
@@ -30,4 +30,5 @@ class AppChannel extends Component {
   }
 }
 /*<button type="button" className="btn btn-primary" onClick={() => this.updateConnected(this)}>Enter</button>*/
+
 export default AppChannel;
