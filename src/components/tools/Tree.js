@@ -1,12 +1,13 @@
 import React, { Component } from 'react';
 import { DragSource } from 'react-dnd';
 
-const itemSource = {
+const spec = {
   beginDrag(props) {
-    console.log('dragging ' + props.tree.treeId);
+    const item = { ...props };
+    console.log('beginDrag', item)
     return props.tree;
   },
-  endDrag(props, monitor, component) {
+  /*endDrag(props, monitor, component) {
     console.log('dropped ' + component);
     if (!monitor.didDrop()) {
       return;
@@ -14,7 +15,7 @@ const itemSource = {
     
     return props.handleDrop(props.tree.treeId);
     
-  },
+  },*/
   
 }
 
@@ -28,15 +29,15 @@ function collect(connect, monitor) {
 
 class Tree extends Component {
   render() {
-    const { isDragging, connectDragSource, tree } = this.props;
+    const { isDragging, connectDragSource } = this.props;
     const opacity = isDragging ? 0 : 1;
 
     return connectDragSource(
       <div className="tree" style={{ opacity }}>
-        <span>Tree {tree.treeId}</span>
+        <span>Tree {this.props.tree.treeId}</span>
       </div>
     );
   }
 }
 
-export default DragSource('tree', itemSource, collect)(Tree);
+export default DragSource('tree', spec, collect)(Tree);

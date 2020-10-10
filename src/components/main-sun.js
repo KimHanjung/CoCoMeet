@@ -28,6 +28,8 @@ class Main extends Component {
       tree1: 0,
       tree2: 1
     };
+    this.onDropLeft = this.onDropLeft.bind(this);
+    this.onDropRight = this.onDropRight.bind(this);
   }
   newTree = (id) => {
     var init_val = 'hello tree ID '+id;
@@ -49,17 +51,23 @@ class Main extends Component {
     this.setState({trees: this.state.trees.concat(this.newTreeData(tree_num-1))});
     console.log(this.state);
   }
-  changeLeftTree = (id) => {
+  /*changeLeftTree = (id) => {
     console.log('left tree changing to ' + id);
     this.setState({tree1: id})
   }
   changeRightTree = (id) => {
     console.log('right tree changing to ' + id);
     //this.setState({tree2: id})
-  }
+  }*/
   addNode = (id) => {
     console.log('adding new node to tree ' + id);
     //this.setState()
+  }
+  onDropLeft(tree_id){
+    this.setState({tree1: tree_id})
+  }
+  onDropRight(tree_id){
+    this.setState({tree2: tree_id})
   }
   render() {
     return (
@@ -70,12 +78,11 @@ class Main extends Component {
         <span>Left tree is {this.state.tree1}</span>
         <DndProvider backend={HTML5Backend}>
           <SplitterLayout primaryIndex={1} secondaryInitialSize={200}>
-            <Tools trees={this.state.trees} treenum={this.state.treenum} tree1={this.state.tree1} tree2={this.state.tree2} 
-              handler1={this.changeLeftTree} handler2={this.changeRightTree}/>
+            <Tools trees={this.state.trees} treenum={this.state.treenum} tree1={this.state.tree1} tree2={this.state.tree2}/>
             <SplitterLayout secondaryInitialSize={350}>
               <SplitterLayout percentage='true'>
-                <Board tree={this.state.trees[this.state.tree1]}/>
-                <Board tree={this.state.trees[this.state.tree2]}/>
+                <Board tree={this.state.trees[this.state.tree1]} onDrop={this.onDropLeft}/>
+                <Board tree={this.state.trees[this.state.tree2]} onDrop={this.onDropRight}/>
               </SplitterLayout>
               <AppChat/>
             </SplitterLayout>

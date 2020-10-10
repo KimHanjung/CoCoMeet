@@ -17,7 +17,7 @@ class Tools extends Component {
         Tool Box
         <div className="item-container">
           {this.props.trees.map((tree) => (
-            <Tree tree={tree} handleDrop={(id) => this.props.handler1(id)} />
+            <Tree tree={tree}/>
           ))}
         </div>
       </div>

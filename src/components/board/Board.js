@@ -9,7 +9,15 @@ function collect(connect, monitor) {
   return {
     connectDropTarget: connect.dropTarget(),
     hovered: monitor.isOver(),
-    item: monitor.getItem(),
+    //item: monitor.getItem(),
+  }
+}
+const spec = {
+  drop(props, monitor){
+      const item = monitor.getItem()
+      console.log(monitor.getDropResult());
+      props.onDrop(item.treeId)
+      return item;
   }
 }
 
@@ -56,4 +64,4 @@ class Board extends Component {
 }
 
 //export default Board;
-export default DropTarget('tree', {}, collect)(Board);
+export default DropTarget('tree', spec, collect)(Board);
