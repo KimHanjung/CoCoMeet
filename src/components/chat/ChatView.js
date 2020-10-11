@@ -1,7 +1,5 @@
 import React, { Component } from 'react';
-//import { Input } from 'react-bootstrap';
 import './ChatView.css';
-//import img from './chuchuchu.jpg';
 
 import io from 'socket.io-client';
 
@@ -14,8 +12,6 @@ class ChatView extends Component {
         this.send = this.send.bind(this);
         this.keysend = this.keysend.bind(this);
         this.inputMSG = this.inputMSG.bind(this);
-        this.select_msg_to_block= this.select_msg_to_block.bind(this);
-        this.handleClick= this.handleClick.bind(this);
     }
     componentDidMount(){
         let cursor=this;
@@ -47,30 +43,35 @@ class ChatView extends Component {
     inputMSG(event) {
         this.setState({ msg: event.target.value });
     }
-    select_msg_to_block(msg){
-        //alert(msg);
-        this.props.onUpdate_msg_to_block(msg);
-    }
-    handleClick(event){
-        event.preventDefault();
-        alert(event.target.value);
-        this.props.onUpdate_msg_to_block(event.target.value);
-    }
-
     render() {
-       // alert('rendering chatview!');
         let list = this.state.chatList.map((item, index) =>{
             let date= new Date(item.chat.date);
             return(
-                <div key={index}>
-                    {item.chat.uname!=null?
+                <div key={index} className="choose-align">
+                    {item.chat.uname==this.state.uname?
+                    <div className="chattingView-header-me">
+                        <div>{item.chat.uname}</div>
+                    </div>
+                    :
                     <div className="chattingView-header">
                         <div>{item.chat.uname}</div>
-                        <div>{date.getFullYear()}년 {date.getMonth()+1}월 {date.getDate()}일 {date.getHours()}:{date.getMinutes()}:{date.getSeconds()}</div>
-                    </div>:null}
-                    <button type="button" className="chattingView-msg" value={item.chat.msg} onClick={(e) => {e.preventDefault(); this.props.onUpdate_msg_to_block(item.chat.msg)}}>{item.chat.msg}</button>
+                    </div>
+                   }
+                   
+                    {item.chat.uname==this.state.uname?
+                    <div className="chattingView-msg-body-me">
+                        <button type="button" className="chattingView-msg-from-me" value={item.chat.msg} onClick={(e)=>this.props.OnupdateMsgToBlock(e.target.value)}>{item.chat.msg}</button>
+                        <div className="msgtime">{date.getHours()}시 {date.getMinutes()}분</div>
+                    </div>
+                    :
+                    <div className="chattingView-msg-body-other">
+                        <button type="button" className="chattingView-msg" value={item.chat.msg} onClick={(e)=>this.props.OnupdateMsgToBlock(e.target.value)}>{item.chat.msg}</button>
+                        <div className="msgtime">{date.getHours()}시 {date.getMinutes()}분</div>
+                    </div>
+                   }
                 </div>
             )
+
         });
         return (
             <div className="body">
@@ -86,4 +87,4 @@ class ChatView extends Component {
     }
 }
 
-export default ChatView;
+export default React.memo(ChatView);

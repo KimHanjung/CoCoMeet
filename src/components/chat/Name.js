@@ -18,6 +18,7 @@ import './Name.css'
     render() {
       return (
           <input type="text" className="uname" placeholder="# User" onBlur={this.updateName} onKeyDown={this.keyUpdateName}/>
+
       );
     }
   }

@@ -14,11 +14,11 @@ import 'react-splitter-layout/lib/index.css';
 class Main extends Component {
   constructor(props) {
     super(props);
-    this.state = {channel:'cocomeet', uname:'Yonsei', connected:'False', msg_to_block:'Empty Block'};
+    this.state = {channel:'cocomeet', uname:'Yonsei', connected:'False', msg_to_block:'Select Message!'};
     this.updateName = this.updateName.bind(this);
     this.updateChannel = this.updateChannel.bind(this);
     this.updateConnected = this.updateConnected.bind(this);
-    this.update_msg_to_block = this.update_msg_to_block.bind(this);
+    this.updateMsgToBlock = this.updateMsgToBlock.bind(this);
   }
   updateName(uname){
     this.setState({uname: uname});
@@ -29,12 +29,10 @@ class Main extends Component {
   updateConnected(value){
     this.setState({connected:value});
   }
-  update_msg_to_block(msg_to_block){
-    alert('ok');
+  updateMsgToBlock(msg_to_block){
     this.setState({msg_to_block: msg_to_block});
   }
   render() {
-    //alert('main');
     return (
       <div>
         <HeaderBar />
@@ -46,8 +44,8 @@ class Main extends Component {
             <ColorTools/>
           </div>
           <SplitterLayout secondaryInitialSize={350}>
-            <SplitterLayout percentage='true'><BoardExternal /></SplitterLayout>
-            <ChatView uname = {this.state.uname} channel={this.state.channel} connected={this.state.connected} onUpdate_msg_to_block={this.update_msg_to_block}/>
+            <SplitterLayout percentage='true'><BoardExternal msg_to_block={this.state.msg_to_block}/></SplitterLayout>
+            <ChatView uname = {this.state.uname} channel={this.state.channel} connected={this.state.connected} OnupdateMsgToBlock={this.updateMsgToBlock}/>
           </SplitterLayout>
         </SplitterLayout>
       </div>

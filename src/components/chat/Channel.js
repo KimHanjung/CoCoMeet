@@ -30,5 +30,4 @@ class AppChannel extends Component {
   }
 }
 /*<button type="button" className="btn btn-primary" onClick={() => this.updateConnected(this)}>Enter</button>*/
-
 export default AppChannel;

@@ -14,8 +14,6 @@
 }
 .chattingView-chatbox:after{
     z-index: -1;
-    background-repeat:no-repeat;
-    background: url('./chuchuchu.jpg');
     background-size: contain;
     position: absolute;
     content:"";
@@ -28,10 +26,14 @@
 }
 .chattingView-chat{
     position: absolute;
+    left: 0px;
+    right: 55px;
     bottom: 0px;
     max-height: 500px;
     max-width: 400px;
     padding-top: 10px;
+    padding-right: 10px;
+    padding-left: 10px;
     overflow-y: auto;
     overflow-x:hidden;
 }
@@ -40,29 +42,86 @@ div.chattingView-header{
     display: flex;
 }
 div.chattingView-header div:first-child{
-    margin-left: 10px;
-    margin-right: 10px;
+    font-weight: bold;
+    font-size: 13px;
+    font-family: Arial;
+    margin:3px;
 }
-div.chattingView-header div:last-child{
-    margin-top: 2px;
-    font-size:12px;
+div.chattingView-header-me{
+    display: -ms-flexbox;
+    display: flex;
+    flex-direction: row-reverse;
 }
-div.chattingView-msg{
+div.chattingView-header-me div:first-child{
+    font-weight: bold;
+    font-size: 13px;
+    font-family: Arial;
+    margin:3px;
+}
+
+div.chattingView-msg-body-me{
+    display: -ms-flexbox;
+    display: -webkit-flexbox;
+    display: flex;
+    flex-direction: row-reverse;
+    align-items: flex-end;
+}
+div.chattingView-msg-body-me div:last-child{
+    font-size: 9px;
+    text-align: right;
+    width: 50px;
+    height: 13px;
+    margin-bottom: 12px;
+}
+button.chattingView-msg-from-me{
     text-align: left;
     margin-bottom: 10px;
-    margin-left: 10px;
-    margin-right: 5px;
+    margin-left: 5px;
     padding: 5px;
-    font-size: 15px;
-    background: rgba(146, 146, 146, 0.301);
+    font-size: 13px;
+    color: white;
+    background: rgba(3, 111, 209, 1);
+    align-self: right;
     border-radius: 10px;
     font-weight: bold;
-    max-width:300px;
+    max-width:250px;
     overflow-wrap: break-word;
     width: -webkit-fit-content;
     width: -moz-fit-content;
     width: fit-content;
+    border: none;
 }
+
+div.chattingView-msg-body-other{
+    display: -ms-flexbox;
+    display: -webkit-flexbox;
+    display: flex;
+    align-items: flex-end;
+}
+div.chattingView-msg-body-other div:last-child{
+    font-size: 9px;
+    width: 50px;
+    height: 13px;
+    margin-bottom: 12px;
+}
+button.chattingView-msg{
+    text-align: left;
+    margin-bottom: 10px;
+    margin-right: 5px;
+    padding: 5px;
+    font-size: 13px;
+    background: rgba(146, 146, 146, 0.301);
+    border-radius: 10px;
+    font-weight: bold;
+    max-width:250px;
+    overflow-wrap: break-word;
+    width: -webkit-fit-content;
+    width: -moz-fit-content;
+    width: fit-content;
+    border: none;
+}
+
+
 
 .chattingView-input{
     text-align: center;
