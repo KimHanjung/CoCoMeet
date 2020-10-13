@@ -23,6 +23,7 @@ npx tailwind init tailwind.js --full
 
 ```
 print("will be added");
+https://tailwindcss.com/components/buttons#app
 ```
 
 ## Contributing
