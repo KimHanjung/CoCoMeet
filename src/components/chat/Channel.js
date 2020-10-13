@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 //import { Input } from 'react-bootstrap';
-import './Channel.css';
+//import './Channel.css';
 //import openSocket from 'socket.io-client';
 //const socket = openSocket('http://localhost:4002');
 
@@ -24,8 +24,9 @@ class AppChannel extends Component {
   }
   render() {
     return (
-      <input type="text" className="channel" placeholder="# Channel" onBlur={this.updateChannel} onKeyDown={this.keyUpdateChannel}/>
- 
+      <div class="p-2">
+        <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="username" type="text" placeholder="# Channel"  onBlur={this.updateChannel} onKeyDown={this.keyUpdateChannel}/>
+      </div>
     );
   }
 }
