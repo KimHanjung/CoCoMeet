@@ -92,10 +92,11 @@ class BoardExternal extends Component {
     constructor(props) {
         super(props);
         this.state = {
-          treeData1: [
-            { title: 'Sunny', expanded: true, children: [{ title: 'rainy' }] },
-            { title: 'Many' },
-            { title: 'Yummy'}],
+          treeData1: props.tree.treeData,
+          //treeData1: [
+          //  { title: 'Sunny', expanded: true, children: [{ title: 'rainy' }] },
+          //  { title: 'Many' },
+          //  { title: 'Yummy'}],
           treeData2: [
             { title: 'Tree21', expanded: true, children: [{ title: 'Tree22' }] },
             { title: 'Tree20' },
@@ -127,7 +128,7 @@ class BoardExternal extends Component {
                     <button
                         onClick={() =>
                             this.setState(state => ({
-                                treeData: state.treeData1.concat({
+                                treeData1: state.treeData1.concat({
                                     title: `${getdefaultName()} Sun`,
                                 }),
                             }))
@@ -172,7 +173,7 @@ class BoardExternal extends Component {
                     <button
                         onClick={() =>
                             this.setState(state => ({
-                                treeData: state.treeData2.concat({
+                                treeData2: state.treeData2.concat({
                                     title: `${getdefaultName()} Sun`,
                                 }),
                             }))
