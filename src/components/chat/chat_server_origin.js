@@ -4,11 +4,14 @@ const http = require('http').Server(app);
 const io = require('socket.io')(http);
 app.use('/', express.static(__dirname + '/build'));
 
-io.sockets.on('connection', function (socket) {
+var nsp;
+
+io.on('connection', function (socket) {
     socket.on('channelJoin',function(data){
+        nsp = io.of('/' + data.channel);
         socket.join(data.channel);
-        let dataAddinfo={uname:data.uname, msg:data.uname+"님이 "+data.channel+" 채널에 입장하셨습니다.", date:Date.now()};
-        io.to(data.channel).emit('receive', {chat:dataAddinfo});
+        let msg={msg:data.uname+"님이 "+data.channel+" 채널에 입장하셨습니다."};
+        io.to(data.channel).emit('receive', {chat:msg});
     });
     socket.on('send', function (data) {
         let dataAddinfo={uname:data.uname, msg:data.msg, date:Date.now()};
@@ -16,8 +19,8 @@ io.sockets.on('connection', function (socket) {
     });
     socket.on('channelLeave', function(data){
         socket.leave(data.channel);
-        let dataAddinfo={uname:data.uname, msg:data.uname+"님이 "+data.channel+" 채널에 입장하셨습니다.", date:Date.now()};
-        io.to(data.channel).emit('receive', {chat:dataAddinfo});
+        let msg={msg:data.uname+"님이 "+data.channel+" 채널에 입장하셨습니다."};
+        io.to(data.channel).emit('receive', {chat:msg});
     });
 });
 

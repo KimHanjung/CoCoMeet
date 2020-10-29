@@ -92,11 +92,17 @@ class BoardExternal extends Component {
     constructor(props) {
         super(props);
         this.state = {
-          treeData: [
-            { title: 'Sunny', expanded: true, children: [{ title: 'rainy' }] },
-            { title: 'Many' },
-            { title: 'Yummy'}],
+          treeData1: props.tree.treeData,
+          //treeData1: [
+          //  { title: 'Sunny', expanded: true, children: [{ title: 'rainy' }] },
+          //  { title: 'Many' },
+          //  { title: 'Yummy'}],
+          treeData2: [
+            { title: 'Tree21', expanded: true, children: [{ title: 'Tree22' }] },
+            { title: 'Tree20' },
+            { title: 'Tree23'}],
         };
+
     }
     
     render() {
@@ -111,11 +117,18 @@ class BoardExternal extends Component {
         const getdefaultName = () => defaultName;
         return (
             <DndProvider backend={HTML5Backend}>
-                <div>
+                <div
+                    style={{
+                        height: 750,
+                        width: 500,
+                        float: 'left',
+                        border: 'solid black 1px',
+                    }}
+                >
                     <button
                         onClick={() =>
                             this.setState(state => ({
-                                treeData: state.treeData.concat({
+                                treeData1: state.treeData1.concat({
                                     title: `${getdefaultName()} Sun`,
                                 }),
                             }))
@@ -127,8 +140,8 @@ class BoardExternal extends Component {
                     <TrashNodeComponent>
                     <div style={{ height: 600 }}>
                         <SortableTree
-                        treeData={this.state.treeData}
-                        onChange={treeData => this.setState({ treeData })}
+                        treeData={this.state.treeData1}
+                        onChange={treeData1 => this.setState({ treeData1 })}
                         generateNodeProps={({ node, path }) => {
                             return {
                                 style:{
@@ -141,7 +154,52 @@ class BoardExternal extends Component {
                             };
                         }}
                         theme={CustomTheme}
-                        dndType={trashNodeType}
+                        dndType={trashNodeType, externalNodeType}
+                        />
+                    </div>
+                    <UExternalComponent node={{ title: 'Suns Apple' }} />← 드래그
+                    </TrashNodeComponent>
+                
+                </div>
+
+                <div
+                    style={{
+                        height: 750,
+                        width: 500,
+                        float: 'left',
+                        border: 'solid black 1px',
+                    }}
+                >
+                    <button
+                        onClick={() =>
+                            this.setState(state => ({
+                                treeData2: state.treeData2.concat({
+                                    title: `${getdefaultName()} Sun`,
+                                }),
+                            }))
+                        }
+                    >
+                    Add
+                    </button>
+                    
+                    <TrashNodeComponent>
+                    <div style={{ height: 600 }}>
+                        <SortableTree
+                        treeData={this.state.treeData2}
+                        onChange={treeData2 => this.setState({ treeData2 })}
+                        generateNodeProps={({ node, path }) => {
+                            return {
+                                style:{
+                                    boxShadow:  `0 0 0 4px ${getRndColor()}`,
+                                    borderRadius: `10px`,
+                                    textDecoration: `${getRndFontDeco()}`,
+                                    fontSize: `15px`,
+                                    fontWeight: `${getRndFontWgt()}`,
+                                }
+                            };
+                        }}
+                        theme={CustomTheme}
+                        dndType={trashNodeType, externalNodeType}
                         />
                     </div>
                     <UExternalComponent node={{ title: 'Suns Apple' }} />← 드래그

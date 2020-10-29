@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import './Name.css'
+//import './Name.css'
 
   class AppChannel extends Component {
     constructor(props) {
@@ -17,8 +17,9 @@ import './Name.css'
     }
     render() {
       return (
-          <input type="text" className="uname" placeholder="# User" onBlur={this.updateName} onKeyDown={this.keyUpdateName}/>
-
+          <div class="p-2">
+            <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" type="text" placeholder="# User" onBlur={this.updateName} onKeyDown={this.keyUpdateName}/>
+          </div>
       );
     }
   }
