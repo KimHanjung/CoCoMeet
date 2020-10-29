@@ -14,9 +14,14 @@ class Tools extends Component {
   render() {
     return (
       <div>
+        <div>
         {this.props.trees.map((tree,index) => (
-          <Tree key={index} tree={tree}/>
+          <div class="w-full">
+            <Tree key={index} tree={tree}/>
+          </div>
         ))}
+        
+      </div>
       </div>
     );
   }

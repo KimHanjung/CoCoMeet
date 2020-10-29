@@ -33,8 +33,13 @@ class Tree extends Component {
     const opacity = isDragging ? 0 : 1;
 
     return connectDragSource(
-      <div className="tree" style={{ opacity }}>
-        <span>Tree {this.props.tree.treeId}</span>
+      <div class="flex">
+        <div class="w-1/2" style={{ opacity }}>
+          <span>Tree {this.props.tree.treeId}</span>
+        </div>
+        <div class="w-1/2">
+          <input type="checkbox" />
+        </div>
       </div>
     );
   }

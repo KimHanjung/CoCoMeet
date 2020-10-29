@@ -52,7 +52,7 @@ class Board extends Component {
     const { connectDropTarget, hovered } = this.props;
     const backgroundColor = hovered ? 'lightgreen' : 'white';
     return connectDropTarget(
-      <div className="Board" style={{ background: backgroundColor }}>
+      <div cllassName="Board" stye={{ background: backgroundColor }}>
       <div style={{ height: 600 }}>
         Board Box
         <button onClick={this.props.addNode} >Add</button> 

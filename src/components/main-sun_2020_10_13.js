@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import ColorTools from './tools/ColorTools';
+import TextTools from './tools/TextTools';
 import Tools from './tools/Tools';
-//mport Board from './board/Board';
+import Board from './board/BoardData';
 import BoardExternal from './board/BoardExternal';
 import BoardInternal from './board/BoardInternal';
 import EditableText from './board/EditableText';
@@ -24,7 +25,7 @@ class Main extends Component {
         {
           treeId: 0,
           treeData: this.newTree(0),
-          block_color: "lime",
+          block_color: "cyan",
           text_deco: "underline",
           font_weight: "bold",
         },
@@ -44,6 +45,8 @@ class Main extends Component {
     this.onDropRight = this.onDropRight.bind(this);
     this.updateNodeLeft = this.updateNodeLeft.bind(this);
     this.updateNodeRight = this.updateNodeRight.bind(this);
+    this.updateTreeLeft = this.updateTreeLeft.bind(this);
+    this.updateTreeRight = this.updateTreeRight.bind(this);
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////
     this.updateName = this.updateName.bind(this);
     this.updateChannel = this.updateChannel.bind(this);
@@ -74,6 +77,25 @@ class Main extends Component {
     this.setState({trees: this.state.trees.concat(this.newTreeData(tree_num-1))});
     console.log(this.state);
   }
+  updateTreeLeft = (newTreeData) => {
+    const id = this.state.tree1
+    let newT = {treeId: id, treeData: newTreeData}
+    //console.log(newT)
+    this.setState({
+      trees: this.state.trees.map(t => t.treeId === id ? {...t, ...newT} : t)
+    });
+    //this.setState({trees: newtree})
+  }
+  updateTreeRight = (newTreeData) =>{
+    const id = this.state.tree2
+    let newT = {treeId: id, treeData: newTreeData}
+    //console.log(newT)
+    this.setState({
+      trees: this.state.trees.map(t => t.treeId === id ? {...t, ...newT} : t)
+    });
+    //this.setState({trees: newtree})
+  }
+
   updateNodeLeft = () => {
     //console.log('adding new node to tree ' + id);
     const id = this.state.tree1
@@ -142,6 +164,7 @@ class Main extends Component {
                               <div class="border-b-2 border-gray-300 bg-gray-200 h-12 p-3 mb-3">
                                 <div class="font-sans text-lg font-semibold text-teal-500">Font Style</div>
                               </div>
+                              <TextTools/>
                             </div>
                             <div class="mb-6 pb-3 shadow-md bg-gray-100 h-1/5">
                               <div class="border-b-2 border-gray-300 bg-gray-200 h-12 p-3 mb-3">
@@ -151,6 +174,7 @@ class Main extends Component {
                                 <button class="bg-transparent border-transparent text-blue-500 font-extrabold hover:underline py-2" onClick={this.addTree} >Add New Tree</button>
                                 <div class="pl-2">
                                   <Tools trees={this.state.trees} treenum={this.state.treenum} tree1={this.state.tree1} tree2={this.state.tree2}/>
+                                  
                                 </div>
                               </div>
                             </div>
@@ -162,7 +186,7 @@ class Main extends Component {
                             <div class="font-sans text-lg font-semibold text-teal-500">Left Tree</div>
                           </div>
                           <BoardInternal tree={this.state.trees[this.state.tree1]} treeId={this.state.tree1} 
-                          onDrop={this.onDropLeft} updateNode={this.updateNodeLeft}/>
+                          onDrop={this.onDropLeft} updateNode={this.updateNodeLeft} updateTree={this.updateTreeLeft}/>
                         </div>
                     </div>
                     <div class="w-3/9 p-3">
@@ -171,7 +195,7 @@ class Main extends Component {
                             <div class="font-sans text-lg font-semibold text-teal-500">Right Tree</div>
                           </div>
                           <BoardInternal tree={this.state.trees[this.state.tree2]} treeId={this.state.tree2} 
-                          onDrop={this.onDropRight} updateNode={this.updateNodeRight}/>
+                          onDrop={this.onDropRight} updateNode={this.updateNodeRight} updateTree={this.updateTreeRight}/>
                         </div>
                     </div>
                     <div class="w-2/9 p-3">
