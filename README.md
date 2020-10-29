@@ -13,12 +13,17 @@ npm install react-sortable-tree --save
 npm install --save react-sortable-tree-theme-solverboard
 npm install react-error-overlay
 npm install --save semantic-ui-react semantic-ui-css
+npm install tailwindcss postcss-cli autoprefixer -D
+npm uninstall autoprefixer
+npm install --save-dev autoprefixer@9.8.6
+npx tailwind init tailwind.js --full
 ```
 
 ## Usage
 
 ```
 print("will be added");
+https://tailwindcss.com/components/buttons#app
 ```
 
 ## Contributing
