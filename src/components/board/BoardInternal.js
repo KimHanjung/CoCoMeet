@@ -135,7 +135,7 @@ class BoardIxternal extends Component {
         
         return connectDropTarget(
         
-            <div class="h-full w-full float-left" >
+            <div class="h-fullcalc w-full float-left" >
                 <div class='pl-8 pt-3'>
                     <button class="bg-transparent hover:bg-blue-500 text-blue-500 font-semibold hover:text-white py-2 px-2 border border-blue-500 hover:border-transparent rounded"
                         onClick={this.props.updateNode}>

@@ -1,3 +1,5 @@
+const { CardColumns } = require("react-bootstrap");
+
 module.exports = {
   future: {
     // removeDeprecatedGapUtilities: true,
@@ -6,6 +8,9 @@ module.exports = {
   purge: [],
   theme: {
     extend: {
+      maxWidth: {
+        '4/5': '80%',
+      },
       width: {
         '1/11': '9.09090909%',
         '2/11': '18.18181818%',
@@ -26,6 +31,7 @@ module.exports = {
         '6/9': '66.6666666%',
         '7/9': '77.7777777%',
         '8/9': '88.8888888%',
+        'ct/w': '400px',
       },
       height: {
         '1/9': '11.1111111%',
@@ -37,10 +43,16 @@ module.exports = {
         '7/9': '77.7777777%',
         '8/9': '88.8888888%',
         '9/9': '99.9999999%',
-        
+
+        'fullcalc': 'calc( 100% - 3.75rem)',
         'quaterscreen': '85vh',
+        'ct/h': '500px',
+
         '9/11': '81.81818181%',
         '10/11': '90.90909090%',
+      },
+      right:{
+        'ct/r': '55px',
       },
       backgroundColor: {
         'red': '#FF0000',

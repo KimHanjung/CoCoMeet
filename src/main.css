@@ -9623,8 +9623,16 @@ video {
   height: 99.9999999%;
 }
 
+.h-fullcalc {
+  height: calc( 100% - 3.75rem);
+}
+
 .h-quaterscreen {
   height: 85vh;
+}
+
+.h-ct\/h {
+  height: 500px;
 }
 
 .h-9\/11 {
@@ -10961,6 +10969,10 @@ video {
 
 .max-w-screen-xl {
   max-width: 1280px;
+}
+
+.max-w-4\/5 {
+  max-width: 80%;
 }
 
 .min-h-0 {
@@ -14625,6 +14637,10 @@ video {
 
 .w-8\/9 {
   width: 88.8888888%;
+}
+
+.w-ct\/w {
+  width: 400px;
 }
 
 .z-0 {
@@ -26347,8 +26363,16 @@ video {
     height: 99.9999999%;
   }
 
+  .sm\:h-fullcalc {
+    height: calc( 100% - 3.75rem);
+  }
+
   .sm\:h-quaterscreen {
     height: 85vh;
+  }
+
+  .sm\:h-ct\/h {
+    height: 500px;
   }
 
   .sm\:h-9\/11 {
@@ -27685,6 +27709,10 @@ video {
 
   .sm\:max-w-screen-xl {
     max-width: 1280px;
+  }
+
+  .sm\:max-w-4\/5 {
+    max-width: 80%;
   }
 
   .sm\:min-h-0 {
@@ -31349,6 +31377,10 @@ video {
 
   .sm\:w-8\/9 {
     width: 88.8888888%;
+  }
+
+  .sm\:w-ct\/w {
+    width: 400px;
   }
 
   .sm\:z-0 {
@@ -43041,8 +43073,16 @@ video {
     height: 99.9999999%;
   }
 
+  .md\:h-fullcalc {
+    height: calc( 100% - 3.75rem);
+  }
+
   .md\:h-quaterscreen {
     height: 85vh;
+  }
+
+  .md\:h-ct\/h {
+    height: 500px;
   }
 
   .md\:h-9\/11 {
@@ -44379,6 +44419,10 @@ video {
 
   .md\:max-w-screen-xl {
     max-width: 1280px;
+  }
+
+  .md\:max-w-4\/5 {
+    max-width: 80%;
   }
 
   .md\:min-h-0 {
@@ -48043,6 +48087,10 @@ video {
 
   .md\:w-8\/9 {
     width: 88.8888888%;
+  }
+
+  .md\:w-ct\/w {
+    width: 400px;
   }
 
   .md\:z-0 {
@@ -59735,8 +59783,16 @@ video {
     height: 99.9999999%;
   }
 
+  .lg\:h-fullcalc {
+    height: calc( 100% - 3.75rem);
+  }
+
   .lg\:h-quaterscreen {
     height: 85vh;
+  }
+
+  .lg\:h-ct\/h {
+    height: 500px;
   }
 
   .lg\:h-9\/11 {
@@ -61073,6 +61129,10 @@ video {
 
   .lg\:max-w-screen-xl {
     max-width: 1280px;
+  }
+
+  .lg\:max-w-4\/5 {
+    max-width: 80%;
   }
 
   .lg\:min-h-0 {
@@ -64737,6 +64797,10 @@ video {
 
   .lg\:w-8\/9 {
     width: 88.8888888%;
+  }
+
+  .lg\:w-ct\/w {
+    width: 400px;
   }
 
   .lg\:z-0 {
@@ -76429,8 +76493,16 @@ video {
     height: 99.9999999%;
   }
 
+  .xl\:h-fullcalc {
+    height: calc( 100% - 3.75rem);
+  }
+
   .xl\:h-quaterscreen {
     height: 85vh;
+  }
+
+  .xl\:h-ct\/h {
+    height: 500px;
   }
 
   .xl\:h-9\/11 {
@@ -77767,6 +77839,10 @@ video {
 
   .xl\:max-w-screen-xl {
     max-width: 1280px;
+  }
+
+  .xl\:max-w-4\/5 {
+    max-width: 80%;
   }
 
   .xl\:min-h-0 {
@@ -81431,6 +81507,10 @@ video {
 
   .xl\:w-8\/9 {
     width: 88.8888888%;
+  }
+
+  .xl\:w-ct\/w {
+    width: 400px;
   }
 
   .xl\:z-0 {
