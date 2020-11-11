@@ -14,6 +14,9 @@ import SplitterLayout from 'react-splitter-layout';
 import 'react-splitter-layout/lib/index.css';
 import { HTML5Backend } from 'react-dnd-html5-backend'
 import { DndProvider } from 'react-dnd'
+import io from 'socket.io-client';
+
+const socket = io('http://localhost:4002/board_server');
 
 class Main extends Component {
   constructor(props) {
@@ -54,6 +57,20 @@ class Main extends Component {
     this.updateMsgToBlock = this.updateMsgToBlock.bind(this);
 
   }
+  componentDidMount(){
+    let cursor=this;
+    socket.emit('channelJoin', {channel:this.state.channel, uname:this.state.uname, trees:this.state.trees});
+    socket.on('receive', function (data) {
+      console.log(data.trees);
+      //cursor.setState({trees: data.trees});
+      console.log('================');
+      console.log(cursor.state.trees);
+    });
+    socket.on('addTree', function(data){
+      cursor.setState({trees: cursor.state.trees.concat(data.tree)});
+      console.log(data.tree);
+    });
+}
   newTree = (id) => {
     var init_val = 'hello tree ID ' + id;
     var child_val = 'chd tree ID' + id;
@@ -74,8 +91,8 @@ class Main extends Component {
   addTree =()=>{
     var tree_num = this.state.treenum +1;
     this.setState({treenum: tree_num});
-    this.setState({trees: this.state.trees.concat(this.newTreeData(tree_num-1))});
-    console.log(this.state);
+    //this.setState({trees: this.state.trees.concat(this.newTreeData(tree_num-1))});
+    socket.emit('addTree', {channel:this.state.channel, tree:this.newTreeData(tree_num-1)});
   }
   updateTreeLeft = (newTreeData) => {
     const id = this.state.tree1
