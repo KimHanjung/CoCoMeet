@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import './ChatView.css';
+//import './ChatView.css';
 
 import io from 'socket.io-client';
 
@@ -32,19 +32,23 @@ class ChatView extends Component {
         });
     }
     send(){
+        console.log("client-send_sun: "+this.state.msg+", "+this.state.channel+", "+this.state.uname);
         socket.emit('send',{msg:this.state.msg, channel:this.state.channel, uname:this.state.uname});
         this.setState({msg:''});
         document.querySelector(".inputMsg").value="";
     }
     keysend(event){
         if(event.keyCode===13) {
+            console.log("client-keysend_sun: "+this.state.msg+", "+this.state.channel+", "+this.state.uname);
             socket.emit('send',{msg:this.state.msg, channel:this.state.channel, uname:this.state.uname});
             this.setState({msg:''});
             document.querySelector(".inputMsg").value="";
         }
     }
     inputMSG(event) {
+        //console.log("client-inputMSG");
         this.setState({ msg: event.target.value });
+        console.log("event: "+this.state.msg);
     }
     render() {
         let list = this.state.chatList.map((item, index) =>{
@@ -77,13 +81,13 @@ class ChatView extends Component {
 
         });
         return (
-            <div className="body">
-                <div className="chattingView-chatbox">
-                <div className="chattingView-chat">{list}</div>
+            <div class="h-fullcalc">
+                <div class="h-8/9 mx-2">
+                    <div className="chattingView-chat">{list}</div>
                 </div>
-                <div className="chattingView-input">
-                    <input type="text" className="form-control inputMsg" placeholder="Input message..."  onChange={this.inputMSG} onKeyDown={this.keysend}/>
-                    <button type="button" className="btn btn-primary" onClick={this.send}>입력</button>
+                <div className="flex h-1/9 w-full bg-gray-200">
+                    <input type="text" class="pl-4 my-4 ml-4 mr-1 w-7/9 border border-blue-500 rounded-md inputMsg" placeholder="Input message..."  onChange={this.inputMSG} onKeyDown={this.keysend}/>
+                    <button type="button" class="my-4 mr-4 ml-1 w-2/9 bg-transparent hover:bg-blue-500 text-blue-500 font-semibold hover:text-white py-2 px-2 border border-blue-500 hover:border-transparent rounded" onClick={this.send}>보내기</button>
                 </div>
             </div>
         );

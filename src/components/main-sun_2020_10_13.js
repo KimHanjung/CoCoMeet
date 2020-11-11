@@ -6,7 +6,7 @@ import Board from './board/BoardData';
 import BoardExternal from './board/BoardExternal';
 import BoardInternal from './board/BoardInternal';
 import EditableText from './board/EditableText';
-import ChatView from './chat/ChatView';
+import ChatView from './chat/ChatView_sun';
 import Channel from './chat/Channel';
 import Name from './chat/Name';
 import HeaderBar from './header/header-bar-sun';
@@ -217,6 +217,9 @@ class Main extends Component {
                     </div>
                     <div class="w-2/9 p-3">
                         <div class="shadow-md bg-gray-100 h-quaterscreen">
+                          <div class="border-b-2 border-gray-300 bg-gray-200 h-12 p-3 mb-3">
+                            <div class="font-sans text-lg font-semibold text-teal-500">Chat</div>
+                          </div>
                           <ChatView uname = {this.state.uname} channel={this.state.channel} connected={this.state.connected} OnupdateMsgToBlock={this.updateMsgToBlock}/> 
                         </div>
                     </div>
