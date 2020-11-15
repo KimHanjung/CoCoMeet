@@ -1,13 +1,10 @@
 import React, { Component } from 'react';
-//import './ChatView.css';
+import './ChatView.css';
 
 import io from 'socket.io-client';
 
-// local host의 chat_server와 연결하려고 할 때
 const socket = io('http://localhost:4002/');
-// aws의 chat_server와 연결하려고 할 떄
 //const socket = io('http://3.34.138.234:4000/');
-
 class ChatView extends Component {
     constructor(props) {
         super(props);
@@ -32,21 +29,30 @@ class ChatView extends Component {
         });
     }
     send(){
-        console.log("client-send_sun: "+this.state.msg+", "+this.state.channel+", "+this.state.uname);
-        socket.emit('send',{msg:this.state.msg, channel:this.state.channel, uname:this.state.uname});
-        this.setState({msg:''});
-        document.querySelector(".inputMsg").value="";
-    }
-    keysend(event){
-        if(event.keyCode===13) {
-            console.log("client-keysend_sun: "+this.state.msg+", "+this.state.channel+", "+this.state.uname);
+        if(this.state.msg!=""){
+            console.log("client-send_sun: "+this.state.msg+", "+this.state.channel+", "+this.state.uname);
             socket.emit('send',{msg:this.state.msg, channel:this.state.channel, uname:this.state.uname});
             this.setState({msg:''});
             document.querySelector(".inputMsg").value="";
+        }else if(this.state.msg==""){
+            return;
+        }
+        
+    }
+    keysend(event){
+        if(this.state.msg!=""){
+            if(event.keyCode===13) {
+                console.log("client-keysend_sun: "+this.state.msg+", "+this.state.channel+", "+this.state.uname);
+                socket.emit('send',{msg:this.state.msg, channel:this.state.channel, uname:this.state.uname});
+                this.setState({msg:''});
+                document.querySelector(".inputMsg").value="";
+            }
+        }else if(this.state.msg==""){
+            return;
         }
     }
     inputMSG(event) {
-        //console.log("client-inputMSG");
+        //console.log("client-inputMSG_sun");
         this.setState({ msg: event.target.value });
         console.log("event: "+this.state.msg);
     }
@@ -54,26 +60,26 @@ class ChatView extends Component {
         let list = this.state.chatList.map((item, index) =>{
             let date= new Date(item.chat.date);
             return(
-                <div key={index} className="choose-align">
+                <div key={index}>
                     {item.chat.uname==this.state.uname?
-                    <div className="chattingView-header-me">
+                    <div class="flex flex-row-reverse">
                         <div>{item.chat.uname}</div>
                     </div>
                     :
-                    <div className="chattingView-header">
+                    <div class="flex flex-row">
                         <div>{item.chat.uname}</div>
                     </div>
                    }
                    
                     {item.chat.uname==this.state.uname?
-                    <div className="chattingView-msg-body-me">
-                        <button type="button" className="chattingView-msg-from-me" value={item.chat.msg} onClick={(e)=>this.props.OnupdateMsgToBlock(e.target.value)}>{item.chat.msg}</button>
-                        <div className="msgtime">{date.getHours()}시 {date.getMinutes()}분</div>
+                    <div class="flex items-end flex-row-reverse">
+                        <button type="button" class="max-w-4/5 bg-blue-500 mb-3 ml-1 p-2 text-left text-white text-base font-bold border-none rounded-lg break-words" value={item.chat.msg} onClick={(e)=>this.props.OnupdateMsgToBlock(e.target.value)}>{item.chat.msg}</button>
+                        <div class="mb-2">{date.getHours()}시 {date.getMinutes()}분</div>
                     </div>
                     :
-                    <div className="chattingView-msg-body-other">
-                        <button type="button" className="chattingView-msg" value={item.chat.msg} onClick={(e)=>this.props.OnupdateMsgToBlock(e.target.value)}>{item.chat.msg}</button>
-                        <div className="msgtime">{date.getHours()}시 {date.getMinutes()}분</div>
+                    <div className="flex items-end flex-row">
+                        <button type="button" class="max-w-4/5 bg-blue-500 mb-3 ml-1 p-1 text-left text-white text-base font-bold border-none rounded break-words" value={item.chat.msg} onClick={(e)=>this.props.OnupdateMsgToBlock(e.target.value)}>{item.chat.msg}</button>
+                        <div class="mb-2">{date.getHours()}시 {date.getMinutes()}분</div>
                     </div>
                    }
                 </div>
@@ -85,9 +91,9 @@ class ChatView extends Component {
                 <div class="h-8/9 mx-2">
                     <div className="chattingView-chat">{list}</div>
                 </div>
-                <div className="flex h-1/9 w-full bg-gray-200">
+                <div class="flex h-1/9 w-full bg-gray-200">
                     <input type="text" class="pl-4 my-4 ml-4 mr-1 w-7/9 border border-blue-500 rounded-md inputMsg" placeholder="Input message..."  onChange={this.inputMSG} onKeyDown={this.keysend}/>
-                    <button type="button" class="my-4 mr-4 ml-1 w-2/9 bg-transparent hover:bg-blue-500 text-blue-500 font-semibold hover:text-white py-2 px-2 border border-blue-500 hover:border-transparent rounded" onClick={this.send}>보내기</button>
+                    <button  type="button" class="my-4 mr-4 ml-1 w-2/9 bg-transparent hover:bg-blue-500 text-blue-500 font-semibold hover:text-white py-2 px-2 border border-blue-500 hover:border-transparent rounded" onClick={this.send}>보내기</button>
                 </div>
             </div>
         );

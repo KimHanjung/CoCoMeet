@@ -25,11 +25,11 @@
     filter:alpha(opacity=30);
 }
 .chattingView-chat{
-    position: absolute;
+    
     left: 0px;
     right: 55px;
     bottom: 0px;
-    max-height: 500px;
+    max-height: 700px;
     max-width: 400px;
     padding-top: 10px;
     padding-right: 10px;
