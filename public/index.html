@@ -1,8 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
+  <script>
+    window.addEventListener('error', function(e){
+      const {error} = e;
+      if (!error.captured) {
+        error.captured = true;
+        e.stopImmediatePropagation();
+        e.preventDefault();
+        // Revisit this error after the error boundary element processed it 
+        setTimeout(()=>{
+          // can be set by the error boundary error handler
+          if (!error.shouldIgnore) {
+            // but if it wasn't caught by a boundary, release it back to the wild
+            throw error;
+          }
+        })
+      }
+    });
+</script>
   <head>
     <meta charset="utf-8" />
-    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <link rel="icon" href="%PUBLIC_URL%/cocomeet3.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#000000" />
     <meta
@@ -24,7 +42,7 @@
       work correctly both with client-side routing and a non-root public URL.
       Learn how to configure a non-root public URL by running `npm run build`.
     -->
-    <title>React App</title>
+    <title>CoCoMeet</title>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>

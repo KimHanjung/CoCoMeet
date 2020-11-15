@@ -2,8 +2,13 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import styles from "./styles/styles.scss";
 import * as serviceWorker from './serviceWorker';
-import Main from './components/main-sun';
+import Main from './components/main-sun_2020_10_13';
+import { stopReportingRuntimeErrors } from "react-error-overlay";
+import './main.css';
 
+if (process.env.NODE_ENV === "development") {
+  stopReportingRuntimeErrors(); // disables error overlays
+}
 ReactDOM.render(
   <React.StrictMode>
     <Main />
