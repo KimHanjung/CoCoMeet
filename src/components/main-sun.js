@@ -1,19 +1,22 @@
 import React, { Component } from 'react';
-import Tools from './tools/Tools';
-import Board from './board/Board';
+import ColorTools from './tools/ColorTools';
+//mport Board from './board/Board';
+import BoardExternal from './board/BoardExternal';
+import BoardInternal from './board/BoardInternal';
 import EditableText from './board/EditableText';
 import MenuBar from "./menu/menu-bar-sun";
-import AppChat from "./chat/AppChat";
-import HeaderBar from "./header/header-bar-sun";
+import ChatView from './chat/ChatView';
+import Channel from './chat/Channel';
+import Name from './chat/Name';
+import HeaderBar from './header/header-bar-sun';
 import SplitterLayout from 'react-splitter-layout';
 import 'react-splitter-layout/lib/index.css';
-import { HTML5Backend } from 'react-dnd-html5-backend'
-import { DndProvider } from 'react-dnd'
 
 class Main extends Component {
-  constructor(props){
-    super(props)
+  constructor(props) {
+    super(props);
     this.state = {
+      channel:'cocomeet', uname:'Yonsei', connected:'False',
       treenum: 2,
       trees: [
         {
@@ -26,17 +29,17 @@ class Main extends Component {
         },
       ],
       tree1: 0,
-      tree2: 1
+      tree2: 1,
     };
-    this.onDropLeft = this.onDropLeft.bind(this);
-    this.onDropRight = this.onDropRight.bind(this);
-    this.addNodeLeft = this.addNodeLeft.bind(this);
-    this.addNodeRight = this.addNodeRight.bind(this);
+    this.updateName = this.updateName.bind(this);
+    this.updateChannel = this.updateChannel.bind(this);
+    this.updateConnected = this.updateConnected.bind(this);
   }
   newTree = (id) => {
     var init_val = 'hello tree ID '+id;
+    var chd_val = 'child tree ID'+id;
     return ([
-      { title: <EditableText initialValue={init_val}/>, expanded: true, children: [{ title: <EditableText initialValue='world'/>}]}
+      { title: <EditableText initialValue={init_val}/>, expanded: true, children: [{ title: <EditableText initialValue={chd_val}/>}]}
     ])
   }
   newTreeData = (id) => {
@@ -47,61 +50,34 @@ class Main extends Component {
       }
     ]);
   }
-  addTree =()=>{
-    var tree_num = this.state.treenum +1;
-    this.setState({treenum: tree_num});
-    this.setState({trees: this.state.trees.concat(this.newTreeData(tree_num-1))});
-    console.log(this.state);
+  updateName(uname){
+    this.setState({uname: uname});
   }
-  addNodeLeft = () => {
-    //console.log('adding new node to tree ' + id);
-    const id = this.state.tree1
-    const elementsIndex = this.state.trees.findIndex(tree => tree.treeId == id )
-    let newtrees = [...this.state.trees]
-    newtrees[elementsIndex] = {...newtrees[elementsIndex], 
-      treeData: newtrees[elementsIndex].treeData.concat([{ title: <EditableText initialValue='new text box'/>, children: []}])}
-    this.setState({
-      trees: newtrees
-    });
+  updateChannel(channel){
+    this.setState({channel: channel});
   }
-  addNodeRight = () => {
-    //console.log('adding new node to tree ' + id);
-    const id = this.state.tree2
-    const elementsIndex = this.state.trees.findIndex(tree => tree.treeId == id )
-    let newtrees = [...this.state.trees]
-    newtrees[elementsIndex] = {...newtrees[elementsIndex], 
-      treeData: newtrees[elementsIndex].treeData.concat([{ title: <EditableText initialValue='new text box'/>, children: []}])}
-    this.setState({
-      trees: newtrees
-    });
-  }
-  onDropLeft(tree_id){
-    this.setState({tree1: tree_id})
-  }
-  onDropRight(tree_id){
-    this.setState({tree2: tree_id})
+  updateConnected(value){
+    this.setState({connected:value});
   }
   render() {
     return (
       <div>
         <HeaderBar />
         <MenuBar />
-        <button onClick={this.addTree} >Add Tree</button>
-        <span>Left tree is {this.state.tree1}</span>
-        <DndProvider backend={HTML5Backend}>
-          <SplitterLayout primaryIndex={1} secondaryInitialSize={200}>
-            <Tools trees={this.state.trees} treenum={this.state.treenum} tree1={this.state.tree1} tree2={this.state.tree2}/>
-            <SplitterLayout secondaryInitialSize={350}>
-              <SplitterLayout percentage='true'>
-                <Board tree={this.state.trees[this.state.tree1]} treeId={this.state.tree1} 
-                          onDrop={this.onDropLeft} addNode={this.addNodeLeft}/>
-                <Board tree={this.state.trees[this.state.tree2]} treeId={this.state.tree2} 
-                          onDrop={this.onDropRight} addNode={this.addNodeRight}/>
-              </SplitterLayout>
-              <AppChat/>
+        <SplitterLayout primaryIndex={1} secondaryInitialSize={200}>
+          <div>
+            <h2><Name uname = {this.state.uname} onUpdate_name2={this.updateName} /></h2>
+            <h3><Channel channel={this.state.channel} connected={this.state.connected} onUpdate_channel2={this.updateChannel} onUpdate_connect2={this.updateConnected} /> </h3>
+            <ColorTools/>
+          </div>
+          <SplitterLayout secondaryInitialSize={350}>
+            <SplitterLayout percentage='true'>
+              <BoardInternal tree={this.state.trees[this.state.tree1]}/>
+              <BoardInternal tree={this.state.trees[this.state.tree2]}/>
             </SplitterLayout>
+            <ChatView uname = {this.state.uname} channel={this.state.channel} connected={this.state.connected}/>
           </SplitterLayout>
-        </DndProvider>
+        </SplitterLayout>
       </div>
     );
   }
