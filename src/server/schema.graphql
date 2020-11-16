@@ -26,4 +26,7 @@ type Mutation {
     new_tree(room_id : Int!) : Block
     new_apple(room_id : Int!, tree_id : Int!, text : String, parent : Int) : Block
     new_block(room_id : Int!, tree_id : Int!) : Block
+    change_color(room_id: Int!, node_id : Int!, color : String!) : Block
+    change_deco(room_id:Int!, node_id : Int!, deco : String!) : Block
+    change_weight(room_id:Int!, node_id : Int!, weight : String!) : Block
 }

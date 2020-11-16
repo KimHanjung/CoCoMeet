@@ -1,5 +1,5 @@
 import {Total_ORDERS} from "./DB2_order";
-import {Total_TREES, newApple, deleteBlock} from "./DB1_tree";
+import {Total_TREES, newApple, deleteBlock, newTree, editColor, editDeco, editWeight} from "./DB1_tree";
 
 const resolvers = {
     Query: {
@@ -10,7 +10,11 @@ const resolvers = {
     Mutation: {
         delete_block: (_, {room_id, node_id}) => deleteBlock(room_id, node_id),
         new_apple: (_, {room_id, tree_id, text, parent}) => newApple(room_id, tree_id, text, parent), 
-        new_block:(_, {room_id, tree_id}) => newApple(room_id, tree_id, "default_text", null)
+        new_block:(_, {room_id, tree_id}) => newApple(room_id, tree_id, "default_text", null),
+        new_tree:(_, {room_id}) => newTree(room_id),
+        change_color:(_, {room_id, node_id, color}) => editColor(room_id, node_id, color),
+        change_deco:(_, {room_id, node_id, deco}) => editDeco(room_id, node_id, deco),
+        change_weight:(_, {room_id, node_id, weight}) => editWeight(room_id, node_id, weight)
     }
 };
 
