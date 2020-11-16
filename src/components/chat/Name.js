@@ -18,10 +18,10 @@ import React, { Component } from 'react';
     render() {
       return (
           <div class="p-2">
-            <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" type="text" placeholder="# User" onBlur={this.updateName} onKeyDown={this.keyUpdateName}/>
+            <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" type="text" placeholder={this.props.uname} readOnly/>
           </div>
       );
     }
   }
-  
+  //<input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" type="text" placeholder="# User" onBlur={this.updateName} onKeyDown={this.keyUpdateName}/>
   export default AppChannel;
