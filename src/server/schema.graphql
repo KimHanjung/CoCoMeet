@@ -1,0 +1,10 @@
+type Nested {
+    room_id : Int!
+    tree_id : Int!
+    content : String!
+}
+
+type Query {
+    get_order(room_id : Int!, tree_id : Int!) : Nested
+    orders : [Nested]!
+}
