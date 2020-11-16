@@ -1,4 +1,4 @@
-export const Total_ORDERS = [
+export let Total_ORDERS = [
     {
         room_id : 0,
         tree_id : 0,
