@@ -67,10 +67,25 @@ class Main extends Component {
       console.log(cursor.state.trees);
     });
     socket.on('addTree', function(data){
-      cursor.setState({trees: cursor.state.trees.concat(data.tree)});
-      console.log(data.tree);
+      var tree_num = cursor.state.treenum +1;
+      cursor.setState({treenum: tree_num, 
+                       trees: cursor.state.trees.concat(JSON.parse(data.tree, (k, v) => {
+                        const matches = v && v.match && v.match(/^\$\$Symbol:(.*)$/);
+                        
+                        return matches ? Symbol.for(matches[1]) : v;
+      }))},function(){
+        console.log(cursor.state);
+      });
     });
-}
+}/*
+componentWillReceiveProps(changeProps){
+  socket.emit('channelLeave', {channel:this.state.channel, uname:this.state.uname});
+  this.setState({channel:changeProps.channel, uname:changeProps.uname},()=>{
+      this.setState({chatList:[]});
+      socket.emit('channelJoin', {channel:this.props.channel, uname:this.props.uname});
+  });
+}*/
+
   newTree = (id) => {
     var init_val = 'hello tree ID ' + id;
     var child_val = 'chd tree ID' + id;
@@ -90,9 +105,21 @@ class Main extends Component {
   }
   addTree =()=>{
     var tree_num = this.state.treenum +1;
-    this.setState({treenum: tree_num});
-    //this.setState({trees: this.state.trees.concat(this.newTreeData(tree_num-1))});
-    socket.emit('addTree', {channel:this.state.channel, tree:this.newTreeData(tree_num-1)});
+    this.setState({treenum: tree_num, trees: this.state.trees.concat(this.newTreeData(tree_num-1))}, function(){
+      socket.emit('addTree', {channel:this.state.channel,
+                              tree:JSON.stringify(this.state.trees[this.state.trees.length - 1], (k, v) => {
+                                  if (typeof v === 'function')
+                                    console.log(v);
+                                  if (typeof v === 'symbol')
+                                    return `$$Symbol:${Symbol.keyFor(v)}`;
+                                  else
+                                    return v;
+                              }
+                                  )});
+      var order=[1,2,[3,4,[5]]];
+      console.log(order.flat(Infinity));
+    });
+    //socket.emit('addTree', {channel:this.state.channel, tree:this.state.trees[this.state.trees.length - 1]});
   }
   updateTreeLeft = (newTreeData) => {
     const id = this.state.tree1
