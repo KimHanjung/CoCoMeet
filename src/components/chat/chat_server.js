@@ -1,4 +1,5 @@
 const express = require('express');
+const { ToastBody } = require('react-bootstrap');
 const app = express();
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
@@ -44,44 +45,79 @@ board_server.on('connection', function(socket){
         socket.leave(data.channel);
         console.log(data.channel);
     });
-    socket.on('addTree', function(data){
+    socket.on('addTree', function(data){ 
         //DB한테 새로운 트리 생성 요청, 트리 개수 요청
         let treenum;
         socket.to(data.channel).emit('addTree', {treenum:treenum});
         console.log(data.tree);
     });
-    socket.on('addNode', function(data){
-        //data.tree_id를 DB한테 보낸 후 새로운 block추가 요청
+    socket.on('addNode', function(data){ // 새로운 node는 클라에서 id -1이라는 정보가 오며, 안에 내용은 없음. db에 새로운 튜플 생성 요청
+        //DB한테 새로운 block추가 요청
         let tree;
-        socket.to(data.channel).emit('addNode', {tree_id:data.tree_id, tree:tree});
-        console.log(data.text);
+        //DB한테 data.channel, data.tree_id 보냄
     });
     socket.on('deleteNode', function(data){
-        //DB로부터 order 받아옴, 삭제 node id:data.node_id
-        let order = [];
-        let delete_nodes = [data.node_id];
-        delBlock(order, data.node_id, delete_nodes);
-        delete_nodes = flat(delete_nodes);
-        //data.tree_id와 delete_nodes, order을 디비로 보냄
-        //delete_nodes: 삭제할 node의 id들
+        //DB2로부터 order_db 받아옴, 삭제 node id:data.node_id
+        let order_db = [];
+
+        //1. 클라가 삭제되기 전 flatdata를 보내줄 경우
+        let dellist = delNode(data.tree, data.node_id);
+        data.tree = data.tree.filter(i => !dellist.includes(i.id));
+        order = getOrder(data.tree);
+        //2. 클라가 삭제하는 parent id만 보낼 경우: db한테 tree 전체 요청(db.tree)
+        rearrange(db.tree, order_db);
+        dellist = delNode(db.tree, data.node_id);
+        db.tree = db.tree.filter(i => !dellist.includes(i.id));
+        order = getOrder(db.tree);
+        //3. 클라가 삭제하는 id 전체를 보낼 경우
+        dellist = data.dellist; //DB 한테 지우는 노드들 알려준 후 업뎃 된 트리 받아옴
+        order = getOrder(db.tree);
+        //4. 클라가 삭제된 후 flatdata만 보낼 경우
+        order = getOrder(data.tree);
+        dellist = order_db.reduce((sequence, cur) => { //db의 order와 client의 order 비교 후 삭제 된 node들 추출
+            if(!order.includes(cur))
+                sequence.push(cur)
+            return sequence;
+        }, []);
+        //db1로 dellist 보내서 node 삭제, db2로 order 업데이트
     });
-    socket.on('selectMessage', function(data){
-        
-        console.log(data.text);
+    socket.on('sunsApple', function(data){
+        //db1로 sunsApple node의 정보들 전달, flatdata로부터 order 추출, db1로부터 sunsapple id 얻음. apple_id
+        let order = getOrder(data.tree);
+        order[order.indexOf('-1')] = apple_id;
+        //db1로 전달, db2로 order 업데이트
+    });
+    socket.on('changeText', function(data) {
+        //DB한테 data.text, data.tree_id, data.node_id 보냄
     });
     socket.on('changeAttribute', function(data){
-        //DB한테 data.color, data.deco, data.weight, data.tree_id, data.node_id 보냄    
+        //DB한테 data.color, data.deco, data.weight, data.tree_id, data.node_id 보냄
+        if(data.deco!==undefined)
+            to_db = (data.tree_id, data.node_id, data.deco);
+        if(data.color!==undefined)
+            to_db = (data.tree_id, data.node_id, data.color);
+        if(data.weight!==undefined)
+            to_db = (data.tree_id, data.node_id, data.weight);
     });
     socket.on('changeTree', function(data){
         //DB로부터 새로운 tree 요청 data.tree_id
+        socket.to(data.channel).emit('sendTree', {tree:db.tree});
     });
     socket.on('migrateNode', function(data){
         //data.origin_tree -> data.target_tree, order
-        
-        console.log(data.text);
+        //옮긴 후의 flatdata 온다고 가정
+        let origin_order = getOrder(data.origin_tree);
+        let target_order = getOrder(data.target_tree);
+        let dellist = delNode(data.target_tree, data.node_id);
+        let datas = data.target_tree.filter(i => dellist.includes(i.id)); // 옮겨진 node들 정보
+        //db1의 origin_tree에서 dellist 삭제, db2의 target_tree에 datas 추가
     });
     socket.on('moveNode', function(data){
-        console.log(data.text);
+        //옮긴 후의 flatdata 온다고 가정
+        let order = getOrder(data.tree);
+        let dellist = delNode(data.tree, data.node_id);
+        let datas = data.tree.filter(i => dellist.includes(i.id)); // 옮겨진 node들 정보
+        //db1의 datas의 parent들 업뎃
     });
 });
 
@@ -89,29 +125,40 @@ http.listen(4002, function(){
     console.log('listening on *:4002');
 });
 
-function delBlock(arr, target, result) { // 삭제 할 block의 child로 묶인 배열을 result에 리턴, 삭제 된 order을 arr에 리턴
-    for(let i=0;i<arr.length;i++) {
-        if(Array.isArray(arr[i])){
-            delBlock(arr[i], target, result);
-            if(Array.isArray(arr[i]) && !arr[i].length)
-                arr.splice(i, 1);
-        }
-        else if(arr[i]===target){
-            if(Array.isArray(arr[i+1])){
-                result.push(arr[i+1])
-                arr.splice(i, 2);
-            }
-            else
-                arr.splice(i, 1);
-        }
+function delNode(tree, node_id) { // 지우는 노드 id들 return
+    let deletenodes = [node_id];
+    for(let i=0; i<tree.length; i++) {
+      if(deletenodes.includes(tree[i].parent)) 
+        deletenodes.push(tree[i].id);
     }
+    return deletenodes;
+  }
+  
+function rearrange(tree, sequence) { // tree들을 sequence 순서대로 재배치한 배열을 return
+    let result = [];
+    for(let i=0; i<sequence.length; i++) 
+        result.push(tree[String(sequence[i])]);
+    return result;
 }
 
+function getOrder(tree) { // tree의 order 뽑아내기
+    return tree.reduce((sequence, cur) => {
+        sequence.push(cur.id);
+        return sequence;
+    }, []);
+}
 
-function flat(arr) { // nested array를 flatten array로 변환
-    return arr.reduce(
-      (acc, val) =>
-        Array.isArray(val) ? acc.concat(flat(val)) : acc.concat(val),
-      [],
-    );
+/*tree에 지워진 데이터 바로 update 되는 version
+function delNode(tree, node_id) { 
+    let deletenodes = [node_id];
+    for(let i=0; i<tree.length; i++) {
+      if(tree[i].id === node_id)
+        tree.splice(i, 1);
+      else if(deletenodes.includes(tree[i].parent)) {
+        deletenodes.push(tree[i].id);
+        tree.splice(i, 1);
+      }
+    }
+    return deletenodes;
   }
+  */
