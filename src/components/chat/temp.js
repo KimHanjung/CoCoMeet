@@ -13,7 +13,7 @@ var tree = [{id: '1', title: 'N1', parent: 'NULL'},
 ];
 var level = [1, 2, 3, 4, 5, 6, 7, 8];
 
-console.log(level.indexOf(1));
+console.log(tree.map((cur) => cur.id==='3' ? cur.id='100' : cur.id));
 
 function delBlock(arr, target, result) { // 삭제 할 block의 child로 묶인 배열을 result에 리턴, 삭제 된 order을 arr에 리턴
   for(let i=0;i<arr.length;i++) {
