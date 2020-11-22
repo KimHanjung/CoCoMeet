@@ -8,6 +8,7 @@ console.log(__dirname)
 
 chat_server = io.of('/chat_server');
 board_server = io.of('/board_server');
+channel_server = io.of('/channel_server');
 //var clients = io.of('/board_server').clients();
 
 board_trees = [];
@@ -34,11 +35,13 @@ board_server.on('connection', function(socket){
         socket.join(data.channel);
         //DB한테 트리 0, 1 요청
         //DB한테 트리 개수 요청
-        let treeLetf, treeRight;
+        let treeLeft, treeRight;
         let orderLeft, orderRight;
         let treenum;
+        rearrange(treeLeft, orderLeft);
+        rearrange(treeRight, orderRight);
         socket.to(data.channel).emit('channelJoin', 
-        {treenum:treenum, tree: {Left:treeLetf, Right:treeRight}, order: {Left:orderLeft, Right:orderRight}});
+        {treenum:treenum, tree: {Left:treeLeft, Right:treeRight}});
         console.log(data.channel);
     });
     socket.on('channelLeave', function(data){
@@ -144,6 +147,19 @@ board_server.on('connection', function(socket){
         socket.to(data.channel).emit('sendTree', {tree:data.tree});
     });
 });
+
+channel_server.on('connection', function(socket) {
+    client_id = socket.id;
+    socket.on('channelCreate', function (_, callback) {    
+        let code = ''
+        const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+        Array.from(Array(5)).forEach(() => {
+        code += possible.charAt(Math.floor(Math.random() * possible.length))
+        });
+
+        callback(code);
+        });
+})
 
 http.listen(4002, function(){
     console.log('listening on *:4002');

@@ -76,4 +76,12 @@ console.log(resul);
 let a = [1, 2, 3, 4, 5]
 
 let b = [2, 4];
-console.log(b.map(i=>a[i]));
+
+
+let text = ''
+    const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+    Array.from(Array(5)).forEach(() => {
+      text += possible.charAt(Math.floor(Math.random() * possible.length))
+    });
+
+console.log(text);
