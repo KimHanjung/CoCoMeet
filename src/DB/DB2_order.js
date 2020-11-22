@@ -1,4 +1,6 @@
-export let Total_ORDERS = [
+const { VariablesInAllowedPositionRule } = require("graphql");
+
+let Total_ORDERS = [
     {
         room_id : 0,
         tree_id : 0,

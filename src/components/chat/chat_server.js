@@ -8,7 +8,118 @@ console.log(__dirname)
 
 chat_server = io.of('/chat_server');
 board_server = io.of('/board_server');
+
+// var Total_ORDERS = require("../../DB/DB2_order");
+var { Total_TREES, newApple, deleteBlock, newTree, editColor, editDeco, editWeight } = require("../../DB/DB1_tree");
 //var clients = io.of('/board_server').clients();
+var {graphql, buildSchema} = require('graphql');
+
+var Total_ORDERS = [
+    {
+        room_id : 0,
+        tree_id : 0,
+        content : "0-tree0-order"
+    },
+    {
+        room_id : 0,
+        tree_id : 1,
+        content : "0-tree1-order"
+    },
+    {
+        room_id : 0,
+        tree_id : 2,
+        content : "0-tree2-order"
+    },
+    {
+        room_id : 0,
+        tree_id : 3,
+        content : "0-tree3-order"
+    },
+    {
+        room_id : 0,
+        tree_id : 4,
+        content : "0-tree4-order"
+    },
+    {
+        room_id : 1,
+        tree_id : 0,
+        content : "1-tree0-order"
+    },
+    {
+        room_id : 1,
+        tree_id : 1,
+        content : "1-tree1-order"
+    },
+    {
+        room_id : 1,
+        tree_id : 2,
+        content : "1-tree2-order"
+    },
+    {
+        room_id : 1,
+        tree_id : 3,
+        content : "1-tree3-order"
+    },
+    {
+        room_id : 1,
+        tree_id : 4,
+        content : "1-tree4-order"
+    }
+];
+
+var schema = buildSchema(`
+    type Query {
+        hello : String
+        get_order(room_id : Int!, tree_id : Int!) : Nested
+        orders : [Nested]!
+        get_tree(room_id : Int!, tree_id : Int!) : [Block]
+    }
+    type Mutation {
+        delete_block(room_id : Int!, node_id : Int!) : Boolean
+        new_tree(room_id : Int!) : Block
+        new_apple(room_id : Int!, tree_id : Int!, text : String, parent : Int) : Block
+        new_block(room_id : Int!, tree_id : Int!) : Block
+        change_color(room_id: Int!, node_id : Int!, color : String!) : Block
+        change_deco(room_id:Int!, node_id : Int!, deco : String!) : Block
+        change_weight(room_id:Int!, node_id : Int!, weight : String!) : Block
+    }
+    type Block { 
+        room_id : Int!
+        tree_id:Int!
+        node_id:Int!
+        title:String!
+        parent:Int
+        color:String!
+        deco:String!
+        weight:String!
+    }
+    type Nested { 
+        room_id : Int!
+        tree_id : Int!
+        content : String
+    }
+`);
+
+
+
+var resolver = {
+    hello : () => {return 'hello...'},
+    get_order: (_, {room_id, tree_id}) => getOrderById(room_id, tree_id),
+    orders : () => {return Total_ORDERS},
+    get_tree:(_, {room_id, tree_id}) => getTree(room_id, tree_id),
+    delete_block: (_, {room_id, node_id}) => deleteBlock(room_id, node_id),
+    new_apple: (_, {room_id, tree_id, text, parent}) => newApple(room_id, tree_id, text, parent), 
+    new_block:(_, {room_id, tree_id}) => newApple(room_id, tree_id, "default_text", null),
+    new_tree:(_, {room_id}) => newTree(room_id),
+    change_color:(_, {room_id, node_id, color}) => editColor(room_id, node_id, color),
+    change_deco:(_, {room_id, node_id, deco}) => editDeco(room_id, node_id, deco),
+    change_weight:(_, {room_id, node_id, weight}) => editWeight(room_id, node_id, weight)
+};
+
+
+graphql(schema, '{orders {tree_id}}', resolver).then((response) => {
+    console.log(response);
+});
 
 board_trees = [];
 
