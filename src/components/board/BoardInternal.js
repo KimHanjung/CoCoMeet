@@ -179,7 +179,7 @@ class BoardIxternal extends Component {
                         </a>
                         </TrashNodeComponent>
                     </div>
-                    <UExternalComponent node={{ title: 'Suns Apple' }} />← 드래그
+                    <UExternalComponent node={{ title: this.props.msg_to_block }} />
                 </div>
                 
                 

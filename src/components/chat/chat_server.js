@@ -12,6 +12,7 @@ channel_server = io.of('/channel_server');
 //var clients = io.of('/board_server').clients();
 
 board_trees = [];
+channel_names = {};
 
 chat_server.on('connection', function (socket) {
     socket.on('channelJoin',function(data){
@@ -29,7 +30,7 @@ chat_server.on('connection', function (socket) {
         socket.leave(data.channel);
     });
 });
-
+/*
 board_server.on('connection', function(socket){
     socket.on('channelJoin', function(data){
         socket.join(data.channel);
@@ -147,10 +148,10 @@ board_server.on('connection', function(socket){
         socket.to(data.channel).emit('sendTree', {tree:data.tree});
     });
 });
-
+*/
 channel_server.on('connection', function(socket) {
     client_id = socket.id;
-    socket.on('channelCreate', function (_, callback) {    
+    socket.on('createChannel', function (data, callback) {    
         let code = ''
         const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
         Array.from(Array(5)).forEach(() => {
@@ -158,7 +159,11 @@ channel_server.on('connection', function(socket) {
         });
 
         callback(code);
+        channel_names[code] = data.channel;
         });
+    socket.on('joinChannel', function(data, callback) {
+        callback(channel_names[data.channel_code]);
+    });
 })
 
 http.listen(4002, function(){
