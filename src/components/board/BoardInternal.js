@@ -88,7 +88,8 @@ const toolsNodeSpec = {
     drop(props, monitor){
         const item = monitor.getItem()
         console.log(monitor.getDropResult());
-        props.onDrop(item.treeId)
+        console.log(item);
+        props.onDrop(item)
         return item;
     }
 };
@@ -101,7 +102,7 @@ const ColorList = ['red', 'orange', 'yellow', 'green', 'blue', 'cyan', 'lime', '
 const FontDeco = ['none', 'line-through', 'overline', 'underline', 'initial'];
 const FontWgt = ['normal', 'bold'];
 //main class
-class BoardIxternal extends Component {
+class BoardInternal extends Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -188,4 +189,4 @@ class BoardIxternal extends Component {
     }
 }
 
-export default DropTarget(toolsNodeType, toolsNodeSpec, toolsNodeCollect)(React.memo(BoardIxternal));
+export default DropTarget(toolsNodeType, toolsNodeSpec, toolsNodeCollect)(React.memo(BoardInternal));
