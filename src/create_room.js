@@ -1,11 +1,18 @@
 import React, { Component } from 'react';
 import { Link, Route, BrowserRouter as Router } from "react-router-dom";
 import './enter.css'
+import io from 'socket.io-client';
 
+const socket = io('http://localhost:4002/');
 class Create extends Component {
     constructor(props) {
         super(props);
-        this.state = {msg:'', uname: this.props.uname, channel:this.props.channel, chatList:[]};
+        this.state = {uname: 'default', channel_name:'default'};
+        this.send = this.send.bind(this);
+    }
+    send(){
+        socket.emit('createChannel', {channel_name:this.state.channel_name, uname:this.state.uname});
+        alert(this.state.uname+' '+this.state.channel_name);
     }
     render() {
         return (
@@ -23,16 +30,16 @@ class Create extends Component {
                     <div className="login-input-container">
                         <div className="login-input-wrap input-id">
                             <i className="far fa-envelope"></i>
-                            <input placeholder="Nickname" type="text"/>
+                            <input placeholder="Nickname" type="text" onChange={(e)=>this.setState({uname: e.target.value})}/>
                         </div>
                         <div className="login-input-wrap input-id">
                             <i className="far fa-envelope"></i>
-                            <input placeholder="Chnnel Name" type="text"/>
+                            <input placeholder="Channel Name" type="text" onChange={(e)=>this.setState({channel_name: e.target.value})}/>
                         </div>
                     </div>
                     <div className="login-btn-wrap">
                         <Link to="/main">
-                            <button className="login-btn">START</button>
+                            <button className="login-btn" onClick={this.send}>START</button>
                         </Link>
                         <Link to="/">Back</Link>
                     </div>

@@ -1,11 +1,19 @@
 import React, { Component } from 'react';
 import { Link, Route, BrowserRouter as Router } from "react-router-dom";
 import './enter.css'
+import io from 'socket.io-client';
+
+const socket = io('http://localhost:4002/');
 
 class Enter extends Component {
     constructor(props) {
         super(props);
-        this.state = {msg:'', uname: this.props.uname, channel:this.props.channel, chatList:[]};
+        this.state = {uname: 'default', channel_code:'default'};
+        this.send = this.send.bind(this);
+    }
+    send(){
+        socket.emit('Channel_join', {channel_code:this.state.channel_code, uname:this.state.uname});
+        alert(this.state.uname+' '+this.state.channel_code);
     }
     render() {
         return (
@@ -23,16 +31,16 @@ class Enter extends Component {
                     <div className="login-input-container">
                         <div className="login-input-wrap input-id">
                             <i className="far fa-envelope"></i>
-                            <input placeholder="Nickname" type="text"/>
+                            <input placeholder="Nickname" type="text" onChange={(e)=>this.setState({uname: e.target.value})}/>
                         </div>
                         <div className="login-input-wrap input-password">
                             <i className="fas fa-key"></i>
-                            <input placeholder="Channel Code"  type="password"/>
+                            <input placeholder="Channel Code" type="text" onChange={(e)=>this.setState({channel_code: e.target.value})}/>
                         </div>
                     </div>
                     <div className="login-btn-wrap">
                         <Link to="/main">
-                            <button className="login-btn">ENTER</button>
+                            <button className="login-btn" onClick={this.send}>ENTER</button>
                         </Link>
                         <Link to="/">Back</Link>
                     </div>

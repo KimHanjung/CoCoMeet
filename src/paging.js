@@ -22,4 +22,4 @@ class Paging extends Component {
     }
 }
 
-export default Paging;
+export default Paging;      
