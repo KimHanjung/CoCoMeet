@@ -15,13 +15,22 @@ board_server = io.of('/board_server');
 const redis = require('redis');
 const r_cli = redis.createClient(6379, 'localhost');
 
+// sample
 r_cli.hmset("R0_order", 0, "room0-tree0-order", 1, "room0-tree1-order");
 r_cli.hmset("R0-0", "room_id", 0, "tree_id", 0, "node_id", 0, "title", "0-0", "parent", "NULL", "color", "blue", "deco", "normal", "weight", "normal");
 
+// default
 r_cli.set("Rnum", 1) // room 개수 저장
 r_cli.hmset("TID", 0, 1); // room별로 tree 개수 저장. room_id : tree_num
 r_cli.hmset("NID", 0, 1); // room별로 node 개수 저장. room_id : node_num
 
+function newRoom(roomCode, roomName) {
+    // 생성될 room의 id
+    r_cli.get("Rnum", (err, obj) => {
+        r_cli.hmset(roomCode, "room_id", Strint(obj), "room_name", roomName)
+    });
+    r_cli.incr("Rnum");
+}
 
 // tree 정보는 Key는 R0-0 이런식으로, 해당 value는 hash 형태로 저장한다
 function get_order(room_id, tree_id) {
@@ -48,18 +57,36 @@ function newApple(room_id, tree_id, text, parent) {
     r_cli.hmget("NID", room_id, (err, obj) => {
         // obj는 지금 만들어야 할 Node id가 담겨있음.
         var info = "R"+room_id+"-"+obj;
-        console.log(info);
+        // console.log(info);
         r_cli.hmset(String(info), "room_id", String(room_id), "tree_id", String(tree_id), "node_id", String(obj), "title", text , "parent", String(parent), "color", "blue", "deco", "normal", "weight", "normal");
     });
     r_cli.HINCRBY("NID", room_id, 1); //해당 room_num의 node 개수 +1
 }
+// new block은 new apple을 text, parent 지정해서 사용하면 된다.
 
-newApple(0, 0, "apple", "NULL")
 
-// r_cli.hmget("R0-1", "title",(err, obj)=> {
-//     console.log("test")
-//     console.log(obj);
-// });
+function newTree(room_id) {
+    var treeId;
+    r_cli.hmget("TID", room_id, (err, obj) => {
+        treeId = obj;
+    })
+    newApple(room_id, treeId, "New Block", "NULL");
+
+    r_cli.HINCRBY("TID", room_id, 1);
+}
+
+function delBlock(room_id, node_id) {
+    var target = "R"+room_id+"-"+node_id;
+    c_cli.del(target);   
+    // 해당 room에서 node 수는 그대로 둔다 -> id는 유지되어야 하기 때문
+    // key를 지운다
+}
+
+function editAttr(room_id, node_id, attr, content) {
+    var target = "R" + room_id + "-" + node_id;
+    c_cli.hmset(target, attr, content);
+}
+
 
 /*
 var { Total_TREES, newApple, deleteBlock, newTree, editColor, editDeco, editWeight } = require("../../DB/DB1_tree");
