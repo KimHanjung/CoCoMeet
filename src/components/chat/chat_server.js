@@ -9,65 +9,22 @@ console.log(__dirname)
 chat_server = io.of('/chat_server');
 board_server = io.of('/board_server');
 
-// var Total_ORDERS = require("../../DB/DB2_order");
+// const db_server = new GraphQLServer({
+
+// })
+const redis = require('redis');
+const r_cli = redis.createClient(6379, 'localhost');
+
+r_cli.hmset("R-0_order", 0, "room0-tree0-order", 1, "room0-tree1-order");
+r_cli.hgetall("R-0_order", (err, obj) => {
+    console.log(obj)
+});
+
 var { Total_TREES, newApple, deleteBlock, newTree, editColor, editDeco, editWeight } = require("../../DB/DB1_tree");
 //var clients = io.of('/board_server').clients();
 var {graphql, buildSchema} = require('graphql');
 
-var Total_ORDERS = [
-    {
-        room_id : 0,
-        tree_id : 0,
-        content : "0-tree0-order"
-    },
-    {
-        room_id : 0,
-        tree_id : 1,
-        content : "0-tree1-order"
-    },
-    {
-        room_id : 0,
-        tree_id : 2,
-        content : "0-tree2-order"
-    },
-    {
-        room_id : 0,
-        tree_id : 3,
-        content : "0-tree3-order"
-    },
-    {
-        room_id : 0,
-        tree_id : 4,
-        content : "0-tree4-order"
-    },
-    {
-        room_id : 1,
-        tree_id : 0,
-        content : "1-tree0-order"
-    },
-    {
-        room_id : 1,
-        tree_id : 1,
-        content : "1-tree1-order"
-    },
-    {
-        room_id : 1,
-        tree_id : 2,
-        content : "1-tree2-order"
-    },
-    {
-        room_id : 1,
-        tree_id : 3,
-        content : "1-tree3-order"
-    },
-    {
-        room_id : 1,
-        tree_id : 4,
-        content : "1-tree4-order"
-    }
-];
-
-var schema = buildSchema(`
+const schema = buildSchema(`
     type Query {
         hello : String
         get_order(room_id : Int!, tree_id : Int!) : Nested
@@ -100,9 +57,7 @@ var schema = buildSchema(`
     }
 `);
 
-
-
-var resolver = {
+const resolver = {
     hello : () => {return 'hello...'},
     get_order: (_, {room_id, tree_id}) => getOrderById(room_id, tree_id),
     orders : () => {return Total_ORDERS},
@@ -117,9 +72,9 @@ var resolver = {
 };
 
 
-graphql(schema, '{orders {tree_id}}', resolver).then((response) => {
-    console.log(response);
-});
+// graphql(schema, '{orders {tree_id}}', resolver).then((response) => {
+//     console.log(response);
+// });
 
 board_trees = [];
 
