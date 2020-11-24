@@ -15,11 +15,53 @@ board_server = io.of('/board_server');
 const redis = require('redis');
 const r_cli = redis.createClient(6379, 'localhost');
 
-r_cli.hmset("R-0_order", 0, "room0-tree0-order", 1, "room0-tree1-order");
-r_cli.hgetall("R-0_order", (err, obj) => {
-    console.log(obj)
-});
+r_cli.hmset("R0_order", 0, "room0-tree0-order", 1, "room0-tree1-order");
+r_cli.hmset("R0-0", "room_id", 0, "tree_id", 0, "node_id", 0, "title", "0-0", "parent", "NULL", "color", "blue", "deco", "normal", "weight", "normal");
 
+r_cli.set("Rnum", 1) // room 개수 저장
+r_cli.hmset("TID", 0, 1); // room별로 tree 개수 저장. room_id : tree_num
+r_cli.hmset("NID", 0, 1); // room별로 node 개수 저장. room_id : node_num
+
+
+// tree 정보는 Key는 R0-0 이런식으로, 해당 value는 hash 형태로 저장한다
+function get_order(room_id, tree_id) {
+    var r_info = "R" + String(room_id)+"_order";
+    if (r_cli.EXISTS(r_info) == 0) {
+        console.log("room does not exist")
+        return null;
+    }
+    else {
+        r_cli.hmget(r_info, tree_id, (err,obj) => {
+            console.log(obj)
+        });
+        return 0;
+    }
+}
+
+function update_order(room_id, tree_id, order) {
+    var r_info = "R" + String(room_id)+"_order";
+    r_cli.hmset(r_info, tree_id, order);
+}
+
+// 들어갈 트리가 있는 경우. Node만 업데이트 해 주면 된다.
+function newApple(room_id, tree_id, text, parent) {
+    r_cli.hmget("NID", room_id, (err, obj) => {
+        // obj는 지금 만들어야 할 Node id가 담겨있음.
+        var info = "R"+room_id+"-"+obj;
+        console.log(info);
+        r_cli.hmset(String(info), "room_id", String(room_id), "tree_id", String(tree_id), "node_id", String(obj), "title", text , "parent", String(parent), "color", "blue", "deco", "normal", "weight", "normal");
+    });
+    r_cli.HINCRBY("NID", room_id, 1); //해당 room_num의 node 개수 +1
+}
+
+newApple(0, 0, "apple", "NULL")
+
+// r_cli.hmget("R0-1", "title",(err, obj)=> {
+//     console.log("test")
+//     console.log(obj);
+// });
+
+/*
 var { Total_TREES, newApple, deleteBlock, newTree, editColor, editDeco, editWeight } = require("../../DB/DB1_tree");
 //var clients = io.of('/board_server').clients();
 var {graphql, buildSchema} = require('graphql');
@@ -71,7 +113,7 @@ const resolver = {
     change_weight:(_, {room_id, node_id, weight}) => editWeight(room_id, node_id, weight)
 };
 
-
+*/
 // graphql(schema, '{orders {tree_id}}', resolver).then((response) => {
 //     console.log(response);
 // });

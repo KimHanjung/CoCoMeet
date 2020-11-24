@@ -1,4 +1,4 @@
-var Total_ORDERS = require("./DB2_order");
+//var Total_ORDERS = require("./DB2_order");
 
 let Total_TREES = [
     {
@@ -75,7 +75,7 @@ let Total_TREES = [
 
 // new Tree는 결국 tree_id가 새 거인 node를 만드는 것과 같음
 const newTree = (room_id) => {
-    const roomTrees = Total_ORDERS.filter(order => order.room_id === room_id);
+    //const roomTrees = Total_ORDERS.filter(order => order.room_id === room_id);
     const newT = newApple(room_id, roomTrees.length, "default_text", null);
     return newT;
 }
