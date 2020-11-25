@@ -8,14 +8,15 @@ class EditableText extends Component{
       super(props)
       this.state = {
         text: props.initialValue,
-        edit: false
+        edit: false,
+        flag: false,
       }
       //this.textInput = React.createRef();
     }
   
-  changeEditMode = (event) => {
+  changeEditMode = () => {
     this.setState({
-      edit: true
+      edit: true, 
     })
     //document.getElementById(`${this.props.node_id}`).focus(); 
   } // false인 edit의 상태를 true로 바꿔주는 역할
@@ -23,27 +24,45 @@ class EditableText extends Component{
     this.setState({
       text: event.target.value
     })
+    if (this.state.flag===false){
+      this.setState({flag:true})
+      this.props.modify(this.props.tree_id, true);
+    }
   }
   handleKeyDown = (event) => {
     if(event.key === "Enter"){
       this.setState({
-        edit: !this.state.edit
-      },
-      function(){
-        socket.emit('channelJoin', {channel:'cocomeet', uname:'열창', trees:null});
-        socket.emit('text', {text:this.state.text});
-      }) 
-      // socket emit
+        edit: false
+      })
+      if (this.state.flag===true){
+        this.setState({flag:false})
+        // socket emit
+        console.log("text changed...EMIT!")
+        var data ={};
+        data["text"]=this.state.text;
+        data["tree_id"]=  this.props.tree_id;
+        data["node_id"]=this.props.node_id;
+        socket.emit("changeText", data);
+      }
+      this.props.modify(this.props.tree_id, false);
       
-  // 만약 입력된 값을 상위 컴포넌트에서 저장/관리한다면, 저장하는 함수를 여기서 실행한다.
     }
   }
-  handleInputFocus = () => {
-    this.setState({ edit: true });
-  };
+  
 
   handleInputBlur = () => {
     this.setState({ edit: false });
+    if (this.state.flag===true){
+      this.setState({flag:false})
+      // socket emit
+      console.log("text changed...EMIT!")
+      var data ={};
+      data["text"]=this.state.text;
+      data["tree_id"]=this.props.tree_id;
+      data["node_id"]=this.props.node_id;
+      socket.emit("changeText", data);
+    }
+    this.props.modify(this.props.tree_id, false);
   };
   componentWillReceiveProps(nextProps) {
     this.setState({ text: nextProps.initialValue });
@@ -53,15 +72,14 @@ class EditableText extends Component{
       <div className="row list">
       {this.state.edit ? 
       (<input className="form-control" type="text" 
-              placeholder={this.state.text} 
+              value={this.state.text} 
               onChange={(event) => this.handleChange(event)} 
               onKeyDown = {this.handleKeyDown} 
-              onFocus = {this.handleInputFocus}
               onBlur = {this.handleInputBlur}
               
               />)
       :
-      (<span onClick={() => this.changeEditMode()}>
+      (<span onDoubleClick={() => this.changeEditMode()}>
           {this.state.text}</span>)}
       </div>
   )}

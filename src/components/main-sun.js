@@ -48,8 +48,8 @@ class Main extends Component {
       treenum: 2,
       lefttree: {treeID: 0, treeData: [{title: "dummy0"}]},
       righttree: {treeID: 1, treeData: [{title: "dummy1"}]},
-      //tree1: 0,
-      //tree2: 1,
+      leftModifying: false,
+      rightModifying: false,
       getcolor: "cyan",
       LeftcheckedList: [],
       RightcheckedList: [],
@@ -64,6 +64,7 @@ class Main extends Component {
     this.updateTreeRight = this.updateTreeRight.bind(this);
     this.LeftmovedNodeIs = this.LeftmovedNodeIs.bind(this);
     this.RightmovedNodeIs = this.RightmovedNodeIs.bind(this);
+    this.modifyState = this.modifyState.bind(this);
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////
     this.updateName = this.updateName.bind(this);
     this.updateChannel = this.updateChannel.bind(this);
@@ -77,10 +78,11 @@ class Main extends Component {
     this.getAttrToBoard = this.getAttrToBoard.bind(this);
     this.getListFromBoard = this.getListFromBoard.bind(this);
   }
-  toTreeDataFrom=(flat)=>{
+  toTreeDataFrom=(flat, tree_id)=>{
     return getTreeFromFlatData({
       flatData: flat.map(node => ({ ...node, 
-        title: <EditableText node_id={node.id} initialValue={node.title}/>, color: node.color, weight: node.weight, deco: node.deco })),
+        title: <EditableText modify={this.modifyState} tree_id={tree_id} node_id={node.id} initialValue={node.title}/>, 
+                          color: node.color, weight: node.weight, deco: node.deco })),
       getKey: node => node.id,
       getParentKey: node => node.parent, 
       rootKey: 'NULL', 
@@ -136,14 +138,14 @@ class Main extends Component {
   recieve_sendtree = (tree_leftright, data) =>{
     const treeID = data.treeId;
     if(tree_leftright==='L'){
-      const left_tree = this.toTreeDataFrom(data.tree);
+      const left_tree = this.toTreeDataFrom(data.tree, treeID);
       if(data.treenum === null){
         this.setState({lefttree: {treeID: treeID, treeData: left_tree}});
       }else{
         this.setState({treenum: data.treenum, lefttree: {treeID: treeID, treeData: left_tree}});
       }
     }else if(tree_leftright==='R'){
-      const right_tree = this.toTreeDataFrom(data.tree);
+      const right_tree = this.toTreeDataFrom(data.tree, treeID);
       if(data.treenum === null){
         this.setState({righttree: {treeID: treeID, treeData: right_tree}});
       }else{
@@ -169,6 +171,9 @@ class Main extends Component {
       // this node moved from left to right. emit "migrateNode"
       console.log("left to right... EMIT!")
       this.setState({lastMoveNodeRight: "NULL"})
+      // if this migrated node is in LeftcheckedList, remove!
+      var left_test_checked = this.state.LeftcheckedList;
+      this.setState({LeftcheckedList: left_test_checked.filter(targetValue => targetValue !==parseInt(node_id))});
       var data = {}
       data["node_id"]=node_id;
       data["origin_tree"]=this.toFlatDataFrom(this.state.lefttree.treeData);
@@ -262,6 +267,9 @@ class Main extends Component {
       // this node moved from right to left. emit "migrateNode"
       console.log("right->left...EMIT!")
       this.setState({lastMoveNodeLeft: "NULL"})
+      // if this migrated node is in RightcheckedList, remove!
+      var right_test_checked = this.state.RightcheckedList;
+      this.setState({RightcheckedList: right_test_checked.filter(targetValue => targetValue !==parseInt(node_id))});
       var data = {}
       data["node_id"]=node_id;
       data["origin_tree"]=this.toFlatDataFrom(this.state.righttree.treeData);
@@ -409,7 +417,7 @@ class Main extends Component {
       attr["weight"]=get_attr;
     }
     console.log(attr);
-    socket.emit('changeAttribute',);
+    socket.emit('changeAttribute',attr);
   }
   getListFromBoard = (tree_id, node_id, isChecked) => {
     var left_test_checked = this.state.LeftcheckedList;
@@ -426,6 +434,14 @@ class Main extends Component {
       }else{
         this.setState({RightcheckedList: right_test_checked.filter(targetValue => targetValue !==node_id)});
       }
+    }
+  }
+  modifyState = (tree_id, flag) => {
+    if (tree_id === this.state.lefttree.treeID){
+      this.setState({leftModifying: flag})
+    }
+    else {
+      this.setState({rightModifying: flag})
     }
   }
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
