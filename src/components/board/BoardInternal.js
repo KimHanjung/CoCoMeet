@@ -89,11 +89,7 @@ const toolsNodeSpec = {
         const item = monitor.getItem();
         console.log(monitor.getDropResult());
         console.log(item);
-<<<<<<< HEAD
-        props.onDrop(item)
-=======
         props.onDrop(item);
->>>>>>> origin/sunny
         return item;
     }
 };
@@ -111,17 +107,19 @@ class BoardInternal extends Component {
         super(props);
         this.state = {
           treeData: props.tree.treeData,
+          lastMovePrevPath: "NULL",
+          lastMoveNextPath: "NULL",
           lastMoveNode: "NULL",
         };
         this.updateTree = this.updateTree.bind(this)
     }
     updateTree(newTreeData){
-        const clickedNode = this.state.lastMoveNode;
+        //const clickedNode = this.state.lastMoveNode;
         //console.log("updateTreeBoard");
         //console.log(newTreeData);
         //console.log(this.props.tree.treeID);
         //console.log(clickedNode.id);
-        this.props.updateTree(newTreeData, this.props.tree.treeID, clickedNode.id)
+        this.props.updateTree(newTreeData, this.props.tree.treeID)
         //this.setState({ newTreeData })
         this.setState({treeData: newTreeData})
         
@@ -144,10 +142,10 @@ class BoardInternal extends Component {
         const { connectDropTarget, hovered } = this.props;
         const backgroundColor = hovered ? 'lightyellow' : 'white';
         const getNodeKey = ({ node: {id}}) => id;
-        const {lastMoveNode} = this.state;
         const recordCall = (name, args) => {
             //console.log(`${name} called with arguments:`, args);
         };
+        const { lastMovePrevPath, lastMoveNextPath, lastMoveNode } = this.state;
         return connectDropTarget(
             <div class="h-fullcalc w-full float-left" >
                 <div class='pl-8 pt-3'>
@@ -203,10 +201,13 @@ class BoardInternal extends Component {
                         onVisibilityToggle={args => recordCall('onVisibilityToggle', args)}
                         onMoveNode={args => {
                             recordCall('onMoveNode', args);
-                            const { node } = args;
+                            const { prevPath, nextPath, node } = args;
                             this.setState({
+                                lastMovePrevPath: prevPath,
+                                lastMoveNextPath: nextPath,
                                 lastMoveNode: node,
                             });
+                            this.props.movedNodeIs(node, this.props.tree.treeID);
                         }}
                         onDragStateChanged={args => recordCall('onDragStateChanged', args)}   
                         onChange={treeData => this.updateTree(treeData)}
@@ -224,12 +225,12 @@ class BoardInternal extends Component {
                         </a>
                         </TrashNodeComponent>
                     </div>
-                    <UExternalComponent node={{ title: 'Suns Apple' }} />← 드래그
-                    {lastMoveNode && (
-                        <div>
-                            Node &quot;{lastMoveNode.id}&quot; moved from path []
-                        </div>
-                    )}
+                    <UExternalComponent node={{ id: -1, title: 'Suns Apple' }} />← 드래그
+                    <div>{lastMoveNode && (
+          <div>
+            Node &quot;{lastMoveNode.id}&quot; moved to path [{lastMoveNextPath}].
+          </div>
+        )}</div>
                 </div>
                 
                 

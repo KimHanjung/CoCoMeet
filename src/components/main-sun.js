@@ -53,6 +53,8 @@ class Main extends Component {
       getcolor: "cyan",
       LeftcheckedList: [],
       RightcheckedList: [],
+      lastMoveNodeLeft: "NULL",
+      lastMoveNodeRight: "NULL",
     };
     this.onDropLeft = this.onDropLeft.bind(this);
     this.onDropRight = this.onDropRight.bind(this);
@@ -60,6 +62,9 @@ class Main extends Component {
     this.updateNodeRight = this.updateNodeRight.bind(this);
     this.updateTreeLeft = this.updateTreeLeft.bind(this);
     this.updateTreeRight = this.updateTreeRight.bind(this);
+    this.LeftmovedNodeIs = this.LeftmovedNodeIs.bind(this);
+    //this.RightmovedNodeIs = this.RightmovedNodeIs.bind(this);
+    this.movedNodeIs = this.movedNodeIs.bind(this);
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////
     this.updateName = this.updateName.bind(this);
     this.updateChannel = this.updateChannel.bind(this);
@@ -143,26 +148,52 @@ class Main extends Component {
   addTree =()=>{
     socket.emit('addTree')
   }
-  updateTreeLeft = (treeData, tree_id, moved_nodeid) => {
-    console.log("updateTreeMainLeft");
-    console.log(treeData);
-    console.log(tree_id);
-    console.log(moved_nodeid);
+  LeftmovedNodeIs = (node) =>{
+    this.setState({lastMoveNodeLeft: node})
+    // emit_func('l', node)
+
+  }
+  movedNodeIs = (node, tree_id) =>{
+    if (tree_id === this.state.lefttree.treeID){
+      this.setState({lastMoveNodeLeft: node})
+    }
+    else {
+      this.setState({lastMoveNodeRight: node})
+    }
+    // if(sunapple){
+    //   emit
+    //   NULL
+    // }else if(delete){
+    //   NULL
+    // }else{
+    //   left right 비교를
+    //   if(LEFT right 다를 때 ){
+    //     MIgrate
+    //   }else{
+    //     move
+    //   }
+    // }
+    //migrate
+  }
+  //emit_func=(tree id, node)=>{
+    //leftmovednodeid === rightmovednodeid
+    //  migrate
+    //  ...
+    //socket.emit('sunsApple', flatdata);
+    //socket.emit('deleteNode', flatdata);
+    //socket.emit('migrateNode', twoflatdata);
+    //socket.emit('moveNode', flatdata)
+  //}
+  updateTreeLeft = (treeData, tree_id) => {
     const tree = this.toFlatDataFrom(treeData);
     console.log(tree);
     //delete,sunsapple,changetext, changeattr, move, migrate
-    //socket.emit('sunsApple', flatdata);
-    //socket.emit('deleteNode', flatdata);
     //socket.emit('changeText', flatdata1row);
     //socket.emit('changeAttribute', flatdata1row);
-    //socket.emit('migrateNode', twoflatdata);
-    //socket.emit('moveNode', flatdata)
+
   }
-  updateTreeRight = (treeData, tree_id, moved_nodeid) =>{
-    console.log("updateTreeMainRight");
-    console.log(treeData);
-    console.log(tree_id);
-    console.log(moved_nodeid);
+  updateTreeRight = (treeData, tree_id) =>{
+    
   }
   updateNodeLeft = () => {
     // addblock
@@ -296,7 +327,7 @@ class Main extends Component {
                           <div class="border-b-2 border-gray-300 bg-gray-200 h-12 p-3 mb-3">
                             <div class="font-sans text-lg font-semibold text-teal-500">Left Tree</div>
                           </div>
-                          <BoardInternal tree={this.state.lefttree} sendChecked={this.getListFromBoard}
+                          <BoardInternal tree={this.state.lefttree} sendChecked={this.getListFromBoard} movedNodeIs={this.movedNodeIs}
                           onDrop={this.onDropLeft} updateNode={this.updateNodeLeft} updateTree={this.updateTreeLeft}/>
                         </div>
                     </div>
@@ -305,7 +336,7 @@ class Main extends Component {
                           <div class="border-b-2 border-gray-300 bg-gray-200 h-12 p-3 mb-3">
                             <div class="font-sans text-lg font-semibold text-teal-500">Right Tree</div>
                           </div>
-                          <BoardInternal tree={this.state.righttree} sendChecked={this.getListFromBoard}
+                          <BoardInternal tree={this.state.righttree} sendChecked={this.getListFromBoard} movedNodeIs={this.movedNodeIs}
                           onDrop={this.onDropRight} updateNode={this.updateNodeRight} updateTree={this.updateTreeRight}/>
                         </div>
                     </div>
