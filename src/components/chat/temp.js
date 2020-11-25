@@ -4,3 +4,5 @@ for (var tree_id in data.tree_id_list) {
   console.log(tree_id);
   console.log(data.tree_id_list[tree_id]);
 }
+
+console.log('hi');
