@@ -2,6 +2,7 @@ var order = [1, 3, [5, [4, [6]], 9]];
 var target = 4;
 var result = [target];
 
+<<<<<<< HEAD
 var tree = [{id: '1', title: 'N1', parent: 'NULL'},
             {id: '2', title: 'N2', parent: 'NULL'},
             {id: '3', title: 'N3', parent: '2'},
@@ -100,3 +101,11 @@ console.log(b.map(i=>a[i]));
             </svg>
           </button>
 */
+=======
+for (var tree_id in data.tree_id_list) {
+  console.log(tree_id);
+  console.log(data.tree_id_list[tree_id]);
+}
+
+console.log('hi');
+>>>>>>> origin/doing
