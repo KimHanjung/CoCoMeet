@@ -4,7 +4,7 @@ import EditableText from './EditableText';
 import { DndProvider, DragSource, DropTarget } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { SortableTreeWithoutDndContext as SortableTree } from 'react-sortable-tree';
-import { changeNodeAtPath } from 'react-sortable-tree';
+//import { addNodeUnderParent, removeNodeAtPath, changeNodeAtPath } from 'react-sortable-tree';
 //import SortableTree from 'react-sortable-tree';
 import 'react-sortable-tree/style.css';
 import CustomTheme from 'react-sortable-tree-theme-solverboard';
@@ -38,12 +38,11 @@ class externalNodeBaseComponent extends Component {
 externalNodeBaseComponent.propTypes = {
     node: PropTypes.shape({ title: PropTypes.string }).isRequired,
     connectDragSource: PropTypes.func.isRequired,
-    
 };
 const UExternalComponent = DragSource(
     externalNodeType,
     externalNodeSpec,
-    externalNodeCollect,
+    externalNodeCollect
 )(externalNodeBaseComponent);
 
 
@@ -59,6 +58,7 @@ const trashNodeCollect = (connect, monitor) => ({
 class trashNodeBaseComponent extends Component {
     render() {
       const { connectDropTarget, children, isOver } = this.props;
+  
       return connectDropTarget(
         <div
           style={{
@@ -86,10 +86,9 @@ const TrashNodeComponent = DropTarget(
 const toolsNodeType = 'tree';
 const toolsNodeSpec = {
     drop(props, monitor){
-        const item = monitor.getItem();
+        const item = monitor.getItem()
         console.log(monitor.getDropResult());
-        console.log(item);
-        props.onDrop(item);
+        props.onDrop(item.treeId)
         return item;
     }
 };
@@ -100,53 +99,42 @@ const toolsNodeCollect = (connect, monitor) => ({
 
 const ColorList = ['red', 'orange', 'yellow', 'green', 'blue', 'cyan', 'lime', 'purple'];
 const FontDeco = ['none', 'line-through', 'overline', 'underline', 'initial'];
-const FontWgt = ['normal', 'bold', 'italic'];
+const FontWgt = ['normal', 'bold'];
 //main class
-class BoardInternal extends Component {
+class BoardIxternal extends Component {
     constructor(props) {
         super(props);
         this.state = {
           treeData: props.tree.treeData,
-          lastMovePrevPath: "NULL",
-          lastMoveNextPath: "NULL",
-          lastMoveNode: "NULL",
+          rev_block_color: props.tree.block_color,
+          rev_text_deco: props.tree.text_deco,
+          rev_font_weight: props.tree.font_weight,
         };
         this.updateTree = this.updateTree.bind(this)
+        //this.add = this.add.bind(this)
     }
     updateTree(newTreeData){
-        //const clickedNode = this.state.lastMoveNode;
-        //console.log("updateTreeBoard");
-        //console.log(newTreeData);
-        //console.log(this.props.tree.treeID);
-        //console.log(clickedNode.id);
-        this.props.updateTree(newTreeData, this.props.tree.treeID)
-        //this.setState({ newTreeData })
+        this.props.updateTree(newTreeData)
+        this.setState({ newTreeData })
+        //console.log(newTreeData)
         this.setState({treeData: newTreeData})
         
     }
-
+    /*add(){
+        //console.log('adding new node to tree ' + this.props.treeId);
+        this.setState({treeData: this.state.treeData.concat([{ title: <EditableText initialValue='Sun'/>, children: []}])});
+        
+    }*/
     componentWillReceiveProps(nextProps) {
         this.setState({ treeData: nextProps.tree.treeData });
-    }
-    handleChecked = (event) => {
-        var test_checked = this.state.checkedList;
-        if(event.target.checked === true){
-            this.props.sendChecked(this.props.tree.treeID, parseInt(event.target.value,10), true)
-            //console.log(this.state.checkedList);
-        }else if(event.target.checked === false){
-            this.props.sendChecked(this.props.tree.treeID, parseInt(event.target.value,10), false)
-            //console.log(this.state.checkedList);
-        }
     }
     render() {
         const { connectDropTarget, hovered } = this.props;
         const backgroundColor = hovered ? 'lightyellow' : 'white';
-        const getNodeKey = ({ node: {id}}) => id;
-        const recordCall = (name, args) => {
-            //console.log(`${name} called with arguments:`, args);
-        };
-        const { lastMovePrevPath, lastMoveNextPath, lastMoveNode } = this.state;
+        const getNodeKey = ({ treeIndex}) => treeIndex;
+        
         return connectDropTarget(
+        
             <div class="h-fullcalc w-full float-left" >
                 <div class='pl-8 pt-3'>
                     <button class="bg-transparent hover:bg-blue-500 text-blue-500 font-semibold hover:text-white py-2 px-2 border border-blue-500 hover:border-transparent rounded"
@@ -154,66 +142,32 @@ class BoardInternal extends Component {
                         Add Block
                     </button>
                 </div>
+                
                 <div class="h-6/9 w-9/9 m-3 p-3" >
                     
                     <SortableTree
                         treeData={this.state.treeData}
-                        
-                        getNodeKey={getNodeKey}
+                        onChange={treeData => this.updateTree(treeData)}
                         scaffoldBlockPxWidth={20}
+                        
                         generateNodeProps={({node, path}) => {
-                            var reviseColor;
-                            var reviseDeco;
-                            var reviseWeight;
-                            reviseColor = 'cyan';
-                            if(node.id === "1"){
-                                reviseColor = 'yellow';
-                                reviseDeco = 'line-through';
-                                reviseWeight = 'bold';
-                            }else if(node.id === "2"){
-                                reviseColor = 'blue'
-                                reviseDeco = 'underline';
-                                reviseWeight = 'normal';
-                            }else if(node.id === "9"){
-                                reviseColor = 'red';
-                                reviseDeco = 'overline';
-                                reviseWeight = 'normal';
-                            }else{
-                                reviseColor = 'cyan';
-                                reviseWeight = 'normal';
-                            }
-                            
                             return {
                                 
-                                buttons:[(<input class="mr-6" type="checkbox" onClick={this.handleChecked} value={node.id} ></input>)],
+                                buttons:[(<input class="mr-6" type="checkbox" ></input>)],
                                 style:{
-                                    backgroundColor: `${reviseColor}`,
-                                    border: `1px solid ${reviseColor}`,
+                                    backgroundColor: `${this.state.rev_block_color}`,
+                                    border: `1px solid ${this.state.rev_block_color}`,
                                     borderRadius: `8px`,
-                                    textDecoration: `${reviseDeco}`,
+                                    textDecoration: `${this.state.rev_text_deco}`,
                                     fontSize: `15px`,
-                                    fontWeight: `${reviseWeight}`,
-                                    fontStyle: `${FontWgt[2]}`,
+                                    fontWeight: `${this.state.rev_font_weight}`,
                                 }
                             };
                         }}
-                        
-                        onVisibilityToggle={args => recordCall('onVisibilityToggle', args)}
-                        onMoveNode={args => {
-                            recordCall('onMoveNode', args);
-                            const { prevPath, nextPath, node } = args;
-                            this.setState({
-                                lastMovePrevPath: prevPath,
-                                lastMoveNextPath: nextPath,
-                                lastMoveNode: node,
-                            });
-                            this.props.movedNodeIs(node, this.props.tree.treeID);
-                        }}
-                        onDragStateChanged={args => recordCall('onDragStateChanged', args)}   
-                        onChange={treeData => this.updateTree(treeData)}
                         theme={CustomTheme}
                         dndType={trashNodeType, externalNodeType}
                     />
+                    
                     <div class="h-2/9 w-full p-3">
                         <TrashNodeComponent>
                         <a class="flex items-center justify-center bg-transparent text-xl text-blue-500 font-semibold py-2 px-2 border border-blue-500 rounded">
@@ -225,12 +179,7 @@ class BoardInternal extends Component {
                         </a>
                         </TrashNodeComponent>
                     </div>
-                    <UExternalComponent node={{ id: -1, title: 'Suns Apple' }} />← 드래그
-                    <div>{lastMoveNode && (
-          <div>
-            Node &quot;{lastMoveNode.id}&quot; moved to path [{lastMoveNextPath}].
-          </div>
-        )}</div>
+                    <UExternalComponent node={{ title: this.props.msg_to_block }} />
                 </div>
                 
                 
@@ -239,4 +188,4 @@ class BoardInternal extends Component {
     }
 }
 
-export default DropTarget(toolsNodeType, toolsNodeSpec, toolsNodeCollect)(React.memo(BoardInternal));
+export default DropTarget(toolsNodeType, toolsNodeSpec, toolsNodeCollect)(React.memo(BoardIxternal));
