@@ -34,11 +34,11 @@ board_server.on('connection', function(socket){
         socket.join(data.channel);
         //DB한테 트리 0, 1 요청
         //DB한테 트리 개수 요청
-        let treeLetf, treeRight;
+        let treeLeft, treeRight;
         let orderLeft, orderRight;
         let treenum;
         socket.to(data.channel).emit('channelJoin', 
-        {treenum:treenum, tree: {Left:treeLetf, Right:treeRight}, order: {Left:orderLeft, Right:orderRight}});
+        {treenum:treenum, tree: {Left:treeLeft, Right:treeRight}, order: {Left:orderLeft, Right:orderRight}});
         console.log(data.channel);
     });
     socket.on('channelLeave', function(data){
@@ -121,7 +121,7 @@ board_server.on('connection', function(socket){
     });
     socket.on('changeTree', function(data){
         //DB로부터 새로운 tree 요청 data.tree_id
-        socket.to(data.channel).emit('sendTree', {tree:db.tree});
+        socket.to(data.channel).emit('changeTree', {tree:db.tree});
     });
     socket.on('migrateNode', function(data){
         //data.origin_tree -> data.target_tree, order

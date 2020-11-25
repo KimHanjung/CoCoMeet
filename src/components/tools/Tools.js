@@ -6,22 +6,29 @@ class Tools extends Component {
     super(props);
     this.state ={
       //trees: props.trees
-      leftree: props.tree1,
-      righttree: props.tree2
+      //leftree: props.tree1,
+      //righttree: props.tree2
     }
   }
 
   render() {
+    let treearray = []
+    for(let i=0;i<this.props.treenum;i++){
+      if (i===this.props.tree1) {
+        treearray.push(<div class="w-full text-red"><Tree treeId={i}/></div>);
+      }
+      else if (i===this.props.tree2){
+        treearray.push(<div class="w-full text-blue-500"><Tree treeId={i}/></div>);
+      }
+      else {
+        treearray.push(<div class="w-full"><Tree treeId={i}/></div>);
+      }
+    }
     return (
       <div>
         <div>
-        {this.props.trees.map((tree,index) => (
-          <div class="w-full">
-            <Tree key={index} tree={tree}/>
-          </div>
-        ))}
-        
-      </div>
+          {treearray}
+        </div>
       </div>
     );
   }

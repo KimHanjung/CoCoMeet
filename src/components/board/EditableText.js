@@ -8,7 +8,7 @@ class EditableText extends Component{
       super(props)
       this.state = {
         text: props.initialValue,
-        isEditable: false
+        edit: false
       }
     }
   
@@ -35,6 +35,13 @@ class EditableText extends Component{
   // 만약 입력된 값을 상위 컴포넌트에서 저장/관리한다면, 저장하는 함수를 여기서 실행한다.
     }
   }
+  handleInputFocus = () => {
+    this.setState({ edit: true });
+  };
+
+  handleInputBlur = () => {
+    this.setState({ edit: false });
+  };
   componentWillReceiveProps(nextProps) {
     this.setState({ text: nextProps.initialValue });
   }
@@ -43,11 +50,15 @@ class EditableText extends Component{
       <div className="row list">
       {this.state.edit ? 
       (<input className="form-control" type="text" 
-              value={this.state.text} 
+              placeholder={this.state.text} 
               onChange={(event) => this.handleChange(event)} 
-              onKeyDown = {this.handleKeyDown} />)
+              onKeyDown = {this.handleKeyDown} 
+              onFocus = {this.handleInputFocus}
+              onBlur = {this.handleInputBlur}
+              
+              />)
       :
-      (<span onDoubleClick={() => this.changeEditMode()}>
+      (<span onClick={() => this.changeEditMode()}>
           {this.state.text}</span>)}
       </div>
   )}
