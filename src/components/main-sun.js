@@ -158,6 +158,12 @@ class Main extends Component {
     console.log("LeftmovedNodeIS")
     if (node_id === -1) {
       //suns-apple
+      // title : this.state.msg_to_block
+      var data={};
+      data["treeid"]=this.state.lefttree.treeID;
+      data["tree"]=this.toFlatIDDataFrom(this.state.lefttree.treeData);
+      data["node_title"]=this.state.msg_to_block
+      // socket.emit
     }
     else if (node_id===this.state.lastMoveNodeRight){
       // this node moved from left to right. emit "migrateNode"
@@ -243,7 +249,16 @@ class Main extends Component {
   }
   RightmovedNodeIs = (node_id, prev_tree, prevIndex, nextIndex, prevPath, nextPath) =>{
     console.log("RIghtmovedNodeIS")
-    if (node_id===this.state.lastMoveNodeLeft){
+    if (node_id === -1) {
+      //suns-apple
+      // title : this.state.msg_to_block
+      var data={};
+      data["treeid"]=this.state.righttree.treeID;
+      data["tree"]=this.toFlatIDDataFrom(this.state.righttree.treeData);
+      data["node_title"]=this.state.msg_to_block
+      // socket.emit
+    }
+    else if (node_id===this.state.lastMoveNodeLeft){
       // this node moved from right to left. emit "migrateNode"
       console.log("right->left...EMIT!")
       this.setState({lastMoveNodeLeft: "NULL"})
@@ -329,7 +344,7 @@ class Main extends Component {
   }
 
   updateTreeLeft = (newtreeData, tree_id) => {
-    console.log("left main", newtreeData);
+    //console.log("left main", newtreeData);
     this.setState({lefttree:{treeID: this.state.lefttree.treeID, treeData: newtreeData}});
     //const tree = this.toFlatDataFrom(treeData);
     //console.log(tree);
@@ -339,7 +354,7 @@ class Main extends Component {
 
   }
   updateTreeRight = (newtreeData, tree_id) =>{
-    console.log("right main", newtreeData);
+    //console.log("right main", newtreeData);
     this.setState({righttree:{treeID: this.state.righttree.treeID, treeData: newtreeData}});
   }
   updateNodeLeft = () => {
