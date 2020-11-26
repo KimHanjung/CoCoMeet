@@ -140,7 +140,8 @@ class BoardInternal extends Component {
         const { connectDropTarget, hovered } = this.props;
         const backgroundColor = hovered ? 'lightyellow' : 'white';
         const getNodeKey = ({ node: {id}}) => id;
-        const {lastMoveNode} = this.state;
+        const { lastMovePrevPath, lastMoveNextPath, lastMoveNode } = this.state;
+
         const recordCall = (name, args) => {
             //console.log(`${name} called with arguments:`, args);
         };
