@@ -12,6 +12,11 @@ board_server = io.of('/board_server');
 // const db_server = new GraphQLServer({
 
 // })
+
+// 승연 _ order 데이터는 [] 없는 "1,2,3,4" 의 형태.
+// 받아올 때 array = string.split(","); 로 받아오기 
+
+
 const redis = require('redis');
 const r_cli = redis.createClient(6379, 'localhost');
 
@@ -40,10 +45,12 @@ function get_order(room_id, tree_id) {
         return null;
     }
     else {
+        var order;
         r_cli.hmget(r_info, tree_id, (err,obj) => {
             console.log(obj)
+            order = obj.split(",");
         });
-        return 0;
+        return order;
     }
 }
 
@@ -52,15 +59,24 @@ function update_order(room_id, tree_id, order) {
     r_cli.hmset(r_info, tree_id, order);
 }
 
+function getTreeNum(room_id) {
+    r_cli.hmget("TID", room_id, (err,obj) => {
+        return obj;
+    });
+}
+
 // 들어갈 트리가 있는 경우. Node만 업데이트 해 주면 된다.
 function newApple(room_id, tree_id, text, parent) {
+    var newid;
     r_cli.hmget("NID", room_id, (err, obj) => {
         // obj는 지금 만들어야 할 Node id가 담겨있음.
+        newid = obj;
         var info = "R"+room_id+"-"+obj;
         // console.log(info);
         r_cli.hmset(String(info), "room_id", String(room_id), "tree_id", String(tree_id), "node_id", String(obj), "title", text , "parent", String(parent), "color", "blue", "deco", "normal", "weight", "normal");
     });
     r_cli.HINCRBY("NID", room_id, 1); //해당 room_num의 node 개수 +1
+    return newid;
 }
 // new block은 new apple을 text, parent 지정해서 사용하면 된다.
 
@@ -112,11 +128,16 @@ chat_server.on('connection', function (socket) {
 board_server.on('connection', function(socket){
     socket.on('channelJoin', function(data){
         socket.join(data.channel);
-        //DB한테 트리 0, 1 요청
-        //DB한테 트리 개수 요청
+        //DB한테 트리 0, 1 요청 -o
+        //DB한테 트리 개수 요청 -o
         let treeLetf, treeRight;
         let orderLeft, orderRight;
         let treenum;
+        /* 승연_test 후 order 오는 거 보고 뜯어서 room_id-block_id 별로 정보 받아와야 함*/
+        orderLeft = get_order(data.room_id, data.Left);
+        orderRight = get_order(data.room_id, data.Right);
+        treenum = getTreeNum(data.room_id);
+
         socket.to(data.channel).emit('channelJoin', 
         {treenum:treenum, tree: {Left:treeLetf, Right:treeRight}, order: {Left:orderLeft, Right:orderRight}});
         console.log(data.channel);
@@ -126,13 +147,20 @@ board_server.on('connection', function(socket){
         console.log(data.channel);
     });
     socket.on('addTree', function(data){ 
-        //DB한테 새로운 트리 생성 요청, 트리 개수 요청
+        //DB한테 새로운 트리 생성 요청 -o
+        //트리 개수 요청 -o
         let treenum;
+    
+        newTree(data.room_id);
+        treenum = getTreeNum(data.room_id);
+
         socket.to(data.channel).emit('addTree', {treenum:treenum});
         console.log(data.tree);
     });
-    socket.on('addNode', function(data){ // 새로운 node는 클라에서 id -1이라는 정보가 오며, 안에 내용은 없음. db에 새로운 튜플 생성 요청
+
+    socket.on('addNode', function(data){ // room_id, tree_id 새로운 node는 클라에서 id -1이라는 정보가 오며, 안에 내용은 없음. db에 새로운 튜플 생성 요청
         //DB한테 새로운 block추가 요청
+        //승연 _ 공동 작업 요청~~~
         let tree;
         //1. client로부터 flatdata가 오지 않을 경우: DB한테 data.channel, data.tree_id 보냄, order, tree 받아옴, 새로운 node id 받음(newnode_id)
         db.order.push(newnode_id)
@@ -143,10 +171,12 @@ board_server.on('connection', function(socket){
         data.tree = data.tree.map((cur) => cur.id==='-1' ? cur.id=newnode_id : cur.id);
         socket.to(data.channel).emit('sendTree', {tree:data.tree});
     });
+
     socket.on('deleteNode', function(data){
         //DB2로부터 order_db 받아옴, 삭제 node id:data.node_id
         let order_db = [];
-
+        order_db =get_order(data.room_id, data.tree_id)
+        // 승연_공동작업 요청
         //1. 클라가 삭제되기 전 flatdata를 보내줄 경우
         let dellist = delNode(data.tree, data.node_id);
         data.tree = data.tree.filter(i => !dellist.includes(i.id));
@@ -166,41 +196,62 @@ board_server.on('connection', function(socket){
                 sequence.push(cur)
             return sequence;
         }, []);
-        //db1로 dellist 보내서 node 삭제, db2로 order 업데이트
+        //db1로 dellist 보내서 node 삭제 -o
+        // db2로 order 업데이트 -o
+        for (var elem in dellist) {
+            delBlock(data.room_id, elem);
+        }
+        update_order(dtat.room_id, String(dellist));
 
         socket.to(data.channel).emit('sendTree', {tree:db.tree}); 
         //or
         socket.to(data.channel).emit('sendTree', {tree:data.tree}); 
     });
+
     socket.on('sunsApple', function(data){ // 클라에서 sunsapple의 node_id는 -1로 전달
-        //db1로 sunsApple node의 정보들 전달, flatdata로부터 order 추출, db1로부터 sunsapple id 얻음(apple_id)
+        //db1로 sunsApple node의 정보들 전달 -o , flatdata로부터 order 추출, db1로부터 sunsapple id 얻음(apple_id) -o
+        let apple_id = newApple(data.room_id, data.tree_id, data.text);
+
         let order = getOrder(data.tree);
         order[order.indexOf('-1')] = apple_id;
         let changeParent = data.tree.reduce((nodes, cur) => {
             if(cur.parent==='-1')
                 nodes.push(cur.id);
         }, []);
-        //db1로 changeParent의 parent들 apple_id로 변경, db2로 order 업데이트
+        //db1로 changeParent의 parent들 apple_id로 변경 -o
+        for (var elem in changeParent) {
+            editAttr(data.room_id, elem, "parent", apple_id);
+        }
+        //db2로 order 업데이트 -o
+        update_order(data.room_id, data.tree_id, String(order));
 
         socket.to(data.channel).emit('sendTree', {tree:data.tree});
     });
+
     socket.on('changeText', function(data) {
-        //DB한테 data.text, data.tree_id, data.node_id 보냄
+        //DB한테 data.text, data.tree_id, data.node_id 보냄 -o
+        editAttr(data.room_id, data.node_id, "title", data.text);
         socket.to(data.channel).emit('sendNode', {node:data.node_data});
     });
+
     socket.on('changeAttribute', function(data){
-        //DB한테 data.color, data.deco, data.weight, data.tree_id, data.node_id 보냄
+        //DB한테 data.color, data.deco, data.weight, data.tree_id, data.node_id 보냄 -o
+
         if(data.deco!==undefined)
-            to_db = (data.tree_id, data.node_id, data.deco);
+            //to_db = (data.tree_id, data.node_id, data.deco);
+            editAttr(data.room_id, data.node_id, "deco", data.deco);
         if(data.color!==undefined)
-            to_db = (data.tree_id, data.node_id, data.color);
+            //to_db = (data.tree_id, data.node_id, data.color);
+            editAttr(data.room_id, data.node_id, "color", data.color);
         if(data.weight!==undefined)
-            to_db = (data.tree_id, data.node_id, data.weight);
+            //to_db = (data.tree_id, data.node_id, data.weight);
+            editAttr(data.room_id, data.node_id, "weight", data.weight);
 
         socket.to(data.channel).emit('sendNode', {node:data.node_data});
     });
     socket.on('changeTree', function(data){
         //DB로부터 새로운 tree 요청 data.tree_id
+        /* 승연_요청~~ order를 받아오고, node를 각각 받아와야 함.*/
         socket.to(data.channel).emit('sendTree', {tree:db.tree});
     });
     socket.on('migrateNode', function(data){
@@ -210,8 +261,12 @@ board_server.on('connection', function(socket){
         let target_order = getOrder(data.target_tree);
         let dellist = delNode(data.target_tree, data.node_id);
         let datas = data.target_tree.filter(i => dellist.includes(i.id)); // 옮겨진 node들 정보
-        //db1의 origin_tree에서 dellist 삭제, db2의 target_tree에 datas 추가
-
+        //db1의 origin_tree에서 dellist 삭제 -o
+        for (var elem in dellist) {
+            delBlock(data.room_id, elem);
+        }
+        // db2의 target_tree에 datas 추가
+        /* 승연_ 이거 데이터 어떻게 생겼는지 알려주세욤 */
         socket.to(data.channel).emit('sendTrees', {tree:{origin: db.origin_tree, target: db.target_tree}});
     });
     socket.on('moveNode', function(data){
@@ -220,7 +275,9 @@ board_server.on('connection', function(socket){
         let dellist = delNode(data.tree, data.node_id);
         let datas = data.tree.filter(i => dellist.includes(i.id)); // 옮겨진 node들 정보
         //db1의 datas의 parent들 업뎃
-
+        for (var elem in dellist) {
+            // 승연_parent를 뭘로 업뎃?
+        }
         socket.to(data.channel).emit('sendTree', {tree:data.tree});
     });
 });
