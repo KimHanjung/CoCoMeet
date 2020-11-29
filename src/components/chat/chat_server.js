@@ -15,15 +15,22 @@ channel_server = io.of('/channel_server');
 
 // })
 
-// 승연 _ order 데이터는 "[1,2,3,4]"" 없는 "1,2,3,4" 의 형태.
-// 받아올 때 array = string.split(","); 로 받아오기 
 
 const redis = require('redis');
-const r_cli = redis.createClient(6379, 'localhost');
+// const r_cli = redis.createClient({port : 6379, host : 'localhost'}); - 됨 (local)
+// const r_cli = redis.createClient(6379, 'localhost'); - 됨 (local)
+// const r_cli = redis.createClient({ host : "http://3.34.138.234", port : 6379}); - 안 됨.
+const r_cli = redis.createClient({ host : "3.34.138.234", port : 6379}); 
+//const r_cli = redis.createClient(6379, '3.34.138.234'); // - 안 됨
+
+r_cli.on("error", function(err) {
+    console.log("ERROR"+err);
+    process.exit(1);
+});
 
 // sample
-r_cli.hmset("R0_order", 0, "room0-tree0-order", 1, "room0-tree1-order");
-r_cli.hmset("R0-0", "room_id", 0, "tree_id", 0, "node_id", 0, "title", "0-0", "parent", "NULL", "color", "blue", "deco", "normal", "weight", "normal");
+// r_cli.hmset("R0_order", 0, "room0-tree0-order", 1, "room0-tree1-order");
+// r_cli.hmset("R0-0", "room_id", 0, "tree_id", 0, "node_id", 0, "title", "0-0", "parent", "NULL", "color", "blue", "deco", "normal", "weight", "normal");
 
 // default
 r_cli.set("Rnum", 0) // room 개수 저장
