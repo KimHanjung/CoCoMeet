@@ -21,8 +21,16 @@ const socket = io('http://localhost:4002/board_server');
 class Main extends Component {
   constructor(props) {
     super(props);
+    let text = ''
+    const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+    Array.from(Array(5)).forEach(() => {
+      text += possible.charAt(Math.floor(Math.random() * possible.length))
+    })
+    
     this.state = {
-      channel:'cocomeet', uname:'Yonsei', connected:'False', msg_to_block:'Select Message!',
+      channel:this.props.history.location.state.channel, 
+      uname:this.props.history.location.state.uname, channel_code: this.props.history.location.state.channel_code,
+      connected:'False', msg_to_block:'Select Message!',
       treenum: 2,
       trees: [
         {
@@ -55,11 +63,11 @@ class Main extends Component {
     this.updateChannel = this.updateChannel.bind(this);
     this.updateConnected = this.updateConnected.bind(this);
     this.updateMsgToBlock = this.updateMsgToBlock.bind(this);
-
   }
   componentDidMount(){
     let cursor=this;
-    socket.emit('channelJoin', {channel:this.state.channel, uname:this.state.uname, trees:this.state.trees});
+    console.log(this.state);
+    socket.emit('channelJoin', {channel:this.state.channel, channel_code:this.state.channel_code, uname:this.state.uname, trees:this.state.trees});
     socket.on('receive', function (data) {
       console.log(data.trees);
       //cursor.setState({trees: data.trees});
@@ -193,10 +201,9 @@ componentWillReceiveProps(changeProps){
                         <div class="h-quaterscreen">
                             <div class="mb-6 pb-3 shadow-md bg-gray-100 h-1/5">
                               <div class="border-b-2 border-gray-300 bg-gray-200 h-12 p-3 mb-3">
-                                <div class="font-sans text-lg font-semibold text-teal-500">Channel</div>
+                                <div class="font-sans text-lg font-semibold text-teal-500">{"Ch. " + this.state.channel}</div>
                               </div>
-                              <Name uname = {this.state.uname} onUpdate_name2={this.updateName} />
-                              <Channel channel={this.state.channel} connected={this.state.connected} onUpdate_channel2={this.updateChannel} onUpdate_connect2={this.updateConnected} /> 
+                              <Name uname = {this.state.uname} onUpdate_name2={this.updateName} channel_code = {this.state.channel_code}/>
                             </div>
                             <div class="mb-6 pb-3 shadow-md bg-gray-100 h-1/5">
                               <div class="border-b-2 border-gray-300 bg-gray-200 h-12 p-3 mb-3">
@@ -229,7 +236,7 @@ componentWillReceiveProps(changeProps){
                           <div class="border-b-2 border-gray-300 bg-gray-200 h-12 p-3 mb-3">
                             <div class="font-sans text-lg font-semibold text-teal-500">Left Tree</div>
                           </div>
-                          <BoardInternal tree={this.state.trees[this.state.tree1]} treeId={this.state.tree1} 
+                          <BoardInternal tree={this.state.trees[this.state.tree1]} treeId={this.state.tree1} msg_to_block={this.state.msg_to_block}
                           onDrop={this.onDropLeft} updateNode={this.updateNodeLeft} updateTree={this.updateTreeLeft}/>
                         </div>
                     </div>
@@ -238,7 +245,7 @@ componentWillReceiveProps(changeProps){
                           <div class="border-b-2 border-gray-300 bg-gray-200 h-12 p-3 mb-3">
                             <div class="font-sans text-lg font-semibold text-teal-500">Right Tree</div>
                           </div>
-                          <BoardInternal tree={this.state.trees[this.state.tree2]} treeId={this.state.tree2} 
+                          <BoardInternal tree={this.state.trees[this.state.tree2]} treeId={this.state.tree2} msg_to_block={this.state.msg_to_block}
                           onDrop={this.onDropRight} updateNode={this.updateNodeRight} updateTree={this.updateTreeRight}/>
                         </div>
                     </div>

@@ -157,7 +157,7 @@ class BoardExternal extends Component {
                         dndType={trashNodeType, externalNodeType}
                         />
                     </div>
-                    <UExternalComponent node={{ title: 'Suns Apple' }} />← 드래그
+                    <UExternalComponent node={{ title: this.props.msg_to_block }} />← 드래그
                     </TrashNodeComponent>
                 
                 </div>
@@ -211,4 +211,4 @@ class BoardExternal extends Component {
     }
 }
 
-export default BoardExternal;
+export default React.memo(BoardExternal);

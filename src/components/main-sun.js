@@ -34,6 +34,7 @@ class Main extends Component {
     this.updateName = this.updateName.bind(this);
     this.updateChannel = this.updateChannel.bind(this);
     this.updateConnected = this.updateConnected.bind(this);
+    this.updateMsgToBlock = this.updateMsgToBlock.bind(this);
   }
   newTree = (id) => {
     var init_val = 'hello tree ID '+id;
@@ -58,6 +59,9 @@ class Main extends Component {
   }
   updateConnected(value){
     this.setState({connected:value});
+  }
+  updateMsgToBlock(msg_to_block){
+    this.setState({msg_to_block: msg_to_block});
   }
   render() {
     return (
