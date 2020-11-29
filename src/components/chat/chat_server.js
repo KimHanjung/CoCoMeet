@@ -36,7 +36,8 @@ r_cli.on("error", function(err) {
 r_cli.set("Rnum", 0) // room 개수 저장
 r_cli.hmset("TID", 0, 1); // room별로 tree 개수 저장. room_id : tree_num
 r_cli.hmset("NID", 0, 1); // room별로 node 개수 저장. room_id : node_num
-r_cli.hmset("RCode",999,"cocomeet");
+r_cli.hmset("RCode",999,"zxcvbnm");
+r_cli.hmset("RName",999,'cocococococo');
 
 function newRoom(roomCode, roomName) {
     // 생성될 room의 id
@@ -342,15 +343,24 @@ channel_server.on('connection', function(socket) {
             room_id = obj;
         });
         r_cli.hmset("RCode", String(code), room_id);
+        r_cli.hmset("RName", room_id, data.channel);
         // 트리 2개 생성
-        newTree(room_id);
-        newTree(room_id);
+        var tree_0 = newTree(room_id);
+        var tree_1 = newTree(room_id);
 
-        callback(code);
+        callback(code, room_id);
         channel_names[code] = data.channel;
         });
     socket.on('joinChannel', function(data, callback) {
-        callback(channel_names[data.channel_code]);
+        var RID; // Room_id
+        var RNAME;
+        r_cli.hmget("RCode", String(data.channel_code), (err, obj) => {
+            RID = obj; // ROOM_ID 가 저장되어있음
+        });
+        r_cli.hmget("RName", RID, (err,ojb) => {
+            RNAME = obj;
+        });
+        callback(RID,RNAME);
     });
 })
 
