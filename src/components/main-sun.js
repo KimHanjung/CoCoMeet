@@ -161,6 +161,7 @@ class Main extends Component {
     if (node_id === -1) {
       //suns-apple
       // title : this.state.msg_to_block
+      console.log("left suns apple")
       var data={};
       data["treeid"]=this.state.lefttree.treeID;
       data["tree"]=this.toFlatIDDataFrom(this.state.lefttree.treeData);
@@ -183,7 +184,7 @@ class Main extends Component {
       //socket.emit("migrateNode", data);
 
     }
-    else { // if this.state.lastMoveNodeRight===NULL
+    else { // if this.state.lastMoveNodeRight==="NULL"
       var prev_flat = this.toFlatIDDataFrom(prev_tree);
       if (prevIndex === nextIndex){
         //  then this node moved from right to left
@@ -220,7 +221,7 @@ class Main extends Component {
       }
       
       else if (prevIndex!==nextIndex){
-        console.log('left prev flat',prev_flat);
+        //console.log('left prev flat',prev_flat);
         if (prev_flat.includes(node_id)){
           var cur_flat = this.toFlatIDDataFrom(this.state.lefttree.treeData);
           if (!cur_flat.includes(node_id)){
@@ -257,6 +258,7 @@ class Main extends Component {
     if (node_id === -1) {
       //suns-apple
       // title : this.state.msg_to_block
+      console.log("right suns apple")
       var data={};
       data["treeid"]=this.state.righttree.treeID;
       data["tree"]=this.toFlatIDDataFrom(this.state.righttree.treeData);
@@ -316,7 +318,7 @@ class Main extends Component {
       }
       
       else if (prevIndex!==nextIndex){
-        console.log('right prev flat',prev_flat);
+        //console.log('right prev flat',prev_flat);
         if (prev_flat.includes(node_id)){
           var cur_flat = this.toFlatIDDataFrom(this.state.righttree.treeData);
           if (!cur_flat.includes(node_id)){
@@ -461,38 +463,38 @@ class Main extends Component {
     return (
       <div>
         <HeaderBar />
-        <div class="h-full">
+        <div className="h-full">
           <DndProvider backend={HTML5Backend}>
             <div >
-                <div class="flex m-4 ">
-                    <div class="w-1/9 p-3">
-                        <div class="h-quaterscreen">
-                            <div class="mb-6 pb-3 shadow-md bg-gray-100 h-1/5">
-                              <div class="border-b-2 border-gray-300 bg-gray-200 h-12 p-3 mb-3">
-                                <div class="font-sans text-lg font-semibold text-teal-500">Channel</div>
+                <div className="flex m-4 ">
+                    <div className="w-1/9 p-3">
+                        <div className="h-quaterscreen">
+                            <div className="mb-6 pb-3 shadow-md bg-gray-100 h-1/5">
+                              <div className="border-b-2 border-gray-300 bg-gray-200 h-12 p-3 mb-3">
+                                <div className="font-sans text-lg font-semibold text-teal-500">Channel</div>
                               </div>
                               <Name uname = {this.state.uname} onUpdate_name2={this.updateName} />
                               <Channel channel={this.state.channel} connected={this.state.connected} onUpdate_channel2={this.updateChannel} onUpdate_connect2={this.updateConnected} /> 
                             </div>
-                            <div class="mb-6 pb-3 shadow-md bg-gray-100 h-1/5">
-                              <div class="border-b-2 border-gray-300 bg-gray-200 h-12 p-3 mb-3">
-                                <div class="font-sans text-lg font-semibold text-teal-500">Block Colors</div>
+                            <div className="mb-6 pb-3 shadow-md bg-gray-100 h-1/5">
+                              <div className="border-b-2 border-gray-300 bg-gray-200 h-12 p-3 mb-3">
+                                <div className="font-sans text-lg font-semibold text-teal-500">Block Colors</div>
                               </div>
                               <ColorTools sendColor={this.getAttrToBoard}/>
                             </div>
-                            <div class="mb-6 pb-3 shadow-md bg-gray-100 h-1/5">
-                              <div class="border-b-2 border-gray-300 bg-gray-200 h-12 p-3 mb-3">
-                                <div class="font-sans text-lg font-semibold text-teal-500">Font Style</div>
+                            <div className="mb-6 pb-3 shadow-md bg-gray-100 h-1/5">
+                              <div className="border-b-2 border-gray-300 bg-gray-200 h-12 p-3 mb-3">
+                                <div className="font-sans text-lg font-semibold text-teal-500">Font Style</div>
                               </div>
                               <TextTools sendDeWe={this.getAttrToBoard}/>
                             </div>
-                            <div class="mb-6 pb-3 shadow-md bg-gray-100 h-1/5">
-                              <div class="border-b-2 border-gray-300 bg-gray-200 h-12 p-3 mb-3">
-                                <div class="font-sans text-lg font-semibold text-teal-500">Tree Lists</div>
+                            <div className="mb-6 pb-3 shadow-md bg-gray-100 h-1/5">
+                              <div className="border-b-2 border-gray-300 bg-gray-200 h-12 p-3 mb-3">
+                                <div className="font-sans text-lg font-semibold text-teal-500">Tree Lists</div>
                               </div>
-                              <div class="ml-3">
-                                <button class="bg-transparent border-transparent text-blue-500 font-extrabold hover:underline py-2" onClick={this.addTree} >Add New Tree</button>
-                                <div class="pl-2">
+                              <div className="ml-3">
+                                <button className="bg-transparent border-transparent text-blue-500 font-extrabold hover:underline py-2" onClick={this.addTree} >Add New Tree</button>
+                                <div className="pl-2">
                                   <Tools treenum={this.state.treenum} tree1={this.state.lefttree.treeID} tree2={this.state.righttree.treeID}/>
                                   
                                 </div>
@@ -500,28 +502,30 @@ class Main extends Component {
                             </div>
                         </div>
                     </div>
-                    <div class="w-3/9 p-3">
-                        <div class="shadow-md bg-gray-100 h-quaterscreen">
-                          <div class="border-b-2 border-gray-300 bg-gray-200 h-12 p-3 mb-3">
-                            <div class="font-sans text-lg font-semibold text-teal-500">Left Tree</div>
+                    <div className="w-3/9 p-3">
+                        <div className="shadow-md bg-gray-100 h-quaterscreen">
+                          <div className="border-b-2 border-gray-300 bg-gray-200 h-12 p-3 mb-3">
+                            <div className="font-sans text-lg font-semibold text-teal-500">Left Tree</div>
                           </div>
                           <BoardInternal tree={this.state.lefttree} sendChecked={this.getListFromBoard} movedNodeIs={this.LeftmovedNodeIs}
+                          msg_to_block={this.state.msg_to_block}
                           onDrop={this.onDropLeft} updateNode={this.updateNodeLeft} updateTree={this.updateTreeLeft}/>
                         </div>
                     </div>
-                    <div class="w-3/9 p-3">
-                        <div class="shadow-md bg-gray-100 h-quaterscreen">
-                          <div class="border-b-2 border-gray-300 bg-gray-200 h-12 p-3 mb-3">
-                            <div class="font-sans text-lg font-semibold text-teal-500">Right Tree</div>
+                    <div className="w-3/9 p-3">
+                        <div className="shadow-md bg-gray-100 h-quaterscreen">
+                          <div className="border-b-2 border-gray-300 bg-gray-200 h-12 p-3 mb-3">
+                            <div className="font-sans text-lg font-semibold text-teal-500">Right Tree</div>
                           </div>
                           <BoardInternal tree={this.state.righttree} sendChecked={this.getListFromBoard} movedNodeIs={this.RightmovedNodeIs}
+                          msg_to_block={this.state.msg_to_block}
                           onDrop={this.onDropRight} updateNode={this.updateNodeRight} updateTree={this.updateTreeRight}/>
                         </div>
                     </div>
-                    <div class="w-2/9 p-3">
-                        <div class="shadow-md bg-gray-100 h-quaterscreen">
-                          <div class="border-b-2 border-gray-300 bg-gray-200 h-12 p-3 mb-3">
-                            <div class="font-sans text-lg font-semibold text-teal-500">Chat</div>
+                    <div className="w-2/9 p-3">
+                        <div className="shadow-md bg-gray-100 h-quaterscreen">
+                          <div className="border-b-2 border-gray-300 bg-gray-200 h-12 p-3 mb-3">
+                            <div className="font-sans text-lg font-semibold text-teal-500">Chat</div>
                           </div>
                           <ChatView uname = {this.state.uname} channel={this.state.channel} connected={this.state.connected} OnupdateMsgToBlock={this.updateMsgToBlock}/> 
                         </div>

@@ -113,14 +113,8 @@ class BoardInternal extends Component {
           lastMoveNode: "NULL",
         };
         this.updateTree = this.updateTree.bind(this)
-        console.log(this.state.treeData);
     }
     updateTree(newTreeData){
-        //const clickedNode = this.state.lastMoveNode;
-        //console.log("updateTreeBoard");
-        //console.log(newTreeData);
-        //console.log(this.props.tree.treeID);
-        //console.log(clickedNode.id);
         this.setState({prevtreeData:this.state.treeData})
         this.props.updateTree(newTreeData, this.props.tree.treeID)
         //this.setState({ newTreeData })
@@ -146,7 +140,7 @@ class BoardInternal extends Component {
         const backgroundColor = hovered ? 'lightyellow' : 'white';
         const getNodeKey = ({ node: {id}}) => id;
         const recordCall = (name, args) => {
-            console.log(`${name} called with tree id ${this.props.tree.treeID} with arguments:`, args);
+            //console.log(`${name} called with tree id ${this.props.tree.treeID} with arguments:`, args);
             //console.log('left', this.state.treeData)
             //console.log(this.props.tree.treeID, this.state.treeData)
             this.props.movedNodeIs(args.node.id, this.state.prevtreeData, args.prevTreeIndex, args.nextTreeIndex, args.prevPath, args.nextPath);
@@ -233,7 +227,7 @@ class BoardInternal extends Component {
                         </a>
                         </TrashNodeComponent>
                     </div>
-                    <UExternalComponent node={{ id: -1, title: "this.props.msg_to_block" }} />
+                    <UExternalComponent node={{ id: -1, title: this.props.msg_to_block }} />
                     <div>{lastMoveNode && (
           <div>
             Node &quot;{lastMoveNode.id}&quot; moved to path [{lastMoveNextPath}].
