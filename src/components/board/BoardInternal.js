@@ -107,17 +107,16 @@ class BoardInternal extends Component {
         super(props);
         this.state = {
           treeData: props.tree.treeData,
+          prevtreeData: null,
+          lastMovePrevPath: "NULL",
+          lastMoveNextPath: "NULL",
           lastMoveNode: "NULL",
         };
         this.updateTree = this.updateTree.bind(this)
     }
     updateTree(newTreeData){
-        const clickedNode = this.state.lastMoveNode;
-        //console.log("updateTreeBoard");
-        //console.log(newTreeData);
-        //console.log(this.props.tree.treeID);
-        //console.log(clickedNode.id);
-        this.props.updateTree(newTreeData, this.props.tree.treeID, clickedNode.id)
+        this.setState({prevtreeData:this.state.treeData})
+        this.props.updateTree(newTreeData, this.props.tree.treeID)
         //this.setState({ newTreeData })
         this.setState({treeData: newTreeData})
         
@@ -140,11 +139,14 @@ class BoardInternal extends Component {
         const { connectDropTarget, hovered } = this.props;
         const backgroundColor = hovered ? 'lightyellow' : 'white';
         const getNodeKey = ({ node: {id}}) => id;
-        const { lastMovePrevPath, lastMoveNextPath, lastMoveNode } = this.state;
-
         const recordCall = (name, args) => {
-            //console.log(`${name} called with arguments:`, args);
+            //console.log(`${name} called with tree id ${this.props.tree.treeID} with arguments:`, args);
+            //console.log('left', this.state.treeData)
+            //console.log(this.props.tree.treeID, this.state.treeData)
+            this.props.movedNodeIs(args.node.id, this.state.prevtreeData, args.prevTreeIndex, args.nextTreeIndex, args.prevPath, args.nextPath);
+            
         };
+        const { lastMovePrevPath, lastMoveNextPath, lastMoveNode } = this.state;
         return connectDropTarget(
             <div class="h-fullcalc w-full float-left" >
                 <div class='pl-8 pt-3'>
@@ -197,15 +199,19 @@ class BoardInternal extends Component {
                             };
                         }}
                         
-                        onVisibilityToggle={args => recordCall('onVisibilityToggle', args)}
+                        //onVisibilityToggle={args => recordCall('onVisibilityToggle', args)}
                         onMoveNode={args => {
                             recordCall('onMoveNode', args);
-                            const { node } = args;
+                            const { prevPath, nextPath, node } = args;
                             this.setState({
+                                lastMovePrevPath: prevPath,
+                                lastMoveNextPath: nextPath,
                                 lastMoveNode: node,
                             });
+                            //console.log('treeId',this.props.tree.treeID, this.state.treeData)
+                            //this.props.movedNodeIs(node);
                         }}
-                        onDragStateChanged={args => recordCall('onDragStateChanged', args)}   
+                        //onDragStateChanged={args => recordCall('onDragStateChanged', args)}   
                         onChange={treeData => this.updateTree(treeData)}
                         theme={CustomTheme}
                         dndType={trashNodeType, externalNodeType}
@@ -213,7 +219,7 @@ class BoardInternal extends Component {
                     <div class="h-2/9 w-full p-3">
                         <TrashNodeComponent>
                         <a class="flex items-center justify-center bg-transparent text-xl text-blue-500 font-semibold py-2 px-2 border border-blue-500 rounded">
-                        <svg class="fill-current w-4 h-4 mr-2" version="1.1" xmlns="http://www.w3.org/2000/svg"  x="0px" y="0px" viewBox="0 0 1000 1000" enable-background="new 0 0 1000 1000">
+                        <svg class="fill-current w-4 h-4 mr-2" version="1.1" xmlns="http://www.w3.org/2000/svg"  x="0px" y="0px" viewBox="0 0 1000 1000" enableBackground="new 0 0 1000 1000">
                         <path d="M188.1,869.7c0,65,52.4,120.3,117,120.3h389.9c64.6,0,117-55.4,117-120.3l78-630.1H110.1L188.1,869.7L188.1,869.7z M622.8,361.8h76.5v506h-76.5V361.8L622.8,361.8z M453.7,361.8h92.5v506h-92.5V361.8L453.7,361.8z M300.7,361.8h76.5v506h-76.5V361.8L300.7,361.8z M870.4,86.5H616.9c0,0-17.5-76.5-39-76.5H422c-21.5,0-39,76.5-39,76.5H129.6c-32.3,0-58.5,28.2-58.5,60.7v61.5h857.8v-61.5C928.9,114.8,902.7,86.5,870.4,86.5L870.4,86.5z"/>
                         </svg>
                             <span>trash</span>   
@@ -221,12 +227,12 @@ class BoardInternal extends Component {
                         </a>
                         </TrashNodeComponent>
                     </div>
-                    <UExternalComponent node={{ title: 'Suns Apple' }} />← 드래그
-                    {lastMoveNode && (
-                        <div>
-                            Node &quot;{lastMoveNode.id}&quot; moved from path []
-                        </div>
-                    )}
+                    <UExternalComponent node={{ id: -1, title: this.props.msg_to_block }} />
+                    <div>{lastMoveNode && (
+          <div>
+            Node &quot;{lastMoveNode.id}&quot; moved to path [{lastMoveNextPath}].
+          </div>
+        )}</div>
                 </div>
                 
                 

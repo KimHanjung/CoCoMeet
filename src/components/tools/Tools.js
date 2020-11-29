@@ -15,13 +15,13 @@ class Tools extends Component {
     let treearray = []
     for(let i=0;i<this.props.treenum;i++){
       if (i===this.props.tree1) {
-        treearray.push(<div class="w-full text-red"><Tree treeId={i}/></div>);
+        treearray.push(<div key = {i} class="w-full text-red"><Tree treeId={i}/></div>);
       }
       else if (i===this.props.tree2){
-        treearray.push(<div class="w-full text-blue-500"><Tree treeId={i}/></div>);
+        treearray.push(<div key = {i} class="w-full text-blue-500"><Tree treeId={i}/></div>);
       }
       else {
-        treearray.push(<div class="w-full"><Tree treeId={i}/></div>);
+        treearray.push(<div key = {i} class="w-full"><Tree treeId={i}/></div>);
       }
     }
     return (
