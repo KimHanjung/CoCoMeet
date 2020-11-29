@@ -167,7 +167,7 @@ board_server.on('connection', function(socket){
         //socket.to(data.channel).emit('channelJoin', 
         //{treenum:treenum, tree: {Left:treeLeft, Right:treeRight}});
         socket.to(data.channel).emit('sendTree', {treenum:treenum, treeid: 0, tree:treeLeft});
-        socket.to(data.channel).emit('sendTree', {treenum:treenum, treeid: 1, tree:treeLeft});
+        socket.to(data.channel).emit('sendTree', {treenum:treenum, treeid: 1, tree:treeRight});
 
         console.log(data.channel);
     });
