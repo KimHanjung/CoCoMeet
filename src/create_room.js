@@ -11,10 +11,10 @@ class Create extends Component {
         this.send = this.send.bind(this);
     }
     send(){
-        socket.emit('createChannel',{channel:this.state.channel_name}, (code) => {
+        socket.emit('createChannel',{channel:this.state.channel_name}, (code, room_id) => {
             this.setState({channel_code: code}, () => {
                 this.props.history.push('/main', 
-                    {channel: this.state.channel_name, channel_code:this.state.channel_code, uname:this.state.uname});
+                    {channel: this.state.channel_name, channel_code:this.state.channel_code, uname:this.state.uname, room_id:room_id});
             })
         });
         alert(this.state.uname+' '+this.state.channel_name);
