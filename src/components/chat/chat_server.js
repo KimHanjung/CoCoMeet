@@ -137,8 +137,7 @@ board_server.on('connection', function(socket){
         let origin_treeid, target_treeid;
         let origin_order = getOrder(data.origin_tree);
         let target_order = getOrder(data.target_tree);
-        let dellist = delNode(data.target_tree, data.node_id);
-        let datas = data.target_tree.filter(i => dellist.includes(i.id)); // 옮겨진 node들 정보
+        let parent = target_tree.filter(i => i.id===node_id)[0].parent;
         //db1의 origin_tree에서 dellist 삭제, db2의 target_tree에 datas 추가
 
         socket.to(data.channel).emit('sendTree', {treeid: origin_treeid, tree:db.origin_tree});
@@ -147,8 +146,7 @@ board_server.on('connection', function(socket){
     socket.on('moveNode', function(data){
         //옮긴 후의 flatdata 온다고 가정
         let order = getOrder(data.tree);
-        let dellist = delNode(data.tree, data.node_id);
-        let datas = data.tree.filter(i => dellist.includes(i.id)); // 옮겨진 node들 정보
+        let parent = data.tree.filter(i => i.id===node_id)[0].parent;
         //db1의 datas의 parent들 업뎃
 
         socket.to(data.channel).emit('treeid: treeid, sendTree', {tree:data.tree});
