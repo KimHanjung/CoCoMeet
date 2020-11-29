@@ -13,9 +13,8 @@ board_server = io.of('/board_server');
 
 // })
 
-// 승연 _ order 데이터는 [] 없는 "1,2,3,4" 의 형태.
+// 승연 _ order 데이터는 "[1,2,3,4]"" 없는 "1,2,3,4" 의 형태.
 // 받아올 때 array = string.split(","); 로 받아오기 
-
 
 const redis = require('redis');
 const r_cli = redis.createClient(6379, 'localhost');
@@ -134,8 +133,8 @@ board_server.on('connection', function(socket){
         let orderLeft, orderRight;
         let treenum;
         /* 승연_test 후 order 오는 거 보고 뜯어서 room_id-block_id 별로 정보 받아와야 함*/
-        orderLeft = get_order(data.room_id, data.Left);
-        orderRight = get_order(data.room_id, data.Right);
+        orderLeft = get_order(data.room_id, 0);
+        orderRight = get_order(data.room_id, 1);
         treenum = getTreeNum(data.room_id);
 
         socket.to(data.channel).emit('channelJoin', 
@@ -162,13 +161,16 @@ board_server.on('connection', function(socket){
         //DB한테 새로운 block추가 요청
         //승연 _ 공동 작업 요청~~~
         let tree;
-        //1. client로부터 flatdata가 오지 않을 경우: DB한테 data.channel, data.tree_id 보냄, order, tree 받아옴, 새로운 node id 받음(newnode_id)
-        db.order.push(newnode_id)
-        db.tree = rearrange(db.tree, db.order); //db2로 order update
-        socket.to(data.channel).emit('sendTree', {tree:db.tree});
+        // //1. client로부터 flatdata가 오지 않을 경우: DB한테 data.channel, data.tree_id 보냄, order, tree 받아옴, 새로운 node id 받음(newnode_id)
+        // db.order.push(newnode_id)
+        // db.tree = rearrange(db.tree, db.order); //db2로 order update
+        // socket.to(data.channel).emit('sendTree', {tree:db.tree});
+
         //2. client로부터 flatdata가 올 경우: 
         order = getOrder(data.tree);
         data.tree = data.tree.map((cur) => cur.id==='-1' ? cur.id=newnode_id : cur.id);
+        newApple(data.room_id, data.tree_id, "newNode", "NULL");
+
         socket.to(data.channel).emit('sendTree', {tree:data.tree});
     });
 
@@ -196,6 +198,7 @@ board_server.on('connection', function(socket){
                 sequence.push(cur)
             return sequence;
         }, []);
+
         //db1로 dellist 보내서 node 삭제 -o
         // db2로 order 업데이트 -o
         for (var elem in dellist) {
@@ -251,9 +254,22 @@ board_server.on('connection', function(socket){
     });
     socket.on('changeTree', function(data){
         //DB로부터 새로운 tree 요청 data.tree_id
-        /* 승연_요청~~ order를 받아오고, node를 각각 받아와야 함.*/
+        order = get_order(data.room_id, data.tree_id);
+        var treee = {};
+        var r_id = data.room_id;
+        var info;
+        var TOTAL = {};
+        for (var elem in order) {
+            info = "R" + r_id+"-"+elem;
+            r_cli.HMGET(String(info), "node_id","room_id", "tree_id", "title", "parent", "color", "weight", "deco", (err, obj) => {
+                var treeeeee = {"room_id" : obj[1], "node_id" : obj[0], "tree_id" : obj[2], "title" : obj[3], "parent": obj[4], "color" : obj[5], "weight" : obj[6], "deco" : obj[7]};
+                TOTAL[elem] = treeeeee;
+            });
+        }
+        var reTree = rearrange(TOTAL, order);
         socket.to(data.channel).emit('sendTree', {tree:db.tree});
     });
+
     socket.on('migrateNode', function(data){
         //data.origin_tree -> data.target_tree, order
         //옮긴 후의 flatdata 온다고 가정
@@ -269,14 +285,15 @@ board_server.on('connection', function(socket){
         /* 승연_ 이거 데이터 어떻게 생겼는지 알려주세욤 */
         socket.to(data.channel).emit('sendTrees', {tree:{origin: db.origin_tree, target: db.target_tree}});
     });
-    socket.on('moveNode', function(data){
+    
+    socket.on('moveNode', function(data){ //같은 트리 안에서의 이동
         //옮긴 후의 flatdata 온다고 가정
         let order = getOrder(data.tree);
         let dellist = delNode(data.tree, data.node_id);
         let datas = data.tree.filter(i => dellist.includes(i.id)); // 옮겨진 node들 정보
         //db1의 datas의 parent들 업뎃
         for (var elem in dellist) {
-            // 승연_parent를 뭘로 업뎃?
+            // 승연_parent를 뭘로 업뎃? --> 
         }
         socket.to(data.channel).emit('sendTree', {tree:data.tree});
     });
