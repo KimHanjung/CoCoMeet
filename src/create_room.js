@@ -17,7 +17,7 @@ class Create extends Component {
                     {channel: this.state.channel_name, channel_code:this.state.channel_code, uname:this.state.uname, room_id:room_id});
             })
         });
-        alert(this.state.uname+' '+this.state.channel_name);
+        //alert(this.state.uname+' '+this.state.channel_name);
     }
     render() {
         return (

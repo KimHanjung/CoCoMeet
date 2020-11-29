@@ -39,6 +39,7 @@ class EditableText extends Component{
         // socket emit
         console.log("text changed...EMIT!")
         var data ={};
+        data["room_id"]=this.state.room_id;
         data["text"]=this.state.text;
         data["tree_id"]=  this.props.tree_id;
         data["node_id"]=this.props.node_id;

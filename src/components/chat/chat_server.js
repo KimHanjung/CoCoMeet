@@ -14,19 +14,24 @@ channel_server = io.of('/channel_server');
 // const db_server = new GraphQLServer({
 
 // })
-
-
+const RedisClient = require('redis')
+const createAdapter = require('socket.io-redis')
+const redisAdapter = require('socket.io-redis');
 const redis = require('redis');
+const r_cli = new redis.RedisClient({ host: "3.34.138.234", port: 6379 });
+console.log(r_cli)
+const subClient = r_cli.duplicate();
+io.adapter(createAdapter({ r_cli, subClient }));
 // const r_cli = redis.createClient({port : 6379, host : 'localhost'}); - 됨 (local)
 // const r_cli = redis.createClient(6379, 'localhost'); - 됨 (local)
 // const r_cli = redis.createClient({ host : "http://3.34.138.234", port : 6379}); - 안 됨.
-const r_cli = redis.createClient({ host : "3.34.138.234", port : 6379}); 
+//const r_cli = redis.createClient({ host : "3.34.138.234", port : 6379}); 
 //const r_cli = redis.createClient(6379, '3.34.138.234'); // - 안 됨
 
-r_cli.on("error", function(err) {
-    console.log("ERROR"+err);
-    process.exit(1);
-});
+// r_cli.on("error", function(err) {
+//     console.log("ERROR"+err);
+//     process.exit(1);
+// });
 
 // sample
 // r_cli.hmset("R0_order", 0, "room0-tree0-order", 1, "room0-tree1-order");
@@ -36,15 +41,28 @@ r_cli.on("error", function(err) {
 r_cli.set("Rnum", 0) // room 개수 저장
 r_cli.hmset("TID", 0, 1); // room별로 tree 개수 저장. room_id : tree_num
 r_cli.hmset("NID", 0, 1); // room별로 node 개수 저장. room_id : node_num
-r_cli.hmset("RCode",999,"zxcvbnm");
-r_cli.hmset("RName",999,'cocococococo');
+r_cli.hmset("RCode","zxcvbnm",999); // code : room_id
+r_cli.hmset("RName",999,'cocococococo'); // room_id : name
+
+r_cli.get("Rnum", (err, obj) => {
+    /////////////////
+    console.log("room_id_1", err, obj);
+});
 
 function newRoom(roomCode, roomName) {
     // 생성될 room의 id
+    var id;
     r_cli.get("Rnum", (err, obj) => {
-        r_cli.hmset(roomCode, "room_id", Strint(obj), "room_name", roomName)
+        id = obj;
+        r_cli.hmset("RCode", roomCode, String(id));
+        r_cli.hmset("RName", id, roomName);
     });
     r_cli.incr("Rnum");
+
+    var tree_0 = newTree(room_id);
+    var tree_1 = newTree(room_id);
+
+    return id;
 }
 
 // tree 정보는 Key는 R0-0 이런식으로, 해당 value는 hash 형태로 저장한다
@@ -331,24 +349,21 @@ board_server.on('connection', function(socket){
 
 channel_server.on('connection', function(socket) {
     client_id = socket.id;
-    socket.on('createChannel', function (data, callback) {    
+    socket.on('createChannel', function (data, callback_func) {    
         let code = ''
         const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
         Array.from(Array(5)).forEach(() => {
         code += possible.charAt(Math.floor(Math.random() * possible.length))
         });
         var room_id;
+        r_cli.set("hanjung", 1111);
+        r_cli.get("hanjung", (err, obj) => {
+            console.log(obj)
+        })
         // 코드 - room_id 연결
-        r_cli.get("Rnum", (err, obj) => {
-            room_id = obj;
-        });
-        r_cli.hmset("RCode", String(code), room_id);
-        r_cli.hmset("RName", room_id, data.channel);
-        // 트리 2개 생성
-        var tree_0 = newTree(room_id);
-        var tree_1 = newTree(room_id);
+        room_id = newRoom(code, data.channel);
 
-        callback(code, room_id);
+        callback_func(code, room_id);
         channel_names[code] = data.channel;
         });
     socket.on('joinChannel', function(data, callback) {
