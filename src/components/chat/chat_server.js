@@ -18,9 +18,10 @@ channel_server = io.of('/channel_server');
 
 const redis = require('redis');
 // const r_cli = redis.createClient({port : 6379, host : 'localhost'}); - 됨 (local)
-const r_cli = redis.createClient(6379, 'localhost');
-const pub = redis.createClient(6379, 'localhost');
-const sub = redis.createClient()
+const r_cli = redis.createClient(6379, "3.34.138.234");
+const pub = redis.createClient(6379, "3.34.138.234");
+const sub = redis.createClient(6379, "3.34.138.234");
+
 // const r_cli = redis.createClient({ host : "http://3.34.138.234", port : 6379}); - 안 됨.
 //const r_cli = redis.createClient({ host : "3.34.138.234", port : 6379}); 
 //const r_cli = redis.createClient(6379, '3.34.138.234'); // - 안 됨
@@ -37,13 +38,13 @@ r_cli.on("error", function(err) {
 
 // default
 r_cli.set("Rnum", 0) // room 개수 저장
-r_cli.hmset("TID", 0, 1); // room별로 tree 개수 저장. room_id : tree_num
-r_cli.hmset("NID", 0, 1); // room별로 node 개수 저장. room_id : node_num
+r_cli.hmset("TID", 0, 0); // room별로 tree 개수 저장. room_id : tree_num
+r_cli.hmset("NID", 0, 0); // room별로 node 개수 저장. room_id : node_num
 r_cli.hmset("RCode","zxcvbnm", 999);
 r_cli.hmset("RName",999,'cocococococo');
 
-r_cli.get("Rnum", (err, obj) => {
-    console.log("rnum:",obj)
+r_cli.get("changyeol", (err, obj) => {
+    console.log("cy:",obj)
 });
 
 function newRoom(roomCode, roomName) {
@@ -91,17 +92,27 @@ function getTreeNum(room_id) {
 }
 
 // 들어갈 트리가 있는 경우. Node만 업데이트 해 주면 된다.
+
 function newApple(room_id, tree_id, text, parent) {
-    var newid;
+    
+    var newid;// = [999];
     r_cli.hmget("NID", room_id, (err, obj) => {
         // obj는 지금 만들어야 할 Node id가 담겨있음.
-        newid = obj;
+        //newid = newid.concat(obj);
+        newid=obj;
+        //console.log("you even working?",newid)
         var info = "R"+room_id+"-"+obj;
         // console.log(info);
         r_cli.hmset(String(info), "room_id", String(room_id), "tree_id", String(tree_id), "node_id", String(obj), "title", text , "parent", String(parent), "color", "blue", "deco", "normal", "weight", "normal");
+        r_cli.HINCRBY("NID", room_id, 1); //해당 room_num의 node 개수 +1
+        console.log("new id", newid)
+        r_cli.set("dummy", String(newid))
+        r_cli.HGET("NID", room_id, (err, obj) => {
+            console.log("incr",newid, obj)
+        })
     });
-    r_cli.HINCRBY("NID", room_id, 1); //해당 room_num의 node 개수 +1
-    return newid;
+    return true;
+    
 }
 // new block은 new apple을 text, parent 지정해서 사용하면 된다.
 
@@ -344,7 +355,6 @@ board_server.on('connection', function(socket){
     });
 });
 
-sub.subscribe("channel");
 channel_server.on('connection', function(socket) {
     client_id = socket.id;
     socket.on('createChannel', function (data, callback) {    
@@ -354,15 +364,64 @@ channel_server.on('connection', function(socket) {
         code += possible.charAt(Math.floor(Math.random() * possible.length))
         });
         var room_id;
-        r_cli.set("seungyeon", "hello", function(e, r){
-            pub.publish("channel", "seungyeon");
-        } );
-        // 코드 - room_id 연결
-        //room_id = newRoom(code, data.channel);  
 
+        // r_cli.get("Rnum", (err, obj) => {
+        //     console.log("say 123", obj);
+        // })
 
-        callback(code, room_id);
-        channel_names[code] = data.channel;
+        r_cli.get("Rnum", (err, obj) => {
+            console.log("say 0 ", obj);
+            room_id = obj;
+            r_cli.hmset("RCode", code, String(room_id));
+            r_cli.hmset("RName", room_id, data.channel);
+
+            r_cli.incr("Rnum");
+            
+            var treeId;
+            console.log("roomid", room_id);
+            
+            r_cli.hmget("TID", room_id, (err, obj) => {
+                treeId = obj;
+                console.log("treeid ",treeId)
+                var check = newApple(room_id, treeId, "New Block", "NULL");
+                if (check) {
+                    r_cli.get("dummy", (err, obj)=> {
+                        console.log("check ", obj);
+                        r_cli.HINCRBY("TID", room_id, 1);
+                        r_cli.hmget("TID", room_id, (err, obj) => {
+                            treeId = obj;
+                            console.log("treeid ",treeId) 
+                            check = newApple(room_id, treeId, "New Block", "NULL");
+                            if (check) {
+                                r_cli.get("dummy", (err, obj)=> {
+                                    console.log("check2 ", obj);
+                                });
+                            }
+                            r_cli.HINCRBY("TID", room_id, 1);
+                            callback(code, room_id);
+                            channel_names[code] = data.channel;
+                        })
+                    });
+                }                
+            })         
+        });
+        
+        
+        //newTree(room_id);
+        //newTree(room_id);
+        // var treeId;
+        // console.log("roomid", room_id);
+        // r_cli.hmget("TID", room_id, (err, obj) => {
+        //     treeId = obj;
+        //     console.log("treeid ",treeId)
+        // })
+        // //newApple(room_id, treeId, "New Block", "NULL");
+
+        // r_cli.HINCRBY("TID", room_id, 1);
+        
+        
+        
+        
         });
 
     socket.on('joinChannel', function(data, callback) {
@@ -370,7 +429,8 @@ channel_server.on('connection', function(socket) {
         var RNAME;
         r_cli.hmget("RCode", String(data.channel_code), (err, obj) => {
             RID = obj; // ROOM_ID 가 저장되어있음
-        });
+        })
+       
         r_cli.hmget("RName", RID, (err,ojb) => {
             RNAME = obj;
         });
