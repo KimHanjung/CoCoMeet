@@ -17,14 +17,18 @@ channel_server = io.of('/channel_server');
 
 
 const redis = require('redis');
-// const r_cli = redis.createClient({port : 6379, host : 'localhost'}); - 됨 (local)
-const r_cli = redis.createClient(6379, "3.34.138.234");
-const pub = redis.createClient(6379, "3.34.138.234");
-const sub = redis.createClient(6379, "3.34.138.234");
+// AWS
+// const r_cli = redis.createClient(6379, "3.34.138.234");
+// const pub = redis.createClient(6379, "3.34.138.234");
+// const sub = redis.createClient(6379, "3.34.138.234");
 
-// const r_cli = redis.createClient({ host : "http://3.34.138.234", port : 6379}); - 안 됨.
-//const r_cli = redis.createClient({ host : "3.34.138.234", port : 6379}); 
-//const r_cli = redis.createClient(6379, '3.34.138.234'); // - 안 됨
+// localhost
+const r_cli = redis.createClient(6379, "localhost");
+const pub = redis.createClient(6379, "localhost");
+const sub = redis.createClient(6379, "localhost");
+
+sub.subscribe('holly');
+
 
 r_cli.on("error", function(err) {
     console.log("ERROR"+err);
@@ -105,11 +109,8 @@ function newApple(room_id, tree_id, text, parent) {
         // console.log(info);
         r_cli.hmset(String(info), "room_id", String(room_id), "tree_id", String(tree_id), "node_id", String(obj), "title", text , "parent", String(parent), "color", "blue", "deco", "normal", "weight", "normal");
         r_cli.HINCRBY("NID", room_id, 1); //해당 room_num의 node 개수 +1
-        console.log("new id", newid)
-        r_cli.set("dummy", String(newid))
-        r_cli.HGET("NID", room_id, (err, obj) => {
-            console.log("incr",newid, obj)
-        })
+        console.log("new apple node id", newid)
+        pub.publish("holly", newid);
     });
     return true;
     
@@ -369,57 +370,50 @@ channel_server.on('connection', function(socket) {
         //     console.log("say 123", obj);
         // })
 
-        r_cli.get("Rnum", (err, obj) => {
-            console.log("say 0 ", obj);
-            room_id = obj;
-            r_cli.hmset("RCode", code, String(room_id));
-            r_cli.hmset("RName", room_id, data.channel);
+        r_cli.get("Rnum", (err, obj) => { //일단 방 갯수를 알아와서
+            room_id = obj; //room _id를 설정하고
+            r_cli.hmset("RCode", code, String(room_id)); //room code - room id 설정,
+            r_cli.hmset("RName", room_id, data.channel); //room id - room name 설정
 
-            r_cli.incr("Rnum");
+            r_cli.incr("Rnum"); // 방 갯수 하나 ++
             
-            var treeId;
+            var treeId; // 방에 만들 트리 id를 담는 변수. 처음에는 0이 있는 게 맞음
             console.log("roomid", room_id);
             
-            r_cli.hmget("TID", room_id, (err, obj) => {
-                treeId = obj;
-                console.log("treeid ",treeId)
-                var check = newApple(room_id, treeId, "New Block", "NULL");
+            r_cli.hmget("TID", room_id, (err, obj) => { //방에 있는 트리 개수를 받아옴. 0이 있겠지
+                treeId = obj; // tree_id 설정 => 0번 트리
+                console.log("첫 treeid ",treeId)
+                var check = newApple(room_id, treeId, "Left Initial Block", "NULL"); //트리에 들어갈 블록을 만든다
                 if (check) {
-                    r_cli.get("dummy", (err, obj)=> {
-                        console.log("check ", obj);
-                        r_cli.HINCRBY("TID", room_id, 1);
-                        r_cli.hmget("TID", room_id, (err, obj) => {
-                            treeId = obj;
-                            console.log("treeid ",treeId) 
-                            check = newApple(room_id, treeId, "New Block", "NULL");
-                            if (check) {
-                                r_cli.get("dummy", (err, obj)=> {
-                                    console.log("check2 ", obj);
-                                });
-                            }
+                    sub.on('message', (channel, message) => {
+                        //console.log("check new_node1_id with holly : ", message); //트리 안에 노드 하나 만들어졌을 것
+                        let ord = [message];
+                        update_order(room_id, treeId, String(ord)); // 새로 생긴 tree order 만들어줘
+                    })
+                    
+                    r_cli.HINCRBY("TID", room_id, 1); //room에 있는 트리 개수 ++ => 1이 됨
+
+                    // 두 번째 트리를 만들기 위한 과정
+                    r_cli.hmget("TID", room_id, (err, obj) => {
+                        treeId = obj;
+                        console.log("두 번째 treeid ", treeId)
+                        check = newApple(room_id, treeId, "Right Initial Block", "NULL");
+                        if (check) {
+                            sub.on('message', (channel, message) => {
+                                //console.log("check new_node2_id with holly : ", message);
+                                ord = [message];
+                                update_order(room_id, treeId, String(ord));
+                            })
                             r_cli.HINCRBY("TID", room_id, 1);
+                            console.log("code ", code);
+                            console.log("room_id", room_id);
                             callback(code, room_id);
                             channel_names[code] = data.channel;
-                        })
-                    });
+                        }
+                    })
                 }                
             })         
         });
-        
-        
-        //newTree(room_id);
-        //newTree(room_id);
-        // var treeId;
-        // console.log("roomid", room_id);
-        // r_cli.hmget("TID", room_id, (err, obj) => {
-        //     treeId = obj;
-        //     console.log("treeid ",treeId)
-        // })
-        // //newApple(room_id, treeId, "New Block", "NULL");
-
-        // r_cli.HINCRBY("TID", room_id, 1);
-        
-        
         
         
         });
