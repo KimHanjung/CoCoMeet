@@ -1,4 +1,5 @@
 const express = require('express');
+const { title } = require('process');
 const { ToastBody } = require('react-bootstrap');
 const app = express();
 const http = require('http').Server(app);
@@ -18,14 +19,14 @@ channel_server = io.of('/channel_server');
 
 const redis = require('redis');
 // AWS
-// const r_cli = redis.createClient(6379, "3.34.138.234");
-// const pub = redis.createClient(6379, "3.34.138.234");
-// const sub = redis.createClient(6379, "3.34.138.234");
+const r_cli = redis.createClient(6379, "3.34.138.234");
+const pub = redis.createClient(6379, "3.34.138.234");
+const sub = redis.createClient(6379, "3.34.138.234");
 
 // localhost
-const r_cli = redis.createClient(6379, "localhost");
-const pub = redis.createClient(6379, "localhost");
-const sub = redis.createClient(6379, "localhost");
+// const r_cli = redis.createClient(6379, "localhost");
+// const pub = redis.createClient(6379, "localhost");
+// const sub = redis.createClient(6379, "localhost");
 
 sub.subscribe('holly');
 
@@ -47,9 +48,6 @@ r_cli.hmset("NID", 0, 0); // room별로 node 개수 저장. room_id : node_num
 r_cli.hmset("RCode","zxcvbnm", 999);
 r_cli.hmset("RName",999,'cocococococo');
 
-r_cli.get("changyeol", (err, obj) => {
-    console.log("cy:",obj)
-});
 
 function newRoom(roomCode, roomName) {
     // 생성될 room의 id
@@ -101,6 +99,9 @@ function newApple(room_id, tree_id, text, parent) {
     
     var newid;// = [999];
     r_cli.hmget("NID", room_id, (err, obj) => {
+        if (err) {
+            console.log("newApple err",err)
+        }
         // obj는 지금 만들어야 할 Node id가 담겨있음.
         //newid = newid.concat(obj);
         newid=obj;
@@ -356,6 +357,8 @@ board_server.on('connection', function(socket){
     });
 });
 
+
+
 channel_server.on('connection', function(socket) {
     client_id = socket.id;
     socket.on('createChannel', function (data, callback) {    
@@ -381,41 +384,49 @@ channel_server.on('connection', function(socket) {
             console.log("roomid", room_id);
             
             r_cli.hmget("TID", room_id, (err, obj) => { //방에 있는 트리 개수를 받아옴. 0이 있겠지
+                if(err){
+                    console.log("hmget ERROR", err)
+                }
                 treeId = obj; // tree_id 설정 => 0번 트리
                 console.log("첫 treeid ",treeId)
-                var check = newApple(room_id, treeId, "Left Initial Block", "NULL"); //트리에 들어갈 블록을 만든다
+                var check = newApple(room_id, treeId[0], "Left Initial Block", "NULL"); //트리에 들어갈 블록을 만든다
                 if (check) {
                     sub.on('message', (channel, message) => {
                         //console.log("check new_node1_id with holly : ", message); //트리 안에 노드 하나 만들어졌을 것
                         let ord = [message];
-                        update_order(room_id, treeId, String(ord)); // 새로 생긴 tree order 만들어줘
+                        update_order(room_id, treeId[0], String(ord)); // 새로 생긴 tree order 만들어줘
                     })
                     
                     r_cli.HINCRBY("TID", room_id, 1); //room에 있는 트리 개수 ++ => 1이 됨
 
                     // 두 번째 트리를 만들기 위한 과정
                     r_cli.hmget("TID", room_id, (err, obj) => {
+                        if(err){
+                            console.log("hmget2 ERROR", err)
+                        }
                         treeId = obj;
                         console.log("두 번째 treeid ", treeId)
-                        check = newApple(room_id, treeId, "Right Initial Block", "NULL");
+                        console.log("벗겨본 트리아이디", treeId[0])
+                        check = newApple(room_id, treeId[0], "Right Initial Block", "NULL");
                         if (check) {
                             sub.on('message', (channel, message) => {
                                 //console.log("check new_node2_id with holly : ", message);
                                 ord = [message];
-                                update_order(room_id, treeId, String(ord));
+                                update_order(room_id, treeId[0], String(ord));
                             })
                             r_cli.HINCRBY("TID", room_id, 1);
+
                             console.log("code ", code);
                             console.log("room_id", room_id);
                             callback(code, room_id);
                             channel_names[code] = data.channel;
                         }
                     })
+                    console.log("second HMGET");
                 }                
             })         
         });
-        
-        
+        console.log("first HMGET")
         });
 
     socket.on('joinChannel', function(data, callback) {
