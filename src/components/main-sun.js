@@ -143,7 +143,7 @@ class Main extends Component {
   componentDidMount(){
     // 방 들어왔을 때 실행되는 코드
     // channel uname ... 설정하는 코드
-
+    socket.emit('channelJoin',{channel: this.state.channel, room_id: this.state.room_id})
     
     // const dataL = test_tree0;
     // const dataR = test_tree1;
@@ -530,7 +530,7 @@ class Main extends Component {
                               <div className="border-b-2 border-gray-300 bg-gray-200 h-12 p-3 mb-3">
                                 <div className="font-sans text-lg font-semibold text-teal-500">Channel</div>
                               </div>
-                              <Name uname = {this.state.uname} onUpdate_name2={this.updateName} />
+                              <Name uname = {this.state.uname} onUpdate_name2={this.updateName} channel_code={this.state.channel_code}/>
                               <Channel channel={this.state.channel} connected={this.state.connected} onUpdate_channel2={this.updateChannel} onUpdate_connect2={this.updateConnected} /> 
                             </div>
                             <div className="mb-6 pb-3 shadow-md bg-gray-100 h-1/5">
