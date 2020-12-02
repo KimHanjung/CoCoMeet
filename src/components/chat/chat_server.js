@@ -20,10 +20,12 @@ const redis = require('redis');
 // const r_cli = redis.createClient({port : 6379, host : 'localhost'}); - 됨 (local)
 // const r_cli = redis.createClient(6379, 'localhost'); - 됨 (local)
 // const r_cli = redis.createClient({ host : "http://3.34.138.234", port : 6379}); - 안 됨.
-const r_cli = redis.createClient({ host : "3.34.138.234", port : 6379}); 
+const r_cli_pub = redis.createClient({ host : "3.34.138.234", port : 6379}); 
+const r_cli_sub = redis.createClient({ host : "3.34.138.234", port : 6379}); 
+const r_cli_store = redis.createClient({ host : "3.34.138.234", port : 6379}); 
 //const r_cli = redis.createClient(6379, '3.34.138.234'); // - 안 됨
 
-r_cli.on("error", function(err) {
+r_cli_sub.on("error", function(err) {
     console.log("ERROR"+err);
     process.exit(1);
 });
@@ -33,17 +35,17 @@ r_cli.on("error", function(err) {
 // r_cli.hmset("R0-0", "room_id", 0, "tree_id", 0, "node_id", 0, "title", "0-0", "parent", "NULL", "color", "blue", "deco", "normal", "weight", "normal");
 
 // default
-r_cli.set("Rnum", 0) // room 개수 저장
-r_cli.hmset("TID", 0, 1); // room별로 tree 개수 저장. room_id : tree_num
-r_cli.hmset("NID", 0, 1); // room별로 node 개수 저장. room_id : node_num
-r_cli.hmset("RCode",999,"cocomeet");
+r_cli_store.set("Rnum", 0) // room 개수 저장
+r_cli_store.hmset("TID", 0, 1); // room별로 tree 개수 저장. room_id : tree_num
+r_cli_store.hmset("NID", 0, 1); // room별로 node 개수 저장. room_id : node_num
+r_cli_store.hmset("RCode",999,"cocomeet");
 
 function newRoom(roomCode, roomName) {
     // 생성될 room의 id
-    r_cli.get("Rnum", (err, obj) => {
+    r_cli_sub.get("Rnum", (err, obj) => {
         r_cli.hmset(roomCode, "room_id", Strint(obj), "room_name", roomName)
     });
-    r_cli.incr("Rnum");
+    r_cli_store.incr("Rnum");
 }
 
 // tree 정보는 Key는 R0-0 이런식으로, 해당 value는 hash 형태로 저장한다
@@ -77,14 +79,14 @@ function getTreeNum(room_id) {
 // 들어갈 트리가 있는 경우. Node만 업데이트 해 주면 된다.
 function newApple(room_id, tree_id, text, parent) {
     var newid;
-    r_cli.hmget("NID", room_id, (err, obj) => {
+    r_cli_sub.hmget("NID", room_id, (err, obj) => {
         // obj는 지금 만들어야 할 Node id가 담겨있음.
         newid = obj;
         var info = "R"+room_id+"-"+obj;
         // console.log(info);
-        r_cli.hmset(String(info), "room_id", String(room_id), "tree_id", String(tree_id), "node_id", String(obj), "title", text , "parent", String(parent), "color", "blue", "deco", "normal", "weight", "normal");
+        r_cli_store.hmset(String(info), "room_id", String(room_id), "tree_id", String(tree_id), "node_id", String(obj), "title", text , "parent", String(parent), "color", "blue", "deco", "normal", "weight", "normal");
     });
-    r_cli.HINCRBY("NID", room_id, 1); //해당 room_num의 node 개수 +1
+    r_cli_store.HINCRBY("NID", room_id, 1); //해당 room_num의 node 개수 +1
     return newid;
 }
 // new block은 new apple을 text, parent 지정해서 사용하면 된다.
@@ -92,12 +94,12 @@ function newApple(room_id, tree_id, text, parent) {
 
 function newTree(room_id) {
     var treeId;
-    r_cli.hmget("TID", room_id, (err, obj) => {
+    r_cli_sub.hmget("TID", room_id, (err, obj) => {
         treeId = obj;
     })
     newApple(room_id, treeId, "New Block", "NULL");
 
-    r_cli.HINCRBY("TID", room_id, 1);
+    r_cli_store.HINCRBY("TID", room_id, 1);
     return treeId;
 }
 
@@ -140,7 +142,7 @@ board_server.on('connection', function(socket){
 
         //DB한테 트리 0, 1 요청 -o
         //DB한테 트리 개수 요청 -o
-        let treeLetf, treeRight;
+        let treeLeft, treeRight;
         let orderLeft, orderRight;
         let treenum;
         orderLeft = get_order(data.room_id, 0);
@@ -338,10 +340,13 @@ channel_server.on('connection', function(socket) {
         });
         var room_id;
         // 코드 - room_id 연결
-        r_cli.get("Rnum", (err, obj) => {
+        console.log('hi');
+        r_cli_store.get("Rnum", (err, obj) => {
+            console.log('good');
             room_id = obj;
         });
-        r_cli.hmset("RCode", String(code), room_id);
+        console.log('bye');
+        r_cli_pub.hmset("RCode", String(code), room_id);
         // 트리 2개 생성
         newTree(room_id);
         newTree(room_id);

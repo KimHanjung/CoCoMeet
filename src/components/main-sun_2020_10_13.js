@@ -29,7 +29,7 @@ class Main extends Component {
     
     this.state = {
       channel:this.props.history.location.state.channel, 
-      uname:this.props.history.location.state.uname, channel_code: this.props.history.location.state.channel_code,
+      uname:this.props.history.location.state.uname, channel_code: this.props.history.location.state.channel_code, room_id:this.props.history.location.state.room_id,
       connected:'False', msg_to_block:'Select Message!',
       treenum: 2,
       trees: [
