@@ -28,7 +28,7 @@ const sub = redis.createClient(6379, "3.34.138.234");
 // const pub = redis.createClient(6379, "localhost");
 // const sub = redis.createClient(6379, "localhost");
 
-
+sub.subscribe("merry");
 
 
 r_cli.on("error", function(err) {
@@ -76,7 +76,6 @@ function get_order(room_id, tree_id) {
     }
     else {
         var order;
-        console.log("Here I am",r_info, tree_id)
         r_cli.hmget(r_info, tree_id, (err,obj) => {
             console.log(obj)
             order = obj.split(",");
@@ -89,8 +88,9 @@ function get_order(room_id, tree_id) {
 
 function update_order(room_id, tree_id, order) {
     var r_info = "R" + String(room_id)+"_order";
-    console.log("before order DB", r_info, tree_id, order)
+    console.log("before order DB", "room_num", r_info, "tree_id", tree_id, "order", order)
     r_cli.hmset(r_info, tree_id, order);
+    return true;
 }
 
 function getTreeNum(room_id) {
@@ -110,16 +110,18 @@ function newApple(room_id, tree_id, text, parent) {
         }   
         // obj는 지금 만들어야 할 Node id가 담겨있음.
         //newid = newid.concat(obj);
-        newid=obj;
-        //console.log("you even working?",newid)
+        newid=obj[0];
         var info = "R"+room_id+"-"+obj;
         // console.log(info);
         
         r_cli.hmset(String(info), "room_id", String(room_id), "tree_id", String(tree_id), "node_id", String(obj), "title", text , "parent", String(parent), "color", "blue", "deco", "normal", "weight", "normal");
         r_cli.HINCRBY("NID", room_id, 1); //해당 room_num의 node 개수 +1
-        console.log("new apple node id", newid)
-        if (tree_id === 0) pub.publish("left", newid); // NEED TO BE CHANGED
-        else if (tree_id === 1) pub.publish("right", newid);
+        let msg = {"content" : newid, "treeid" : tree_id};
+        msg = JSON.stringify(msg);
+
+        //console.log("merry ", msg);
+        pub.publish("merry", msg);
+
     });
     return true;
     
@@ -382,8 +384,6 @@ channel_server.on('connection', function(socket) {
         // r_cli.get("Rnum", (err, obj) => {
         //     console.log("say 123", obj);
         // })
-        sub.subscribe('left');
-        sub.subscribe('right');
         r_cli.get("Rnum", (err, obj) => { //일단 방 갯수를 알아와서
             room_id = obj; //room _id를 설정하고
             r_cli.hmset("RCode", code, String(room_id)); //room code - room id 설정,
@@ -398,19 +398,17 @@ channel_server.on('connection', function(socket) {
                 if(err){
                     console.log("hmget ERROR", err)
                 }
-                treeId = treeId.concat(obj); // tree_id 설정 => 0번 트리
-                console.log("첫 treeid ",treeId)
-                var check = newApple(room_id, treeId[0], "Left Initial Block", "NULL"); //트리에 들어갈 블록을 만든다
+                treeId = obj[0];
+                var check = newApple(room_id, treeId, "Left Initial Block", "NULL"); //트리에 들어갈 블록을 만든다
                 if (check) {
                     sub.on('message', (channel, message) => {
-                        if (channel === "left"){
-                            console.log("1st sub")
-                            //console.log("check new_node1_id with holly : ", message); //트리 안에 노드 하나 만들어졌을 것
-                            let ord = [message];
-                            console.log("before update order", room_id, treeId[0], String(ord))
-                            update_order(room_id, treeId[0], String(ord)); // 새로 생긴 tree order 만들어줘
+                        let msg = JSON.parse(message);
+                        if (msg.treeid === '0') {
+                            let ord = [msg.content];
+                            ord = JSON.stringify(ord);
+                            console.log("--first order DB update--");
+                            update_order(room_id, msg.treeid, ord);
                         }
-                        
                     })
                     
                     r_cli.HINCRBY("TID", room_id, 1); //room에 있는 트리 개수 ++ => 1이 됨
@@ -420,21 +418,27 @@ channel_server.on('connection', function(socket) {
                         if(err){
                             console.log("hmget2 ERROR", err)
                         }
-                        treeId = treeId.concat(obj);                        
-                        check = newApple(room_id, treeId[1], "Right Initial Block", "NULL");
+                        treeId = obj[0];                    
+                        check = newApple(room_id, treeId, "Right Initial Block", "NULL");
                         if (check) {
                             sub.on('message', (channel, message) => {
-                                if (channel === "right"){
-                                    //console.log("check new_node2_id with holly : ", message);
-                                    console.log("2nd sub")
-                                    ord = [message];
-                                    update_order(room_id, treeId[1], String(ord));
+                                
+                                let msg = JSON.parse(message);
+
+                                if (msg.treeid === '1') {
+                                    let ord = [msg.content];
+                                    ord = JSON.stringify(ord);
+                                    console.log("--second order DB update--");
+                                    let c = update_order(room_id, msg.treeid, ord);
+                                    if (c) {
+                                        r_cli.HINCRBY("TID", room_id, 1);
+                                        console.log("channel create", code, room_id,data.channel)
+                                        callback(code, room_id,data.channel);
+                                        channel_names[code] = data.channel;
+                                    }
                                 }
                             })
-                            r_cli.HINCRBY("TID", room_id, 1);
-                            console.log("channel create", code, room_id,data.channel)
-                            callback(code, room_id,data.channel);
-                            channel_names[code] = data.channel;
+                            
                         }
                     })
                     
