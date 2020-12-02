@@ -19,16 +19,17 @@ channel_server = io.of('/channel_server');
 
 const redis = require('redis');
 // AWS
-const r_cli = redis.createClient(6379, "3.34.138.234");
-const pub = redis.createClient(6379, "3.34.138.234");
-const sub = redis.createClient(6379, "3.34.138.234");
+// const r_cli = redis.createClient(6379, "3.34.138.234");
+// const pub = redis.createClient(6379, "3.34.138.234");
+// const sub = redis.createClient(6379, "3.34.138.234");
 
 // localhost
-// const r_cli = redis.createClient(6379, "localhost");
-// const pub = redis.createClient(6379, "localhost");
-// const sub = redis.createClient(6379, "localhost");
+const r_cli = redis.createClient(6379, "localhost");
+const pub = redis.createClient(6379, "localhost");
+const sub = redis.createClient(6379, "localhost");
 
 sub.subscribe("merry");
+sub.subscribe('christ');
 
 
 r_cli.on("error", function(err) {
@@ -48,8 +49,6 @@ r_cli.hmset("NID", 0, 0); // room별로 node 개수 저장. room_id : node_num
 r_cli.hmset("RCode","zxcvbnm", 999);
 r_cli.hmset("RName",999,'cocococococo');
 
-
-
 function newRoom(roomCode, roomName) {
     // 생성될 room의 id
     var id;
@@ -68,27 +67,32 @@ function newRoom(roomCode, roomName) {
 
 // tree 정보는 Key는 R0-0 이런식으로, 해당 value는 hash 형태로 저장한다
 function get_order(room_id, tree_id) {
-    console.log("enter get_order func")
+    //console.log("room_id", room_id, "tree_id", tree_id)
     var r_info = "R" + String(room_id)+"_order";
+    console.log(r_info)
     if (r_cli.EXISTS(r_info) == 0) {
         console.log("room does not exist")
         return null;
     }
     else {
         var order;
+
         r_cli.hmget(r_info, tree_id, (err,obj) => {
-            console.log(obj)
-            order = obj.split(",");
-            console.log("getorder",order)
+ 
+            console.log(obj[0])
+            order = obj[0].split("");
+            order.shift();
+            order.pop();
+            console.log("getorder",order);
+            
             return order;
         });
-        
     }
 }
 
 function update_order(room_id, tree_id, order) {
     var r_info = "R" + String(room_id)+"_order";
-    console.log("before order DB", "room_num", r_info, "tree_id", tree_id, "order", order)
+    //console.log("before order DB", "room_num", r_info, "tree_id", tree_id, "order", order)
     r_cli.hmset(r_info, tree_id, order);
     return true;
 }
@@ -176,42 +180,82 @@ chat_server.on('connection', function (socket) {
 board_server.on('connection', function(socket){
     socket.on('channelJoin', function(data){
         socket.join(data.channel);
-
+        
         //DB한테 트리 0, 1 요청 -o
         //DB한테 트리 개수 요청 -o
-        let treeLeft, treeRight;
+        let treeLeft = {};
+        let treeRight = {};
         let orderLeft, orderRight;
         let treenum;
-        console.log("들들?들들들")
-        orderLeft = get_order(data.room_id, 0);
-        orderRight = get_order(data.room_id, 1);
-        console.log("orderRight",orderRight)
-        treenum = getTreeNum(data.room_id);
-        var info;
-        for (var elem in orderLeft) {
-            info = "R" + r_id+"-"+elem;
-            r_cli.HMGET(String(info), "node_id","room_id", "tree_id", "title", "parent", "color", "weight", "deco", (err, obj) => {
-                var treeeeee = {"room_id" : obj[1], "node_id" : obj[0], "tree_id" : obj[2], "title" : obj[3], "parent": obj[4], "color" : obj[5], "weight" : obj[6], "deco" : obj[7]};
-                treeLeft[elem] = treeeeee;
-            });
+
+        let room_id = data.room_id;
+        let r_info = "R"+room_id+"_order";
+        if (r_cli.EXISTS(r_info) == 0) {
+            console.log("room does not exist")
         }
-        for (var elem in orderRight) {
-            info = "R" + r_id+"-"+elem;
-            r_cli.HMGET(String(info), "node_id","room_id", "tree_id", "title", "parent", "color", "weight", "deco", (err, obj) => {
-                var treeeeee = {"room_id" : obj[1], "node_id" : obj[0], "tree_id" : obj[2], "title" : obj[3], "parent": obj[4], "color" : obj[5], "weight" : obj[6], "deco" : obj[7]};
-                treeRight[elem] = treeeeee;
-            });
+        else {
+            r_cli.hmget(r_info, 0, 1, (err, obj) => {
+                orderLeft = obj[0];
+                orderLeft = orderLeft.split("");
+                orderLeft.shift();
+                orderLeft.pop();
+
+                orderRight = obj[1];
+                orderRight = orderRight.split("");
+                orderRight.shift();
+                orderRight.pop();
+
+                console.log("orderLeft", orderLeft);
+                console.log("orderRight", orderRight);
+
+                r_cli.hmget("TID", room_id, (err,obj) => {
+                    console.log("treenum", obj);
+                    treenum = obj;
+
+                    var info_l;
+                    var info_r;
+                    for (var elem in orderLeft) {
+                        info_l = "R" + room_id+"-"+elem;
+                        r_cli.HMGET(info_l, "node_id","room_id", "tree_id", "title", "parent", "color", "weight", "deco", (err, obj) => {
+                            var treeeeee = {"room_id" : obj[1], "node_id" : obj[0], "tree_id" : obj[2], "title" : obj[3], "parent": obj[4], "color" : obj[5], "weight" : obj[6], "deco" : obj[7]};
+                            treeLeft[elem] = treeeeee;
+                            
+                            pub.publish("merry", elem)
+                        });
+                    }
+
+                    for (var elem in orderRight) {
+                        info_r = "R" + room_id+"-"+elem;
+                        r_cli.HMGET(info_r, "node_id","room_id", "tree_id", "title", "parent", "color", "weight", "deco", (err, obj) => {
+                            var treeeeee = {"room_id" : obj[1], "node_id" : obj[0], "tree_id" : obj[2], "title" : obj[3], "parent": obj[4], "color" : obj[5], "weight" : obj[6], "deco" : obj[7]};
+                            treeRight[elem] = treeeeee;
+                            pub.publish("christ", elem)
+                        });
+                    }
+                    
+                    sub.on("message", (channel, message) => {
+                        if (channel === "merry" && message === orderLeft[orderLeft.length-1]) {
+                            rearrange(treeLeft, orderLeft);
+                            socket.to(data.channel).emit('sendTree', {treenum:treenum, treeid: 0, tree:treeLeft});
+
+                        }
+                        if (channel === "christ" && message === orderRight[orderRight.length-1]){
+                            rearrange(treeRight, orderRight);
+                            socket.to(data.channel).emit('sendTree', {treenum:treenum, treeid: 1, tree:treeRight});
+                        }
+                    })
+                    
+                    //socket.to(data.channel).emit('channelJoin', 
+                    //{treenum:treenum, tree: {Left:treeLeft, Right:treeRight}});
+                    
+            
+                    // console.log(data.channel);
+                });
+            })
         }
 
-        rearrange(treeLeft, orderLeft);
-        rearrange(treeRight, orderRight);
-        //socket.to(data.channel).emit('channelJoin', 
-        //{treenum:treenum, tree: {Left:treeLeft, Right:treeRight}});
-        socket.to(data.channel).emit('sendTree', {treenum:treenum, treeid: 0, tree:treeLeft});
-        socket.to(data.channel).emit('sendTree', {treenum:treenum, treeid: 1, tree:treeRight});
-
-        console.log(data.channel);
     });
+
     socket.on('channelLeave', function(data){
         socket.leave(data.channel);
         console.log(data.channel);
@@ -405,7 +449,8 @@ channel_server.on('connection', function(socket) {
                         let msg = JSON.parse(message);
                         if (msg.treeid === '0') {
                             let ord = [msg.content];
-                            ord = JSON.stringify(ord);
+                            ord  = "["+ord+"]";
+
                             console.log("--first order DB update--");
                             update_order(room_id, msg.treeid, ord);
                         }
@@ -427,7 +472,7 @@ channel_server.on('connection', function(socket) {
 
                                 if (msg.treeid === '1') {
                                     let ord = [msg.content];
-                                    ord = JSON.stringify(ord);
+                                    ord  = "["+ord+"]";
                                     console.log("--second order DB update--");
                                     let c = update_order(room_id, msg.treeid, ord);
                                     if (c) {
@@ -438,7 +483,6 @@ channel_server.on('connection', function(socket) {
                                     }
                                 }
                             })
-                            
                         }
                     })
                     
