@@ -20,28 +20,6 @@ import jsPDF from 'jspdf';
 
 const socket = io('http://localhost:4002/board_server');
 
-const test_tree0 = {treenum: 2, treeId: 0, tree: 
-          [{id: '1', title: 'tree1 N1', parent: 'NULL', color: 'cyan', weight: 'bold', deco: 'underline'},
-            {id: '2', title: 'tree1 N2', parent: 'NULL', color: 'cyan', weight: 'bold', deco: 'underline'},
-            {id: '3', title: 'tree1 N3', parent: '2', color: 'cyan', weight: 'bold', deco: 'underline'},
-            {id: '4', title: 'tree1 N4', parent: '2', color: 'cyan', weight: 'bold', deco: 'underline'},
-            {id: '5', title: 'tree1 N5', parent: '4', color: 'cyan', weight: 'bold', deco: 'underline'},
-            {id: '6', title: 'tree1 N6', parent: '4', color: 'cyan', weight: 'bold', deco: 'underline'},
-            {id: '7', title: 'tree1 N7', parent: '2', color: 'cyan', weight: 'bold', deco: 'underline'},
-            {id: '8', title: 'tree1 N8', parent: 'NULL', color: 'cyan', weight: 'bold', deco: 'underline'},
-          ]
-};
-const test_tree1 = {treenum: 2, treeId: 1, tree:
-          [{id: '9', title: 'tree2 N9', parent: 'NULL', color: 'cyan', weight: 'bold', deco: 'underline'},
-            {id: '10', title: 'tree2 N10', parent: 'NULL', color: 'cyan', weight: 'bold', deco: 'underline'},
-            {id: '11', title: 'tree2 N11', parent: '10', color: 'cyan', weight: 'bold', deco: 'underline'},
-            {id: '12', title: 'tree2 N12', parent: '12', color: 'cyan', weight: 'bold', deco: 'underline'},
-            {id: '13', title: 'tree2 N13', parent: '12', color: 'cyan', weight: 'bold', deco: 'underline'},
-            {id: '14', title: 'tree2 N14', parent: '10', color: 'cyan', weight: 'bold', deco: 'underline'},
-        ]
-};
-
-
 class Main extends Component {
   constructor(props) {
     super(props);
@@ -97,13 +75,13 @@ class Main extends Component {
     if (this.state.lefttree.treeID !==tree_id){
       // traverse left tree
       var lflat = this.toFlatDataFrom(this.state.leftree);
-      lflat.map(node => new_node.id === node.id ? new_node : node)
+      lflat.map(node => new_node.node_id === node.node_id ? new_node : node)
       this.setState({lefttree:this.toTreeDataFrom(lflat)})
     }
     if (this.state.righttree.treeID !==tree_id){
       // traverse left tree
       var rflat = this.toFlatDataFrom(this.state.righttree);
-      rflat.map(node => new_node.id === node.id ? new_node : node)
+      rflat.map(node => new_node.node_id === node.node_id ? new_node : node)
       this.setState({righttree:this.toTreeDataFrom(rflat)})
     }
   }
@@ -112,10 +90,10 @@ class Main extends Component {
 
   toTreeDataFrom=(flat, tree_id)=>{
     return getTreeFromFlatData({
-      flatData: flat.map(node => ({ ...node, 
-        title: <EditableText modify={this.modifyState} tree_id={tree_id} node_id={node.id} initialValue={node.title}/>, 
+      flatData: flat.map(node => ({ ...node, node_id: node.node_id,
+        title: <EditableText modify={this.modifyState} tree_id={tree_id} node_id={node.node_id} initialValue={node.title}/>, 
                           color: node.color, weight: node.weight, deco: node.deco })),
-      getKey: node => node.id,
+      getKey: node => node.node_id,
       getParentKey: node => node.parent, 
       rootKey: 'NULL', 
     });
@@ -123,10 +101,10 @@ class Main extends Component {
   toFlatDataFrom=(tree)=>{
     return getFlatDataFromTree({
       treeData: tree,
-      getNodeKey: ({ node }) => node.id, 
+      getNodeKey: ({ node }) => node.node_id, 
       ignoreCollapsed: false, 
     }).map(({ node, path }) => ({
-      id: node.id,
+      node_id: node.node_id,
 
       // The last entry in the path is this node's key
       // The second to last entry (accessed here) is the parent node's key
@@ -136,9 +114,9 @@ class Main extends Component {
   toFlatIDDataFrom=(tree)=>{
     return getFlatDataFromTree({
       treeData: tree,
-      getNodeKey: ({ node }) => node.id, 
+      getNodeKey: ({ node }) => node.node_id, 
       ignoreCollapsed: false, 
-    }).map(({ node }) => (node.id));
+    }).map(({ node }) => (node.node_id));
   }
   receive_sendtree = (tree_leftright, data) =>{
     const treeID = data.treeid;
@@ -164,10 +142,10 @@ class Main extends Component {
     // 방 들어왔을 때 실행되는 코드
     // channel uname ... 설정하는 코드
     console.log("미스테리우스")
-    socket.emit('channelJoin',{channel: this.state.channel, room_id: this.state.room_id})
+    socket.emit('channelJoin',{channel: cursor.state.channel, room_id: cursor.state.room_id})
     
     socket.on('addTree', function(data){
-      this.setState({treenum: data.treenum})
+      cursor.setState({treenum: data.treenum})
     })
     socket.on('sendTree', function(data){
       //move, migrate, sunsapple, delete, addnode
@@ -182,7 +160,7 @@ class Main extends Component {
     })
     socket.on('sendNode', function(data){
       //changetext, changeattr
-      this.applytoTree(data.treeid, data.node);
+      cursor.applytoTree(data.treeid, data.node);
       
     })
   }
@@ -414,8 +392,8 @@ class Main extends Component {
     // addblock
     // left tree 마지막에 "block with id -1" 추가
     var addnode_lefttree = this.state.lefttree.treeData;
-    addnode_lefttree.concat(
-      [{ id: -1, title: "dummy", color: "cyan", weight: "normal", deco: "none"}]
+    addnode_lefttree = addnode_lefttree.concat(
+      [{ node_id: "-1", title: "dummy", color: "cyan", weight: "normal", deco: "none"}]
     )
     socket.emit("addNode", {room_id: this.state.room_id, tree_id: this.state.lefttree.treeID, tree: this.toFlatDataFrom(addnode_lefttree)});
   }
@@ -423,8 +401,8 @@ class Main extends Component {
     // addblock
     // left tree 마지막에 "block with id -1" 추가
     var addnode_righttree = this.state.righttree.treeData;
-    addnode_righttree.concat(
-      [{ id: -1, title: "dummy", color: "cyan", weight: "normal", deco: "none"}]
+    addnode_righttree = addnode_righttree.concat(
+      [{ node_id: "-1", title: "dummy", color: "cyan", weight: "normal", deco: "none"}]
     )
     
     socket.emit("addNode", {room_id: this.state.room_id, tree_id: this.state.righttree.treeID, tree: this.toFlatDataFrom(addnode_righttree)});
@@ -432,16 +410,18 @@ class Main extends Component {
   onDropLeft = (tree_id) => {
     if (tree_id !== this.state.lefttree.treeID) {
       socket.emit('changeTree', {room_id: this.state.room_id, tree_id: tree_id});
+      let cursor = this;
       socket.on('changeTree',function(data){
-        this.receive_sendtree('L', data);
+        cursor.receive_sendtree('L', data);
       })
     }
   }
   onDropRight = (tree_id) => {
     if (tree_id !== this.state.righttree.treeID) {
       socket.emit('changeTree', {room_id: this.state.room_id, tree_id: tree_id});
+      let cursor = this;
       socket.on('changeTree',function(data){
-        this.receive_sendtree('R', data);
+        cursor.receive_sendtree('R', data);
       })
     }
   }
