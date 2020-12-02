@@ -121,7 +121,7 @@ function newApple(room_id, tree_id, text, parent) {
         
         r_cli.hmset(String(info), "room_id", String(room_id), "tree_id", String(tree_id), "node_id", String(obj), "title", text , "parent", String(parent), "color", "blue", "deco", "normal", "weight", "normal");
         r_cli.HINCRBY("NID", room_id, 1); //해당 room_num의 node 개수 +1
-        let msg = {"content" : newid, "treeid" : tree_id};
+        let msg = {"type" : "apple", "content" : newid, "treeid" : tree_id};
         msg = JSON.stringify(msg);
 
         //console.log("merry ", msg);
@@ -221,8 +221,11 @@ board_server.on('connection', function(socket){
                         r_cli.HMGET(info_l, "node_id","room_id", "tree_id", "title", "parent", "color", "weight", "deco", (err, obj) => {
                             var treeeeee = {"room_id" : obj[1], "node_id" : obj[0], "tree_id" : obj[2], "title" : obj[3], "parent": obj[4], "color" : obj[5], "weight" : obj[6], "deco" : obj[7]};
                             treeLeft[test] = treeeeee;
-                            
-                            pub.publish("christ", test)
+                            let dic = {};
+                            dic["type"] = "b_join";
+                            dic["content"] = test;
+                            dic = JSON.stringify(dic);
+                            pub.publish("christ", dic);
                         });
                     }
 
@@ -234,22 +237,31 @@ board_server.on('connection', function(socket){
                         r_cli.HMGET(info_r, "node_id","room_id", "tree_id", "title", "parent", "color", "weight", "deco", (err, obj) => {
                             var treeeeee = {"room_id" : obj[1], "node_id" : obj[0], "tree_id" : obj[2], "title" : obj[3], "parent": obj[4], "color" : obj[5], "weight" : obj[6], "deco" : obj[7]};
                             treeRight[test1] = treeeeee;
-                            pub.publish("merry", test1)
+                            let dic1 = {};
+                            dic1["type"] = "b_join";
+                            dic1["content"] = test1;
+                            dic1 = JSON.stringify(dic1);
+                            pub.publish("merry", dic1);
+
                         });
                     }
                     
                     sub.on("message", (channel, message) => {
-                        console.log("i want to see channel:",channel, message)
-                        if (channel === "christ" && message === orderLeft[orderLeft.length-1]) {
-                            treeLeft = rearrange(treeLeft, orderLeft);
-                            //console.log("before sendtree", treeLeft)
-                            board_server.to(data.channel).emit('sendTree', {treenum:treenum, treeid: 0, tree:treeLeft});
+                        console.log("our msg", message);
+                        message = JSON.parse(message);
+                        if (message.type === "b_join") {
+                            if (channel === "christ" && message.content === orderLeft[orderLeft.length-1]) {
+                                treeLeft = rearrange(treeLeft, orderLeft);
+                                console.log("보낼거야 ")
+                                //console.log("before sendtree", treeLeft)
+                                board_server.to(data.channel).emit('sendTree', {treenum:treenum, treeid: 0, tree:treeLeft});
 
-                        }
-                        if (channel === "merry" && message === orderRight[orderRight.length-1]){
-                            treeRight = rearrange(treeRight, orderRight);
-                            console.log("haha",treeRight)
-                            board_server.to(data.channel).emit('sendTree', {treenum:treenum, treeid: 1, tree:treeRight});
+                            }
+                            if (channel === "merry" && message.content === orderRight[orderRight.length-1]){
+                                treeRight = rearrange(treeRight, orderRight);
+                                console.log("haha",treeRight)
+                                board_server.to(data.channel).emit('sendTree', {treenum:treenum, treeid: 1, tree:treeRight});
+                            }
                         }
                     })
                     
@@ -455,12 +467,14 @@ channel_server.on('connection', function(socket) {
                 if (check) {
                     sub.on('message', (channel, message) => {
                         let msg = JSON.parse(message);
-                        if (msg.treeid === '0') {
-                            let ord = [msg.content];
-                            ord  = "["+ord+"]";
+                        if (msg.type === "apple"){
+                            if (msg.treeid === '0') {
+                                let ord = [msg.content];
+                                ord  = "["+ord+"]";
 
-                            console.log("--first order DB update--");
-                            update_order(room_id, msg.treeid, ord);
+                                console.log("--first order DB update--");
+                                update_order(room_id, msg.treeid, ord);
+                            }
                         }
                     })
                     
