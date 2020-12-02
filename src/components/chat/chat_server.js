@@ -1,5 +1,6 @@
 const express = require('express');
 const { title } = require('process');
+const { stringify } = require('querystring');
 const { ToastBody } = require('react-bootstrap');
 const app = express();
 const http = require('http').Server(app);
@@ -19,14 +20,14 @@ channel_server = io.of('/channel_server');
 
 const redis = require('redis');
 // AWS
-// const r_cli = redis.createClient(6379, "3.34.138.234");
-// const pub = redis.createClient(6379, "3.34.138.234");
-// const sub = redis.createClient(6379, "3.34.138.234");
+const r_cli = redis.createClient(6379, "3.34.138.234");
+const pub = redis.createClient(6379, "3.34.138.234");
+const sub = redis.createClient(6379, "3.34.138.234");
 
 // localhost
-const r_cli = redis.createClient(6379, "localhost");
-const pub = redis.createClient(6379, "localhost");
-const sub = redis.createClient(6379, "localhost");
+// const r_cli = redis.createClient(6379, "localhost");
+// const pub = redis.createClient(6379, "localhost");
+// const sub = redis.createClient(6379, "localhost");
 
 sub.subscribe("merry");
 sub.subscribe('christ');
@@ -214,34 +215,41 @@ board_server.on('connection', function(socket){
 
                     var info_l;
                     var info_r;
-                    for (var elem in orderLeft) {
+                    for(var i=0, elem; elem=orderLeft[i]; i++){
+                        var test = elem;
                         info_l = "R" + room_id+"-"+elem;
                         r_cli.HMGET(info_l, "node_id","room_id", "tree_id", "title", "parent", "color", "weight", "deco", (err, obj) => {
                             var treeeeee = {"room_id" : obj[1], "node_id" : obj[0], "tree_id" : obj[2], "title" : obj[3], "parent": obj[4], "color" : obj[5], "weight" : obj[6], "deco" : obj[7]};
-                            treeLeft[elem] = treeeeee;
+                            treeLeft[test] = treeeeee;
                             
-                            pub.publish("merry", elem)
+                            pub.publish("christ", test)
                         });
                     }
 
-                    for (var elem in orderRight) {
-                        info_r = "R" + room_id+"-"+elem;
+                    console.log("here eee orderright", orderRight)
+                    for(var i=0,elem1; elem1=orderRight[i]; i++){
+                        console.log("elem1~", elem1)
+                        var test1 = elem1;
+                        info_r = "R" + room_id+"-"+elem1;
                         r_cli.HMGET(info_r, "node_id","room_id", "tree_id", "title", "parent", "color", "weight", "deco", (err, obj) => {
                             var treeeeee = {"room_id" : obj[1], "node_id" : obj[0], "tree_id" : obj[2], "title" : obj[3], "parent": obj[4], "color" : obj[5], "weight" : obj[6], "deco" : obj[7]};
-                            treeRight[elem] = treeeeee;
-                            pub.publish("christ", elem)
+                            treeRight[test1] = treeeeee;
+                            pub.publish("merry", test1)
                         });
                     }
                     
                     sub.on("message", (channel, message) => {
-                        if (channel === "merry" && message === orderLeft[orderLeft.length-1]) {
-                            rearrange(treeLeft, orderLeft);
-                            socket.to(data.channel).emit('sendTree', {treenum:treenum, treeid: 0, tree:treeLeft});
+                        console.log("i want to see channel:",channel, message)
+                        if (channel === "christ" && message === orderLeft[orderLeft.length-1]) {
+                            treeLeft = rearrange(treeLeft, orderLeft);
+                            //console.log("before sendtree", treeLeft)
+                            board_server.to(data.channel).emit('sendTree', {treenum:treenum, treeid: 0, tree:treeLeft});
 
                         }
-                        if (channel === "christ" && message === orderRight[orderRight.length-1]){
-                            rearrange(treeRight, orderRight);
-                            socket.to(data.channel).emit('sendTree', {treenum:treenum, treeid: 1, tree:treeRight});
+                        if (channel === "merry" && message === orderRight[orderRight.length-1]){
+                            treeRight = rearrange(treeRight, orderRight);
+                            console.log("haha",treeRight)
+                            board_server.to(data.channel).emit('sendTree', {treenum:treenum, treeid: 1, tree:treeRight});
                         }
                     })
                     

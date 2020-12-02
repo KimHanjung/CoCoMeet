@@ -86,7 +86,7 @@ class Main extends Component {
     this.toFlatDataFrom = this.toFlatDataFrom.bind(this);
     this.toFlatIDDataFrom = this.toFlatIDDataFrom.bind(this);
     this.toTreeDataFrom = this.toTreeDataFrom.bind(this);
-    this.recieve_sendtree = this.recieve_sendtree.bind(this);
+    this.receive_sendtree = this.receive_sendtree.bind(this);
     this.getAttrToBoard = this.getAttrToBoard.bind(this);
     this.getListFromBoard = this.getListFromBoard.bind(this);
 
@@ -140,36 +140,9 @@ class Main extends Component {
       ignoreCollapsed: false, 
     }).map(({ node }) => (node.id));
   }
-  componentDidMount(){
-    // 방 들어왔을 때 실행되는 코드
-    // channel uname ... 설정하는 코드
-    socket.emit('channelJoin',{channel: this.state.channel, room_id: this.state.room_id})
-    
-    // const dataL = test_tree0;
-    // const dataR = test_tree1;
-    // this.recieve_sendtree('L', dataL);
-    // this.recieve_sendtree('R', dataR);
-    
-    socket.on('addTree', function(data){
-      this.setState({treenum: data.treenum})
-    })
-    socket.on('sendTree', function(data){
-      //move, migrate, sunsapple, delete, addnode
-      const treeID = data.treeId;
-      if(treeID === this.lefttree.treeID){
-        this.recieve_sendtree('L', data);
-      }else if(treeID === this.righttree.treeID){
-        this.recieve_sendtree('R', data);
-      }
-    })
-    socket.on('sendNode', function(data){
-      //changetext, changeattr
-      this.applytoTree(data.treeid, data.node);
-      
-    })
-  }
-  recieve_sendtree = (tree_leftright, data) =>{
-    const treeID = data.treeId;
+  receive_sendtree = (tree_leftright, data) =>{
+    const treeID = data.treeid;
+    //console.log("inside receive send tree", treeID)
     if(tree_leftright==='L'){
       const left_tree = this.toTreeDataFrom(data.tree, treeID);
       if(data.treenum === null){
@@ -186,6 +159,34 @@ class Main extends Component {
       }
     }
   }
+  componentDidMount(){
+    let cursor = this;
+    // 방 들어왔을 때 실행되는 코드
+    // channel uname ... 설정하는 코드
+    console.log("미스테리우스")
+    socket.emit('channelJoin',{channel: this.state.channel, room_id: this.state.room_id})
+    
+    socket.on('addTree', function(data){
+      this.setState({treenum: data.treenum})
+    })
+    socket.on('sendTree', function(data){
+      //move, migrate, sunsapple, delete, addnode
+      const treeID = data.treeid;
+      console.log('fine heredasf tree id Fine',treeID)
+      if(treeID === cursor.state.lefttree.treeID){
+        console.log('fine here')
+        cursor.receive_sendtree('L', data);
+      }else if(treeID === cursor.state.righttree.treeID){
+        cursor.receive_sendtree('R', data);
+      }
+    })
+    socket.on('sendNode', function(data){
+      //changetext, changeattr
+      this.applytoTree(data.treeid, data.node);
+      
+    })
+  }
+  
   addTree =()=>{
     var data = {}
     data["room_id"]=this.state.room_id;
@@ -432,7 +433,7 @@ class Main extends Component {
     if (tree_id !== this.state.lefttree.treeID) {
       socket.emit('changeTree', {room_id: this.state.room_id, tree_id: tree_id});
       socket.on('changeTree',function(data){
-        this.recieve_sendtree('L', data);
+        this.receive_sendtree('L', data);
       })
     }
   }
@@ -440,7 +441,7 @@ class Main extends Component {
     if (tree_id !== this.state.righttree.treeID) {
       socket.emit('changeTree', {room_id: this.state.room_id, tree_id: tree_id});
       socket.on('changeTree',function(data){
-        this.recieve_sendtree('R', data);
+        this.receive_sendtree('R', data);
       })
     }
   }
