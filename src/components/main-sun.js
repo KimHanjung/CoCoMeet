@@ -19,7 +19,6 @@ import jsPDF from 'jspdf';
 
 
 const socket = io('http://localhost:4002/board_server');
-
 class Main extends Component {
   constructor(props) {
     super(props);
@@ -123,20 +122,22 @@ class Main extends Component {
     //console.log("inside receive send tree", treeID)
     if(tree_leftright==='L'){
       const left_tree = this.toTreeDataFrom(data.tree, treeID);
-      if(data.treenum === null){
+      console.log("data treenum from server", data.treenum)
+      if(data.treenum === undefined){
         this.setState({lefttree: {treeID: treeID, treeData: left_tree}});
       }else{
         this.setState({treenum: data.treenum, lefttree: {treeID: treeID, treeData: left_tree}});
       }
     }else if(tree_leftright==='R'){
       const right_tree = this.toTreeDataFrom(data.tree, treeID);
-      if(data.treenum === null){
+      if(data.treenum === undefined){
         this.setState({righttree: {treeID: treeID, treeData: right_tree}});
       }else{
         this.setState({treenum: data.treenum, righttree: {treeID: treeID, treeData: right_tree}});
       }
     }
   }
+  
   componentDidMount(){
     let cursor = this;
     // 방 들어왔을 때 실행되는 코드
@@ -147,6 +148,7 @@ class Main extends Component {
     socket.on('addTree', function(data){
       cursor.setState({treenum: data.treenum})
     })
+
     socket.on('sendTree', function(data){
       //move, migrate, sunsapple, delete, addnode
       const treeID = data.treeid;
@@ -168,6 +170,7 @@ class Main extends Component {
   addTree =()=>{
     var data = {}
     data["room_id"]=this.state.room_id;
+    data["channel"]=this.state.channel;
     socket.emit('addTree',data)
   }
   LeftmovedNodeIs = (node_id, prev_tree, prevIndex, nextIndex, prevPath, nextPath) =>{
@@ -180,7 +183,8 @@ class Main extends Component {
       data["room_id"]=this.state.room_id;
       data["treeid"]=this.state.lefttree.treeID;
       data["tree"]=this.toFlatIDDataFrom(this.state.lefttree.treeData);
-      data["node_title"]=this.state.msg_to_block
+      data["node_title"]=this.state.msg_to_block;
+      data["channel"]=this.state.channel;
       socket.emit("sunsApple", data)
     }
     else if (node_id===this.state.lastMoveNodeRight){
@@ -197,6 +201,7 @@ class Main extends Component {
       data["origin_treeid"]=this.state.lefttree.treeID;
       data["target_tree"]=this.toFlatDataFrom(this.state.righttree.treeData);
       data["target_treeid"]=this.state.righttree.treeID;
+      data["channel"]=this.state.channel;
       socket.emit("migrateNode", data);
 
     }
@@ -223,6 +228,7 @@ class Main extends Component {
               data["node_id"]=node_id;
               data["treeid"]=this.state.lefttree.treeID;
               data["tree"]=cur_flat;
+              data["channel"]=this.state.channel;
               socket.emit("deleteNode", data);
             }
             else {
@@ -232,6 +238,7 @@ class Main extends Component {
               data["node_id"]=node_id;
               data["treeid"]=this.state.lefttree.treeID;
               data["tree"]=prev_flat;
+              data["channel"]=this.state.channel;
               socket.emit("moveNode", data);
             }
           }
@@ -250,6 +257,7 @@ class Main extends Component {
             data["node_id"]=node_id;
             data["treeid"]=this.state.lefttree.treeID;
             data["tree"]=cur_flat;
+            data["channel"]=this.state.channel;
             socket.emit("deleteNode", data);
           }
           else {
@@ -259,6 +267,7 @@ class Main extends Component {
             data["node_id"]=node_id;
             data["treeid"]=this.state.lefttree.treeID;
             data["tree"]=prev_flat;
+            data["channel"]=this.state.channel;
             socket.emit("moveNode", data);
           }
         }
@@ -284,6 +293,7 @@ class Main extends Component {
       data["treeid"]=this.state.righttree.treeID;
       data["tree"]=this.toFlatIDDataFrom(this.state.righttree.treeData);
       data["node_title"]=this.state.msg_to_block
+      data["channel"]=this.state.channel;
       socket.emit("sunsApple", data)
     }
     else if (node_id===this.state.lastMoveNodeLeft){
@@ -300,6 +310,7 @@ class Main extends Component {
       data["origin_treeid"]=this.state.righttree.treeID;
       data["target_tree"]=this.toFlatDataFrom(this.state.lefttree.treeData);
       data["target_treeid"]=this.state.lefttree.treeID;
+      data["channel"]=this.state.channel;
       socket.emit("migrateNode", data);
 
     }
@@ -326,6 +337,7 @@ class Main extends Component {
               data["node_id"]=node_id;
               data["treeid"]=this.state.righttree.treeID;
               data["tree"]=cur_flat;
+              data["channel"]=this.state.channel;
               socket.emit("deleteNode", data);
             }
             else {
@@ -335,6 +347,7 @@ class Main extends Component {
               data["node_id"]=node_id;
               data["treeid"]=this.state.righttree.treeID;
               data["tree"]=prev_flat;
+              data["channel"]=this.state.channel;
               socket.emit("moveNode", data);
             }
           }
@@ -353,6 +366,7 @@ class Main extends Component {
             data["node_id"]=node_id;
             data["treeid"]=this.state.righttree.treeID;
             data["tree"]=cur_flat;
+            data["channel"]=this.state.channel;
             socket.emit("deleteNode", data);
           }
           else {
@@ -363,6 +377,7 @@ class Main extends Component {
             data["node_id"]=node_id;
             data["treeid"]=this.state.righttree.treeID;
             data["tree"]=prev_flat;
+            data["channel"]=this.state.channel;
             socket.emit("moveNode", data);
           }
           
@@ -389,15 +404,17 @@ class Main extends Component {
     this.setState({righttree:{treeID: this.state.righttree.treeID, treeData: newtreeData}});
   }
   updateNodeLeft = () => {
+    let cursor = this;
     // addblock
     // left tree 마지막에 "block with id -1" 추가
     var addnode_lefttree = this.state.lefttree.treeData;
     addnode_lefttree = addnode_lefttree.concat(
       [{ node_id: "-1", title: "dummy", color: "cyan", weight: "normal", deco: "none"}]
     )
-    socket.emit("addNode", {room_id: this.state.room_id, tree_id: this.state.lefttree.treeID, tree: this.toFlatDataFrom(addnode_lefttree)});
+    socket.emit("addNode", {channel: cursor.state.channel, room_id: this.state.room_id, tree_id: this.state.lefttree.treeID, tree: this.toFlatDataFrom(addnode_lefttree)});
   }
   updateNodeRight = () => {
+    let cursor = this;
     // addblock
     // left tree 마지막에 "block with id -1" 추가
     var addnode_righttree = this.state.righttree.treeData;
@@ -405,11 +422,11 @@ class Main extends Component {
       [{ node_id: "-1", title: "dummy", color: "cyan", weight: "normal", deco: "none"}]
     )
     
-    socket.emit("addNode", {room_id: this.state.room_id, tree_id: this.state.righttree.treeID, tree: this.toFlatDataFrom(addnode_righttree)});
+    socket.emit("addNode", {channel: cursor.state.channel, room_id: this.state.room_id, tree_id: this.state.righttree.treeID, tree: this.toFlatDataFrom(addnode_righttree)});
   }
   onDropLeft = (tree_id) => {
     if (tree_id !== this.state.lefttree.treeID) {
-      socket.emit('changeTree', {room_id: this.state.room_id, tree_id: tree_id});
+      socket.emit('changeTree', {channel: this.state.channel, room_id: this.state.room_id, tree_id: tree_id});
       let cursor = this;
       socket.on('changeTree',function(data){
         cursor.receive_sendtree('L', data);
@@ -418,7 +435,7 @@ class Main extends Component {
   }
   onDropRight = (tree_id) => {
     if (tree_id !== this.state.righttree.treeID) {
-      socket.emit('changeTree', {room_id: this.state.room_id, tree_id: tree_id});
+      socket.emit('changeTree', {channel: this.state.channel, room_id: this.state.room_id, tree_id: tree_id});
       let cursor = this;
       socket.on('changeTree',function(data){
         cursor.receive_sendtree('R', data);
