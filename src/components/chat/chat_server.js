@@ -125,6 +125,7 @@ function newApple(room_id, tree_id, text, parent) {
         msg = JSON.stringify(msg);
 
         //console.log("merry ", msg);
+        console.log("In newApple, node", newid, "generated")
         pub.publish("merry", msg);
 
     });
@@ -216,28 +217,28 @@ board_server.on('connection', function(socket){
                     var info_l;
                     var info_r;
                     for(var i=0, elem; elem=orderLeft[i]; i++){
-                        var test = elem;
+
                         info_l = "R" + room_id+"-"+elem;
                         r_cli.HMGET(info_l, "node_id","room_id", "tree_id", "title", "parent", "color", "weight", "deco", (err, obj) => {
                             var treeeeee = {"room_id" : obj[1], "node_id" : obj[0], "tree_id" : obj[2], "title" : obj[3], "parent": obj[4], "color" : obj[5], "weight" : obj[6], "deco" : obj[7]};
-                            treeLeft[test] = treeeeee;
+                            treeLeft[obj[0]] = treeeeee;
                             let dic = {};
                             dic["type"] = "b_join";
-                            dic["content"] = test;
+                            dic["content"] = obj[0]; // node_id
                             dic = JSON.stringify(dic);
                             pub.publish("christ", dic);
                         });
                     }
 
                     for(var i=0,elem1; elem1=orderRight[i]; i++){
-                        var test1 = elem1;
+
                         info_r = "R" + room_id+"-"+elem1;
                         r_cli.HMGET(info_r, "node_id","room_id", "tree_id", "title", "parent", "color", "weight", "deco", (err, obj) => {
                             var treeeeee = {"room_id" : obj[1], "node_id" : obj[0], "tree_id" : obj[2], "title" : obj[3], "parent": obj[4], "color" : obj[5], "weight" : obj[6], "deco" : obj[7]};
-                            treeRight[test1] = treeeeee;
+                            treeRight[obj[0]] = treeeeee;
                             let dic1 = {};
                             dic1["type"] = "b_join";
-                            dic1["content"] = test1;
+                            dic1["content"] = obj[0];
                             dic1 = JSON.stringify(dic1);
                             pub.publish("merry", dic1);
 
@@ -291,34 +292,76 @@ board_server.on('connection', function(socket){
 
     socket.on('addNode', function(data){ // room_id, tree_id 새로운 node는 클라에서 id -1이라는 정보가 오며, 안에 내용은 없음. db에 새로운 튜플 생성 요청
         //DB한테 새로운 block추가 요청
-        let tree;
-        console.log("data", data)
+        let tree = {};
         order = getOrder(data.tree); // 여기서 client로부터 order 가져오고
-        console.log("data.tree", data.tree);
         room_id = data.room_id;
         tree_id = data.tree_id;
-        console.log("tree_id", tree_id)
-        //해당하는 노드 정보를 db로 부터 받아와야함. 2020-12-03(이선위 작성)
-        let datatree = data.tree;
-        newApple(room_id, tree_id, "newNode", "NULL");
-        let r_info = "R"+room_id+"_order";
-        order = stringify(order);
 
-        r_cli.hmset(r_info, tree_id, order); // db order update
+        //해당하는 노드 정보를 db로 부터 받아와야함. 2020-12-03(이선위 작성)
+        // let datatree = data.tree; //업데이트 전 트리 데이터(이게 왜 필요한지 모르겠음)
+        newApple(room_id, tree_id, "newNode", "NULL"); // 새로운 노드를 만든다. -> 여기서 apple 신호를 보냄. 다 만들면!
+        let r_info = "R"+room_id+"_order"; // 이거는 order 값 저장하기 위한 거. 순서 상관 없음.
+
+
 
         sub.on('message', (channel, message) => {
             message = JSON.parse(message);
+            let ORDER = order;
+            console.log("order from Client", ORDER);
             if (channel == "merry" && message.type === "apple") { // && message.newid === hmget-1 필요하면 넣기 
+                // 새로운 노드의 아이디를 받아온다
                 let newnode_id = message.newid;
+                console.log("Newnode_id",newnode_id);
+
                 if (newnode_id > 1) {
-                    datatree = datatree.map(cur => cur.node_id==='-1' ? {...cur, node_id: String(newnode_id)} : cur);
-                    console.log("datatree", datatree)
-                    socket.to(data.channel).emit('sendTree', {treeid: tree_id, tree:datatree});
+                    for(var i=0, elem; elem=order[i]; i++){ // 새로운 Order에 있는 원소를 하나씩 보면서 ( -1이 들어가있음 )
+                        if (elem === "-1") {
+                            console.log("found -1 and change to ", newnode_id)
+                            ORDER.splice(i,1,newnode_id);
+                            elem = newnode_id;
+                        }
+                        var test = elem;
+                        info_l = "R" + room_id+"-"+elem; // 원소 정보 받아오기 위한 것
+                        r_cli.HMGET(info_l, "node_id","room_id", "tree_id", "title", "parent", "color", "weight", "deco", (err, obj) => {
+                            var treeeeee = {"room_id" : obj[1], "node_id" : obj[0], "tree_id" : obj[2], "title" : obj[3], "parent": obj[4], "color" : obj[5], "weight" : obj[6], "deco" : obj[7]};
+                            tree[obj[0]] = treeeeee; // 원소를 받아와서 tree{} 에 저장하고
+                            let dic = {}; // 이거는 publish 위한 것
+                            dic["type"] = "a_node"; 
+                            dic["tdata"] = tree;
+                            dic["order"] = ORDER;
+                            dic["len"] = Object.keys(tree).length;
+                            dic = JSON.stringify(dic);
+                            pub.publish("christ", dic); // publish에 a_node, 방금 받아온 노드 번호를 담아서 보낸다.!
+                        });
+                    }
                 }
-                
             }
         })
+
+
+        sub.on("message", (channel, message) => { // 이거는 tree 정보를 다 받아오고나서 실행된다. treedata를 client 전용으로 재배열
+            message = JSON.parse(message);
+
+            //console.log("a_node subscribe", message)
+            if (message.type === "a_node" && message.len === order.length){
+                tree = message.tdata;
+                order = message.order;
+                tree = rearrange(tree, order);
+
+                // order DB update
+                let storder = stringify(order); 
+                r_cli.hmset(r_info, tree_id, storder); 
+                // console.log("before sendTree, treeid :",tree_id, "tree :",tree);
+                // socket emit
+                socket.to(data.channel).emit('sendTree', {treeid: tree_id, tree:tree});            }
+        })
+
+ 
+
+        //             datatree = datatree.map(cur => cur.node_id==='-1' ? {...cur, node_id: String(newnode_id)} : cur);
+      
     });
+
 
     socket.on('deleteNode', function(data){
         //DB2로부터 order_db 받아옴, 삭제 node id:data.node_id
