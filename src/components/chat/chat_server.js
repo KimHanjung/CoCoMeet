@@ -65,15 +65,19 @@ function get_order(room_id, tree_id) {
     else {
         var order;
 
+        console.log("tree_id", tree_id);        
         r_cli.hmget(r_info, tree_id, (err,obj) => {
- 
             console.log('r_order', obj[0])
             order = obj[0].split("");
             order.shift();
             order.pop();
             console.log("getorder",order);
-            
-            return order;
+            let dic = {}
+            dic['tree_id'] = tree_id;
+            dic['order'] = order;
+            dic = JSON.stringify(dic);
+
+            pub.publish("christ", dic);
         });
     }
 }
@@ -192,7 +196,7 @@ board_server.on('connection', function(socket){
                 orderLeft.pop(); // ]
                 orderLeft = orderLeft.filter(i => i !== ',');
 
-                console.log("-------------changed orderLeft",orderLeft)
+                //console.log("-------------changed orderLeft",orderLeft)
                 
                 
 
@@ -204,7 +208,7 @@ board_server.on('connection', function(socket){
                 orderRight.pop();
                 orderRight = orderRight.filter(i => i !== ',');
 
-                console.log("-------------changed orderRight",orderRight)
+                // console.log("-------------changed orderRight",orderRight)
 
 
                 r_cli.hmget("Tnum", room_id, (err,obj) => {
@@ -280,8 +284,27 @@ board_server.on('connection', function(socket){
         let treenum, treeid;
         let room_id = data.room_id;
         r_cli.hmget("TID", room_id, (err, obj) => {
-            treeid = obj;
+            treeid = obj[0];
+            console.log("treeid", treeid)
             newApple(room_id, treeid, "New Block", "NULL"); // 새로운 노드 만듦. 신호 보냈음.
+            /// new apple의 id를 받아서 order를 만들고, db에 업데이트 해야함
+            
+            sub.on("message", (channel, message) => { // 이거는 tree 정보를 다 받아오고나서 실행된다. treedata를 client 전용으로 재배열
+                if (channel === 'merry') {
+                    message = JSON.parse(message);
+                    // console.log(".....message", message);
+                    // console.log("22222222222treeid", treeid)
+                    if (message.type === "apple", message.treeid === treeid) {
+                        let newid = message.newid;
+        
+                        order = "["+newid+"]";
+                        console.log("]]]]]]]]]]]]]]]]]]order", order);
+                        let r_info = "R"+room_id+"_order";
+                        r_cli.hmset(r_info, treeid, order); 
+                        // 어떻게 order 형태를 만든 다음에 update
+                    }
+                }
+            })
             r_cli.HINCRBY("TID", room_id, 1);
             r_cli.HINCRBY("Tnum", room_id, 1);
             r_cli.hmget("Tnum", room_id, (err, obj) => {
@@ -291,7 +314,10 @@ board_server.on('connection', function(socket){
                 board_server.to(data.channel).emit('addTree', {treeid: treeid[0], treenum: treenum[0]});
             })
         })
+
+        
     });
+
 
     socket.on('addNode', function(data){ // room_id, tree_id 새로운 node는 클라에서 id -1이라는 정보가 오며, 안에 내용은 없음. db에 새로운 튜플 생성 요청
         //DB한테 새로운 block추가 요청
@@ -349,8 +375,8 @@ board_server.on('connection', function(socket){
             if (channel === "christ" && message.type === "a_node" && message.len === order.length){
                 tree = message.tdata;
                 order = message.order;
-                console.log("-----------------order", order);
-                console.log(">>>>>>>>>>>>>>>before>>>>", tree)
+                // console.log("-----------------order", order);
+                // console.log(">>>>>>>>>>>>>>>before>>>>", tree)
                 tree = rearrange(tree, order);
                 console.log(">>>>>>>>>>>>>>>>after>>>>", tree)
 
@@ -455,22 +481,66 @@ board_server.on('connection', function(socket){
     });
     socket.on('changeTree', function(data){
         //DB로부터 새로운 tree 요청 data.tree_id
-        order = get_order(data.room_id, data.tree_id);
-        var treee = {};
-        var r_id = data.room_id;
-        var info;
-        var TOTAL = {};
+        let tid = data.tree_id;
+        let rid = data.room_id;
+        let tree = {}
+        get_order(rid, tid);
+        
+        sub.on('message', (channel, message) => {
+            if (channel === "christ") {
+                let msg = JSON.parse(message);
 
-        //for문 고쳐야한다
-        for (var elem in order) {
-            info = "R" + r_id+"-"+elem;
-            r_cli.HMGET(String(info), "node_id","room_id", "tree_id", "title", "parent", "color", "weight", "deco", (err, obj) => {
-                var treeeeee = {"room_id" : obj[1], "node_id" : obj[0], "tree_id" : obj[2], "title" : obj[3], "parent": obj[4], "color" : obj[5], "weight" : obj[6], "deco" : obj[7]};
-                TOTAL[elem] = treeeeee;
-            });
-        }
-        var reTree = rearrange(TOTAL, order);
-        board_server.to(data.channel).emit('changeTree', {treeid: treeid, tree:reTree});
+                if (msg.tree_id === tid) {
+                    order = msg.order;
+                    for (var i = 0, elem; elem = order[i]; i++) {
+                        var info = "R"+rid+"-"+elem;
+                        r_cli.HMGET(info, "node_id","room_id", "tree_id", "title", "parent", "color", "weight", "deco", (err, obj) => {
+                            var treeeeee = {"room_id" : obj[1], "node_id" : obj[0], "tree_id" : obj[2], "title" : obj[3], "parent": obj[4], "color" : obj[5], "weight" : obj[6], "deco" : obj[7]};
+                            tree[elem] = treeeeee;
+                            let dic = {};
+                            dic["type"] = "cTree";
+                            dic["content"] = obj[0];
+                            dic["treedata"] = tree;
+                            dic["order"] = order;
+                            dic["len"] = Object.keys(tree).length;
+                            dic = JSON.stringify(dic);
+                            pub.publish("merry", dic);
+                        })
+                    }
+                }
+            }
+        });
+
+        sub.on('message', (channel, message)=> {
+            if (channel === "merry") {
+                let msg = JSON.parse(message);
+                if (msg.type === "cTree" && msg.order.length === msg.len){
+                    tree = msg.treedata;
+                    order = msg.order;
+                    tree = rearrange(tree, order);
+                    //console.log("changeTree:",)
+                    board_server.to(data.channel).emit('changeTree', {treeid: tid, tree:tree});
+
+                }
+            }
+        })
+
+
+        // var treee = {};
+        // var r_id = data.room_id;
+        // var info;
+        // var TOTAL = {};
+
+        // //for문 고쳐야한다 선위, 창열, 승연, 열일중, ㅠㅠㅠ
+        // for (var elem in order) {
+        //     info = "R" + r_id+"-"+elem;
+        //     r_cli.HMGET(String(info), "node_id","room_id", "tree_id", "title", "parent", "color", "weight", "deco", (err, obj) => {
+        //         var treeeeee = {"room_id" : obj[1], "node_id" : obj[0], "tree_id" : obj[2], "title" : obj[3], "parent": obj[4], "color" : obj[5], "weight" : obj[6], "deco" : obj[7]};
+        //         TOTAL[elem] = treeeeee;
+        //     });
+        // }
+        // var reTree = rearrange(TOTAL, order);
+        // board_server.to(data.channel).emit('changeTree', {treeid: treeid, tree:reTree});
     });
 
     socket.on('migrateNode', function(data){

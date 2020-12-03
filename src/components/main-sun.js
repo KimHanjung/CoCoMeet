@@ -427,6 +427,7 @@ class Main extends Component {
     socket.emit("addNode", {channel: cursor.state.channel, room_id: this.state.room_id, tree_id: this.state.righttree.treeID, tree: this.toFlatDataFrom(addnode_righttree)});
   }
   onDropLeft = (tree_id) => {
+    console.log("checking...",tree_id)
     if (tree_id !== this.state.lefttree.treeID) {
       socket.emit('changeTree', {channel: this.state.channel, room_id: this.state.room_id, tree_id: tree_id});
       let cursor = this;

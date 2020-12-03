@@ -88,9 +88,9 @@ const toolsNodeSpec = {
     drop(props, monitor){
         const item = monitor.getItem();
         console.log(monitor.getDropResult());
-        console.log(item);
-        props.onDrop(item);
-        return item;
+        //console.log(item);
+        props.onDrop(item.treeId);
+        return item.treeId;
     }
 };
 const toolsNodeCollect = (connect, monitor) => ({
