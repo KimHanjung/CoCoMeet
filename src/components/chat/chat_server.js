@@ -45,32 +45,19 @@ r_cli.on("error", function(err) {
 
 // default
 r_cli.set("Rnum", 0) // room 개수 저장
-r_cli.hmset("TID", 0, 0); // room별로 tree 개수 저장. room_id : tree_num
-r_cli.hmset("NID", 0, 0); // room별로 node 개수 저장. room_id : node_num
+r_cli.hmset("Tnum", 0, 0);
+r_cli.hmset("Nnum", 0, 0)
+r_cli.hmset("TID", 0, 0); // room별로 tree id 누적. room_id : tree_num
+r_cli.hmset("NID", 0, 0); // room별로 node id 누적. room_id : node_num
 r_cli.hmset("RCode","zxcvbnm", 999);
 r_cli.hmset("RName",999,'cocococococo');
 
-function newRoom(roomCode, roomName) {
-    // 생성될 room의 id
-    var id;
-    r_cli.get("Rnum", (err, obj) => {
-        id = obj;
-        r_cli.hmset("RCode", roomCode, String(id));
-        r_cli.hmset("RName", id, roomName);
-    });
-    r_cli.incr("Rnum");
-
-    var tree_0 = newTree(room_id);
-    var tree_1 = newTree(room_id);
-
-    return id;
-}
 
 // tree 정보는 Key는 R0-0 이런식으로, 해당 value는 hash 형태로 저장한다
 function get_order(room_id, tree_id) {
     //console.log("room_id", room_id, "tree_id", tree_id)
     var r_info = "R" + String(room_id)+"_order";
-    console.log(r_info)
+    console.log("r_info" , r_info)
     if (r_cli.EXISTS(r_info) == 0) {
         console.log("room does not exist")
         return null;
@@ -80,7 +67,7 @@ function get_order(room_id, tree_id) {
 
         r_cli.hmget(r_info, tree_id, (err,obj) => {
  
-            console.log(obj[0])
+            console.log('r_order', obj[0])
             order = obj[0].split("");
             order.shift();
             order.pop();
@@ -121,6 +108,7 @@ function newApple(room_id, tree_id, text, parent) {
         
         r_cli.hmset(String(info), "room_id", String(room_id), "tree_id", String(tree_id), "node_id", String(obj), "title", text , "parent", String(parent), "color", "blue", "deco", "normal", "weight", "normal");
         r_cli.HINCRBY("NID", room_id, 1); //해당 room_num의 node 개수 +1
+        r_cli.HINCRBY("Nnum", room_id, 1);
         let msg = {"type" : "apple", "newid" : newid, "treeid" : tree_id};
         msg = JSON.stringify(msg);
 
@@ -219,9 +207,9 @@ board_server.on('connection', function(socket){
                 console.log("-------------changed orderRight",orderRight)
 
 
-                r_cli.hmget("TID", room_id, (err,obj) => {
+                r_cli.hmget("Tnum", room_id, (err,obj) => {
                     console.log("treenum", obj);
-                    treenum = obj;
+                    treenum = obj[0];
 
                     var info_l;
                     var info_r;
@@ -287,17 +275,22 @@ board_server.on('connection', function(socket){
         socket.leave(data.channel);
         console.log(data.channel);
     });
+
     socket.on('addTree', function(data){ 
-
-        //DB한테 새로운 트리 생성 요청 -o
-        //트리 개수 요청 -o
         let treenum, treeid;
-        treeid = newTree(data.room_id);
-        treenum = getTreeNum(data.room_id);
-
-        socket.to(data.channel).emit('addTree', {treeid: treeid, treenum: treenum});
-
-        console.log(data.tree);
+        let room_id = data.room_id;
+        r_cli.hmget("TID", room_id, (err, obj) => {
+            treeid = obj;
+            newApple(room_id, treeid, "New Block", "NULL"); // 새로운 노드 만듦. 신호 보냈음.
+            r_cli.HINCRBY("TID", room_id, 1);
+            r_cli.HINCRBY("Tnum", room_id, 1);
+            r_cli.hmget("Tnum", room_id, (err, obj) => {
+                treenum = obj;
+                console.log("before addTree, treeid:", treeid[0], "treenum:",treenum[0])
+                console.log("datachannel", data.channel)
+                board_server.to(data.channel).emit('addTree', {treeid: treeid[0], treenum: treenum[0]});
+            })
+        })
     });
 
     socket.on('addNode', function(data){ // room_id, tree_id 새로운 node는 클라에서 id -1이라는 정보가 오며, 안에 내용은 없음. db에 새로운 튜플 생성 요청
@@ -351,9 +344,9 @@ board_server.on('connection', function(socket){
 
         sub.on("message", (channel, message) => { // 이거는 tree 정보를 다 받아오고나서 실행된다. treedata를 client 전용으로 재배열
             message = JSON.parse(message);
-
+        
             //console.log("a_node subscribe", message)
-            if (message.type === "a_node" && message.len === order.length){
+            if (channel === "christ" && message.type === "a_node" && message.len === order.length){
                 tree = message.tdata;
                 order = message.order;
                 console.log("-----------------order", order);
@@ -467,6 +460,8 @@ board_server.on('connection', function(socket){
         var r_id = data.room_id;
         var info;
         var TOTAL = {};
+
+        //for문 고쳐야한다
         for (var elem in order) {
             info = "R" + r_id+"-"+elem;
             r_cli.HMGET(String(info), "node_id","room_id", "tree_id", "title", "parent", "color", "weight", "deco", (err, obj) => {
@@ -475,7 +470,7 @@ board_server.on('connection', function(socket){
             });
         }
         var reTree = rearrange(TOTAL, order);
-        socket.to(data.channel).emit('changeTree', {treeid: treeid, tree:reTree});
+        board_server.to(data.channel).emit('changeTree', {treeid: treeid, tree:reTree});
     });
 
     socket.on('migrateNode', function(data){
@@ -551,6 +546,7 @@ channel_server.on('connection', function(socket) {
                     })
                     
                     r_cli.HINCRBY("TID", room_id, 1); //room에 있는 트리 개수 ++ => 1이 됨
+                    r_cli.HINCRBY("Tnum", room_id, 1);
 
                     // 두 번째 트리를 만들기 위한 과정
                     r_cli.hmget("TID", room_id, (err, obj) => {
@@ -571,6 +567,7 @@ channel_server.on('connection', function(socket) {
                                         let c = update_order(room_id, msg.treeid, ord);
                                         if (c) {
                                             r_cli.HINCRBY("TID", room_id, 1);
+                                            r_cli.HINCRBY("Tnum", room_id, 1);
                                             console.log("channel create", code, room_id,data.channel)
                                             callback(code, room_id,data.channel);
                                             channel_names[code] = data.channel;

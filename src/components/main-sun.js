@@ -146,6 +146,7 @@ class Main extends Component {
     socket.emit('channelJoin',{channel: cursor.state.channel, room_id: cursor.state.room_id})
     
     socket.on('addTree', function(data){
+      console.log("에드트리 제발 성공하자 ㅠㅠㅠㅠ", data);
       cursor.setState({treenum: data.treenum})
     })
 
@@ -171,6 +172,7 @@ class Main extends Component {
     var data = {}
     data["room_id"]=this.state.room_id;
     data["channel"]=this.state.channel;
+    console.log("서니 add tree", data);
     socket.emit('addTree',data)
   }
   LeftmovedNodeIs = (node_id, prev_tree, prevIndex, nextIndex, prevPath, nextPath) =>{
