@@ -122,7 +122,7 @@ class Main extends Component {
     //console.log("inside receive send tree", treeID)
     if(tree_leftright==='L'){
       const left_tree = this.toTreeDataFrom(data.tree, treeID);
-      console.log("data treenum from server", data.treenum)
+      //console.log("data treenum from server", data.treenum)
       if(data.treenum === undefined){
         this.setState({lefttree: {treeID: treeID, treeData: left_tree}});
       }else{
@@ -146,16 +146,15 @@ class Main extends Component {
     socket.emit('channelJoin',{channel: cursor.state.channel, room_id: cursor.state.room_id})
     
     socket.on('addTree', function(data){
-      console.log("에드트리 제발 성공하자 ㅠㅠㅠㅠ", data);
       cursor.setState({treenum: data.treenum})
     })
-
+    
     socket.on('sendTree', function(data){
       //move, migrate, sunsapple, delete, addnode
       const treeID = data.treeid;
-      console.log('fine heredasf tree id Fine',treeID)
+      //console.log('fine heredasf tree id Fine',treeID)
       if(treeID === cursor.state.lefttree.treeID){
-        console.log('fine here')
+        //console.log('fine here')
         cursor.receive_sendtree('L', data);
       }else if(treeID === cursor.state.righttree.treeID){
         cursor.receive_sendtree('R', data);
@@ -427,23 +426,49 @@ class Main extends Component {
     socket.emit("addNode", {channel: cursor.state.channel, room_id: this.state.room_id, tree_id: this.state.righttree.treeID, tree: this.toFlatDataFrom(addnode_righttree)});
   }
   onDropLeft = (tree_id) => {
-    console.log("checking...",tree_id)
+    console.log("left drop...",tree_id)
     if (tree_id !== this.state.lefttree.treeID) {
+      // let ttree = this.state.lefttree
+      // ttree['treeID'] = tree_id
+      // this.setState({lefttree: ttree})
       socket.emit('changeTree', {channel: this.state.channel, room_id: this.state.room_id, tree_id: tree_id});
       let cursor = this;
+      /////////////////////////////////////////////한중한테 emit한 cli한테 다시 보내기
       socket.on('changeTree',function(data){
-        cursor.receive_sendtree('L', data);
+        console.log("무조건 실행1", tree_id)
+        console.log("무조건 실행11", data.treeid)
+        if(data.treeid === tree_id){
+          console.log("left main data change tree", data)
+          cursor.receive_sendtree('L', data);
+        }else{
+          console.log("else1")
+        }
       })
     }
   }
   onDropRight = (tree_id) => {
+    console.log("right drop...",tree_id) 
     if (tree_id !== this.state.righttree.treeID) {
+      // let ttree = this.state.righttree
+      // ttree['treeID'] = tree_id
+      // this.setState({righttree: ttree})
       socket.emit('changeTree', {channel: this.state.channel, room_id: this.state.room_id, tree_id: tree_id});
       let cursor = this;
-      socket.on('changeTree',function(data){
-        cursor.receive_sendtree('R', data);
+      /////////////////////////////////////////////한중한테 emit한 cli한테 다시 보내기
+      socket.on('changeTree',function(data){ 
+        console.log("무조건 실행2", tree_id) 
+        console.log("무조건 실행22", data.treeid)
+        if(data.treeid === tree_id){
+          console.log("right main data change tree", data)
+          cursor.receive_sendtree('R', data);
+        }else{
+          console.log("else2")
+        }
       })
     }
+  }
+  dropFunction=(data)=>{
+    
   }
   getAttrToBoard = (get_attr, msg) => {
     //data = {tree_id_list: {1: [1,3,4], 3:[6,2,5,7]}, color: "cyan"}

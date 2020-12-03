@@ -71,10 +71,12 @@ function get_order(room_id, tree_id) {
             order = obj[0].split("");
             order.shift();
             order.pop();
+            order = order.filter(i => i !== ',');
             console.log("getorder",order);
             let dic = {}
             dic['tree_id'] = tree_id;
             dic['order'] = order;
+            dic['type']="gord";
             dic = JSON.stringify(dic);
 
             pub.publish("christ", dic);
@@ -98,7 +100,7 @@ function getTreeNum(room_id) {
 // 들어갈 트리가 있는 경우. Node만 업데이트 해 주면 된다.
 
 function newApple(room_id, tree_id, text, parent) {
-    
+    console.log('newApple entered with room_id :', room_id, "tree_id :", tree_id);
     var newid;// = [999];
     r_cli.hmget("NID", room_id, (err, obj) => {
         if (err) {
@@ -286,7 +288,8 @@ board_server.on('connection', function(socket){
         r_cli.hmget("TID", room_id, (err, obj) => {
             treeid = obj[0];
             console.log("treeid", treeid)
-            newApple(room_id, treeid, "New Block", "NULL"); // 새로운 노드 만듦. 신호 보냈음.
+            let cc = "Tree: "+treeid+" New Block"
+            newApple(room_id, treeid, cc, "NULL"); // 새로운 노드 만듦. 신호 보냈음.
             /// new apple의 id를 받아서 order를 만들고, db에 업데이트 해야함
             
             sub.on("message", (channel, message) => { // 이거는 tree 정보를 다 받아오고나서 실행된다. treedata를 client 전용으로 재배열
@@ -298,7 +301,7 @@ board_server.on('connection', function(socket){
                         let newid = message.newid;
         
                         order = "["+newid+"]";
-                        console.log("]]]]]]]]]]]]]]]]]]order", order);
+                        //console.log("]]]]]]]]]]]]]]]]]]order", order);
                         let r_info = "R"+room_id+"_order";
                         r_cli.hmset(r_info, treeid, order); 
                         // 어떻게 order 형태를 만든 다음에 update
@@ -310,7 +313,6 @@ board_server.on('connection', function(socket){
             r_cli.hmget("Tnum", room_id, (err, obj) => {
                 treenum = obj;
                 console.log("before addTree, treeid:", treeid[0], "treenum:",treenum[0])
-                console.log("datachannel", data.channel)
                 board_server.to(data.channel).emit('addTree', {treeid: treeid[0], treenum: treenum[0]});
             })
         })
@@ -325,9 +327,7 @@ board_server.on('connection', function(socket){
         order = getOrder(data.tree); // 여기서 client로부터 order 가져오고
         room_id = data.room_id;
         tree_id = data.tree_id;
-
-        //해당하는 노드 정보를 db로 부터 받아와야함. 2020-12-03(이선위 작성)
-        // let datatree = data.tree; //업데이트 전 트리 데이터(이게 왜 필요한지 모르겠음)
+        
         newApple(room_id, tree_id, "newNode", "NULL"); // 새로운 노드를 만든다. -> 여기서 apple 신호를 보냄. 다 만들면!
         let r_info = "R"+room_id+"_order"; // 이거는 order 값 저장하기 위한 거. 순서 상관 없음.
 
@@ -490,13 +490,13 @@ board_server.on('connection', function(socket){
             if (channel === "christ") {
                 let msg = JSON.parse(message);
 
-                if (msg.tree_id === tid) {
+                if (msg.tree_id === tid && msg.type === "gord") {
                     order = msg.order;
                     for (var i = 0, elem; elem = order[i]; i++) {
                         var info = "R"+rid+"-"+elem;
                         r_cli.HMGET(info, "node_id","room_id", "tree_id", "title", "parent", "color", "weight", "deco", (err, obj) => {
                             var treeeeee = {"room_id" : obj[1], "node_id" : obj[0], "tree_id" : obj[2], "title" : obj[3], "parent": obj[4], "color" : obj[5], "weight" : obj[6], "deco" : obj[7]};
-                            tree[elem] = treeeeee;
+                            tree[obj[0]] = treeeeee;
                             let dic = {};
                             dic["type"] = "cTree";
                             dic["content"] = obj[0];
@@ -517,8 +517,12 @@ board_server.on('connection', function(socket){
                 if (msg.type === "cTree" && msg.order.length === msg.len){
                     tree = msg.treedata;
                     order = msg.order;
+                    console.log(">>>>>>>>order", order)
+                    //console.log(">>>>>before tree", tree);
                     tree = rearrange(tree, order);
-                    //console.log("changeTree:",)
+                    // console.log(">>>>>>>>after tree", tree)
+                    // console.log("changeTree:",data.channel)
+                    // console.log("changeTree", tree)
                     board_server.to(data.channel).emit('changeTree', {treeid: tid, tree:tree});
 
                 }
