@@ -262,6 +262,7 @@ board_server.on('connection', function(socket){
                             if (channel === "merry" && message.content === orderRight[orderRight.length-1]){
                                 treeRight = rearrange(message.treedata, orderRight);
                                 board_server.to(data.channel).emit('sendTree', {treenum:treenum, treeid: 1, tree:treeRight});
+                                
                             }
                         }
                     })
@@ -521,10 +522,11 @@ board_server.on('connection', function(socket){
                     //console.log(">>>>>before tree", tree);
                     tree = rearrange(tree, order);
                     // console.log(">>>>>>>>after tree", tree)
-                    // console.log("changeTree:",data.channel)
-                    // console.log("changeTree", tree)
-                    board_server.to(data.channel).emit('changeTree', {treeid: tid, tree:tree});
-
+                    //board_server.to(data.channel).emit('changeTree', {treeid: tid, tree:tree});
+                    //console.log("서니서니", socket)
+                    console.log("서니서니2", socket.id)
+                    //board_server.to(socket.id).emit('changeTree', {treeid: tid, tree:tree});
+                    socket.emit('changeTree', {treeid: tid, tree:tree});
                 }
             }
         })
