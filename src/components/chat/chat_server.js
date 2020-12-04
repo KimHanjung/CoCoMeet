@@ -100,7 +100,7 @@ function getTreeNum(room_id) {
 // 들어갈 트리가 있는 경우. Node만 업데이트 해 주면 된다.
 
 function newApple(room_id, tree_id, text, parent) {
-    console.log('newApple entered with room_id :', room_id, "tree_id :", tree_id);
+    //console.log('newApple entered with room_id :', room_id, "tree_id :", tree_id);
     var newid;// = [999];
     r_cli.hmget("NID", room_id, (err, obj) => {
         if (err) {
@@ -484,6 +484,7 @@ board_server.on('connection', function(socket){
         //DB로부터 새로운 tree 요청 data.tree_id
         let tid = data.tree_id;
         let rid = data.room_id;
+        //console.log("server_changeTree !! tid", tid, "rid", rid)
         let tree = {}
         get_order(rid, tid);
         
@@ -492,7 +493,8 @@ board_server.on('connection', function(socket){
                 let msg = JSON.parse(message);
 
                 if (msg.tree_id === tid && msg.type === "gord") {
-                    order = msg.order;
+                    // console.log(">>>>>>>>>>>>>>>>>>>>>CHRIST GORD, msg : ", msg);
+                    order = msg.order; 
                     for (var i = 0, elem; elem = order[i]; i++) {
                         var info = "R"+rid+"-"+elem;
                         r_cli.HMGET(info, "node_id","room_id", "tree_id", "title", "parent", "color", "weight", "deco", (err, obj) => {
@@ -506,6 +508,7 @@ board_server.on('connection', function(socket){
                             dic["len"] = Object.keys(tree).length;
                             dic = JSON.stringify(dic);
                             pub.publish("merry", dic);
+                            
                         })
                     }
                 }
@@ -516,17 +519,18 @@ board_server.on('connection', function(socket){
             if (channel === "merry") {
                 let msg = JSON.parse(message);
                 if (msg.type === "cTree" && msg.order.length === msg.len){
+                    ///////////선위 고쳐야함 2번 실행됌
                     tree = msg.treedata;
                     order = msg.order;
-                    console.log(">>>>>>>>order", order)
+                    // console.log(">>>>>>>>order", order)
                     //console.log(">>>>>before tree", tree);
                     tree = rearrange(tree, order);
-                    // console.log(">>>>>>>>after tree", tree)
+                    //console.log(">>>>>>>>after tree", tree)
                     //board_server.to(data.channel).emit('changeTree', {treeid: tid, tree:tree});
                     //console.log("서니서니", socket)
-                    console.log("서니서니2", socket.id)
-                    //board_server.to(socket.id).emit('changeTree', {treeid: tid, tree:tree});
-                    socket.emit('changeTree', {treeid: tid, tree:tree});
+                    //console.log("서니서니2", socket.id)
+                    board_server.to(socket.id).emit('changeTree', {treeid: (tree[0].tree_id)*1, tree:tree});
+
                 }
             }
         })
