@@ -31,6 +31,7 @@ const sub = redis.createClient(6379, "localhost");
 
 sub.subscribe("merry");
 sub.subscribe('christ');
+sub.subscribe("mas");
 
 
 r_cli.on("error", function(err) {
@@ -150,6 +151,10 @@ function delBlock(room_id, node_id) {
 function editAttr(room_id, node_id, attr, content) {
     var target = "R" + room_id + "-" + node_id;
     r_cli.hmset(target, attr, content);
+    let dic = {};
+    dic["type"] = "edt";
+    dic["node_id"] = node_id;
+    pub.publish("mas", dic);
 }
 
 
@@ -298,7 +303,7 @@ board_server.on('connection', function(socket){
                     message = JSON.parse(message);
                     // console.log(".....message", message);
                     // console.log("22222222222treeid", treeid)
-                    if (message.type === "apple", message.treeid === treeid) {
+                    if (message.type === "apple" && message.treeid === treeid) {
                         let newid = message.newid;
         
                         order = "["+newid+"]";
@@ -325,6 +330,7 @@ board_server.on('connection', function(socket){
     socket.on('addNode', function(data){ // room_id, tree_id 새로운 node는 클라에서 id -1이라는 정보가 오며, 안에 내용은 없음. db에 새로운 튜플 생성 요청
         //DB한테 새로운 block추가 요청
         let tree = {};
+        
         order = getOrder(data.tree); // 여기서 client로부터 order 가져오고
         room_id = data.room_id;
         tree_id = data.tree_id;
@@ -440,22 +446,104 @@ board_server.on('connection', function(socket){
 
     socket.on('sunsApple', function(data){ // 클라에서 sunsapple의 node_id는 -1로 전달
         //db1로 sunsApple node의 정보들 전달 -o , flatdata로부터 order 추출, db1로부터 sunsapple id 얻음(apple_id) -o
-        let apple_id = newApple(data.room_id, data.tree_id, data.text);
+        console.log(">>>>>>>>>>>>>>>>>>>>>>>data", data);
+        rid = data.room_id;
+        tid = data.tree_id;
+        txt = data.node_title;
+        par = data.node_parent;
 
-        let order = getOrder(data.tree);
-        order[order.indexOf('-1')] = apple_id;
-        let changeParent = data.tree.reduce((nodes, cur) => {
-            if(cur.parent==='-1')
-                nodes.push(cur.node_id);
-        }, []);
-        //db1로 changeParent의 parent들 apple_id로 변경 -o
-        for (var elem in changeParent) {
-            editAttr(data.room_id, elem, "parent", apple_id);
-        }
-        //db2로 order 업데이트 -o
-        update_order(data.room_id, data.tree_id, String(order));
+        let tree = {};
 
-        socket.to(data.channel).emit('sendTree', {treeid: treeid, tree:data.tree});
+        newApple(rid, tid, txt, par); // 먼저 새로운 노드를 만든다.
+        // return으로 새로운 아이디를 보내주고, 트리 아이디도 보내줄 거야.
+        // type : apple, newid : newid, treeid : tree_id
+        let order = getOrder(data.tree); // 오더를 받아와. 이건 client로부터
+        console.log("~~~~~~~~~~~~~~~getOrder", order);
+
+
+        sub.on("message", (channel, message) => { // 이거는 tree 정보를 다 받아오고나서 실행된다. treedata를 client 전용으로 재배열
+            if (channel === 'merry') {
+                message = JSON.parse(message);
+                console.log("hey ho ")
+
+                if (message.type === "apple" && message.treeid === tid) {
+                    console.log(" apple done ")
+                    let apple_id = message.newid;
+
+                    // let changeParent = data.tree.reduce((nodes, cur) => { // changeParent 해야하는 애들
+                    //     if(cur.parent==='-1')
+                    //         nodes.push(cur.node_id);
+                    // }, []);
+
+                    order[order.indexOf('-1')] = apple_id; // order -1로 되어있는 거 apple_id로 업데이트. apple_id를 미리 받아서 설정해둬야 한다.
+
+                    // parent update 
+
+                    console.log("AFTER -1 change", order)
+
+                    // if (changeParent) {
+                    //     for (var i = 0, elem; elem = changeParent[i]; i++) {
+                    //         editAttr(rid, elem, "parent", apple_id);
+                    //     }
+                    // }
+                    
+                    var r_info = "R"+String(rid)+"_order";
+                    let storder = "["+order.map(i=>parseInt(i)).toString()+"]";
+                    
+                    r_cli.hmset(r_info, tid, storder);
+                
+                    
+
+                    for (var i = 0, ele; ele = order[i]; i++) {
+                        var info = "R"+rid+"-"+ele;
+                        r_cli.HMGET(info, "node_id","room_id", "tree_id", "title", "parent", "color", "weight", "deco", (err, obj) => {
+                            var treeeeee = {"room_id" : obj[1], "node_id" : obj[0], "tree_id" : obj[2], "title" : obj[3], "parent": obj[4], "color" : obj[5], "weight" : obj[6], "deco" : obj[7]};
+                            tree[obj[0]] = treeeeee;
+                            let dic = {};
+                            dic["type"] = "sapple";
+                            dic["content"] = obj[0];
+                            dic["treedata"] = tree;
+                            dic["order"] = order;
+                            dic["len"] = Object.keys(tree).length;
+                            dic = JSON.stringify(dic);
+                            pub.publish("christ", dic);
+                            
+                        })
+                    }
+                            
+                        
+                    
+                    
+                }
+            }
+        })
+
+        sub.on("message", (channel, message) => { // 이거는 tree 정보를 다 받아오고나서 실행된다. treedata를 client 전용으로 재배열
+            message = JSON.parse(message);
+            
+            //console.log("a_node subscribe", message)
+            if (channel === "christ" && message.type === "sapple" && message.len === order.length){
+                tree = message.treedata;
+                order = message.order;
+                // console.log("-----------------order", order);
+                // console.log(">>>>>>>>>>>>>>>before>>>>", tree)
+                tree = rearrange(tree, order);
+                console.log(">>>>>>>>>>>>>>>>after>>>>", tree)
+
+                // order DB update
+                // let storder = "["+order.map(i=>parseInt(i)).toString()+"]";
+                // a=['0','1','2']
+                // b=a.map(i=>parseInt(i)).toString()
+                // b="[0,1,2]"
+ 
+                  
+                console.log("~~~~~~~~~~~~~~~before sendTree, treeid", tid, "tree", tree);
+
+                board_server.to(data.channel).emit('sendTree', {treeid: tid, tree:tree});        
+            }
+        })
+
+
     });
 
     socket.on('changeText', function(data) {

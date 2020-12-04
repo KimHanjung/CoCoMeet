@@ -138,12 +138,12 @@ class BoardInternal extends Component {
     render() {
         const { connectDropTarget, hovered } = this.props;
         const backgroundColor = hovered ? 'lightyellow' : 'white';
-        const getNodeKey = ({ node: {id}}) => id;
+        const getNodeKey = ({ node: {node_id}}) => node_id;
         const recordCall = (name, args) => {
             //console.log(`${name} called with tree id ${this.props.tree.treeID} with arguments:`, args);
             //console.log('left', this.state.treeData)
             //console.log(this.props.tree.treeID, this.state.treeData)
-            this.props.movedNodeIs(args.node.id, this.state.prevtreeData, args.prevTreeIndex, args.nextTreeIndex, args.prevPath, args.nextPath);
+            this.props.movedNodeIs(args.node.node_id, this.state.prevtreeData, args.prevTreeIndex, args.nextTreeIndex, args.prevPath, args.nextPath);
             
         };
         const { lastMovePrevPath, lastMoveNextPath, lastMoveNode } = this.state;
@@ -170,27 +170,29 @@ class BoardInternal extends Component {
                             var reviseColor;
                             var reviseDeco;
                             var reviseWeight;
+                            reviseDeco = "underline";
+                            reviseWeight = 'normal';
                             reviseColor = 'cyan';
-                            if(node.id === "1"){
-                                reviseColor = 'yellow';
-                                reviseDeco = 'line-through';
-                                reviseWeight = 'bold';
-                            }else if(node.id === "2"){
-                                reviseColor = 'blue'
-                                reviseDeco = 'underline';
-                                reviseWeight = 'normal';
-                            }else if(node.id === "9"){
-                                reviseColor = 'red';
-                                reviseDeco = 'overline';
-                                reviseWeight = 'normal';
-                            }else{
-                                reviseColor = 'cyan';
-                                reviseWeight = 'normal';
-                            }
+                            // if(node.node_id === "1"){
+                            //     reviseColor = 'yellow';
+                            //     reviseDeco = 'line-through';
+                            //     reviseWeight = 'bold';
+                            // }else if(node.node_id === "2"){
+                            //     reviseColor = 'blue'
+                            //     reviseDeco = 'underline';
+                            //     reviseWeight = 'normal';
+                            // }else if(node.node_id === "9"){
+                            //     reviseColor = 'red';
+                            //     reviseDeco = 'overline';
+                            //     reviseWeight = 'normal';
+                            // }else{
+                            //     reviseColor = 'cyan';
+                            //     reviseWeight = 'normal';
+                            // }
                             
                             return {
                                 
-                                buttons:[(<input class="mr-6" type="checkbox" onClick={this.handleChecked} value={node.id} ></input>)],
+                                buttons:[(<input class="mr-6" type="checkbox" onClick={this.handleChecked} value={node.node_id} ></input>)],
                                 style:{
                                     backgroundColor: `${reviseColor}`,
                                     border: `1px solid ${reviseColor}`,
@@ -198,7 +200,7 @@ class BoardInternal extends Component {
                                     textDecoration: `${reviseDeco}`,
                                     fontSize: `15px`,
                                     fontWeight: `${reviseWeight}`,
-                                    fontStyle: `${FontWgt[2]}`,
+                                    fontStyle: `${FontWgt[0]}`,
                                 }
                             };
                         }}
@@ -231,10 +233,10 @@ class BoardInternal extends Component {
                         </a>
                         </TrashNodeComponent>
                     </div>
-                    <UExternalComponent node={{ id: -1, title: this.props.msg_to_block }} />
+                    <UExternalComponent node={{ node_id: '-1', title: this.props.msg_to_block }} />
                     <div>{lastMoveNode && (
           <div>
-            Node &quot;{lastMoveNode.id}&quot; moved to path [{lastMoveNextPath}].
+            Node &quot;{lastMoveNode.node_id}&quot; moved to path [{lastMoveNextPath}].
           </div>
         )}</div>
                 </div>

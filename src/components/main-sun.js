@@ -66,7 +66,7 @@ class Main extends Component {
     this.receive_sendtree = this.receive_sendtree.bind(this);
     this.getAttrToBoard = this.getAttrToBoard.bind(this);
     this.getListFromBoard = this.getListFromBoard.bind(this);
-
+    this.find_parent_of = this.find_parent_of.bind(this);
     this.applytoTree = this.applytoTree.bind(this);
   }
 
@@ -91,7 +91,7 @@ class Main extends Component {
 
   toTreeDataFrom=(flat, tree_id)=>{
     return getTreeFromFlatData({
-      flatData: flat.map(node => ({ ...node, node_id: node.node_id,
+      flatData: flat.map(node => ({ ...node, node_id: node.node_id, 
         title: <EditableText modify={this.modifyState} tree_id={tree_id} node_id={node.node_id} initialValue={node.title}/>, 
                           color: node.color, weight: node.weight, deco: node.deco })),
       getKey: node => node.node_id,
@@ -100,6 +100,7 @@ class Main extends Component {
     });
   }
   toFlatDataFrom=(tree)=>{
+    //console.log(tree)
     return getFlatDataFromTree({
       treeData: tree,
       getNodeKey: ({ node }) => node.node_id, 
@@ -142,6 +143,10 @@ class Main extends Component {
         this.setState({treenum: data.treenum, righttree: {treeID: treeID, treeData: right_tree}});
       }
     }
+  }
+
+  find_parent_of(id,flat){
+    return flat.find(i => i.node_id === id).parent
   }
   
   componentDidMount(){
@@ -201,16 +206,18 @@ class Main extends Component {
   }
   LeftmovedNodeIs = (node_id, prev_tree, prevIndex, nextIndex, prevPath, nextPath) =>{
     console.log("LeftmovedNodeIS")
-    if (node_id === -1) {
+    if (node_id === '-1') {
       //suns-apple
       // title : this.state.msg_to_block
       console.log("left suns apple")
       var data={};
+      var send_tree_flat = this.toFlatDataFrom(this.state.lefttree.treeData);
       data["room_id"]=this.state.room_id;
-      data["treeid"]=this.state.lefttree.treeID;
-      data["tree"]=this.toFlatIDDataFrom(this.state.lefttree.treeData);
+      data["tree_id"]=this.state.lefttree.treeID;
+      data["tree"]=send_tree_flat
       data["node_title"]=this.state.msg_to_block;
       data["channel"]=this.state.channel;
+      data["node_parent"]=this.find_parent_of('-1',send_tree_flat)
       socket.emit("sunsApple", data)
     }
     else if (node_id===this.state.lastMoveNodeRight){
@@ -224,15 +231,16 @@ class Main extends Component {
       data["room_id"]=this.state.room_id;
       data["node_id"]=node_id;
       data["origin_tree"]=this.toFlatDataFrom(this.state.lefttree.treeData);
-      data["origin_treeid"]=this.state.lefttree.treeID;
+      data["origin_tree_id"]=this.state.lefttree.treeID;
       data["target_tree"]=this.toFlatDataFrom(this.state.righttree.treeData);
-      data["target_treeid"]=this.state.righttree.treeID;
+      data["target_tree_id"]=this.state.righttree.treeID;
       data["channel"]=this.state.channel;
       socket.emit("migrateNode", data);
 
     }
     else { // if this.state.lastMoveNodeRight==="NULL"
       var prev_flat = this.toFlatIDDataFrom(prev_tree);
+      var prev_flat_for_sending = this.toFlatDataFrom(prev_tree)
       if (prevIndex === nextIndex){
         //  then this node moved from right to left
         //  or this node moved inside left or did not move
@@ -246,14 +254,15 @@ class Main extends Component {
           }
           else {
             var cur_flat = this.toFlatIDDataFrom(this.state.lefttree.treeData);
+            var cur_flat_for_sending = this.toFlatDataFrom(this.state.lefttree.treeData)
             if (!cur_flat.includes(node_id)){
               // prev_flat에는 있는데 cur_flat에는 없으면 delete
               console.log("left deleted...EMIT!")
               var data = {};
               data["room_id"]=this.state.room_id;
               data["node_id"]=node_id;
-              data["treeid"]=this.state.lefttree.treeID;
-              data["tree"]=cur_flat;
+              data["tree_id"]=this.state.lefttree.treeID;
+              data["tree"]=cur_flat_for_sending;
               data["channel"]=this.state.channel;
               socket.emit("deleteNode", data);
             }
@@ -262,8 +271,8 @@ class Main extends Component {
               var data = {};
               data["room_id"]=this.state.room_id;
               data["node_id"]=node_id;
-              data["treeid"]=this.state.lefttree.treeID;
-              data["tree"]=prev_flat;
+              data["tree_id"]=this.state.lefttree.treeID;
+              data["tree"]=prev_flat_for_sending;
               data["channel"]=this.state.channel;
               socket.emit("moveNode", data);
             }
@@ -275,14 +284,15 @@ class Main extends Component {
         //console.log('left prev flat',prev_flat);
         if (prev_flat.includes(node_id)){
           var cur_flat = this.toFlatIDDataFrom(this.state.lefttree.treeData);
+          var cur_flat_for_sending = this.toFlatDataFrom(this.state.lefttree.treeData)
           if (!cur_flat.includes(node_id)){
             // prev_flat에는 있는데 cur_flat에는 없으면 delete
             console.log("left deleted...EMIT!")
             var data = {};
             data["room_id"]=this.state.room_id;
             data["node_id"]=node_id;
-            data["treeid"]=this.state.lefttree.treeID;
-            data["tree"]=cur_flat;
+            data["tree_id"]=this.state.lefttree.treeID;
+            data["tree"]=cur_flat_for_sending;
             data["channel"]=this.state.channel;
             socket.emit("deleteNode", data);
           }
@@ -291,8 +301,8 @@ class Main extends Component {
             var data = {};
             data["room_id"]=this.state.room_id;
             data["node_id"]=node_id;
-            data["treeid"]=this.state.lefttree.treeID;
-            data["tree"]=prev_flat;
+            data["tree_id"]=this.state.lefttree.treeID;
+            data["tree"]=prev_flat_for_sending;
             data["channel"]=this.state.channel;
             socket.emit("moveNode", data);
           }
@@ -310,16 +320,18 @@ class Main extends Component {
   }
   RightmovedNodeIs = (node_id, prev_tree, prevIndex, nextIndex, prevPath, nextPath) =>{
     console.log("RIghtmovedNodeIS")
-    if (node_id === -1) {
+    if (node_id === '-1') {
       //suns-apple
       // title : this.state.msg_to_block
       console.log("right suns apple")
       var data={};
+      var send_tree_flat = this.toFlatDataFrom(this.state.righttree.treeData);
       data["room_id"]=this.state.room_id;
-      data["treeid"]=this.state.righttree.treeID;
-      data["tree"]=this.toFlatIDDataFrom(this.state.righttree.treeData);
+      data["tree_id"]=this.state.righttree.treeID;
+      data["tree"]=send_tree_flat
       data["node_title"]=this.state.msg_to_block
       data["channel"]=this.state.channel;
+      data["node_parent"]=this.find_parent_of('-1',send_tree_flat)
       socket.emit("sunsApple", data)
     }
     else if (node_id===this.state.lastMoveNodeLeft){
@@ -333,19 +345,20 @@ class Main extends Component {
       data["room_id"]=this.state.room_id;
       data["node_id"]=node_id;
       data["origin_tree"]=this.toFlatDataFrom(this.state.righttree.treeData);
-      data["origin_treeid"]=this.state.righttree.treeID;
+      data["origin_tree_id"]=this.state.righttree.treeID;
       data["target_tree"]=this.toFlatDataFrom(this.state.lefttree.treeData);
-      data["target_treeid"]=this.state.lefttree.treeID;
+      data["target_tree_id"]=this.state.lefttree.treeID;
       data["channel"]=this.state.channel;
       socket.emit("migrateNode", data);
 
     }
     else { // if this.state.lastMoveNodeLeft===NULL
       var prev_flat = this.toFlatIDDataFrom(prev_tree);
+      var prev_flat_for_sending = this.toFlatDataFrom(prev_tree);
       if (prevIndex === nextIndex){
         //  then this node moved from left to right 
         //  or this node moved inside right or did not move
-        if (!prev_flat.includes(node_id)){
+        if (!prev_flat.includes(node_id)){ // ['1', '2', '3'] [{},{},{}]
           this.setState({lastMoveNodeRight: node_id})
           console.log("left->right")
         }
@@ -355,14 +368,15 @@ class Main extends Component {
           }
           else {
             var cur_flat = this.toFlatIDDataFrom(this.state.righttree.treeData);
+            var cur_flat_for_sending = this.toFlatDataFrom(this.state.righttree.treeData);
             if (!cur_flat.includes(node_id)){
               // prev_flat에는 있는데 cur_flat에는 없으면 delete
               console.log("right deleted...EMIT!")
               var data = {};
               data["room_id"]=this.state.room_id;
               data["node_id"]=node_id;
-              data["treeid"]=this.state.righttree.treeID;
-              data["tree"]=cur_flat;
+              data["tree_id"]=this.state.righttree.treeID;
+              data["tree"]=cur_flat_for_sending;
               data["channel"]=this.state.channel;
               socket.emit("deleteNode", data);
             }
@@ -371,8 +385,8 @@ class Main extends Component {
               var data = {};
               data["room_id"]=this.state.room_id;
               data["node_id"]=node_id;
-              data["treeid"]=this.state.righttree.treeID;
-              data["tree"]=prev_flat;
+              data["tree_id"]=this.state.righttree.treeID;
+              data["tree"]=prev_flat_for_sending;
               data["channel"]=this.state.channel;
               socket.emit("moveNode", data);
             }
@@ -384,14 +398,15 @@ class Main extends Component {
         //console.log('right prev flat',prev_flat);
         if (prev_flat.includes(node_id)){
           var cur_flat = this.toFlatIDDataFrom(this.state.righttree.treeData);
+          var cur_flat_for_sending = this.toFlatDataFrom(this.state.righttree.treeData);
           if (!cur_flat.includes(node_id)){
             // prev_flat에는 있는데 cur_flat에는 없으면 delete
             console.log("right deleted...EMIT!")
             var data = {};
             data["room_id"]=this.state.room_id;
             data["node_id"]=node_id;
-            data["treeid"]=this.state.righttree.treeID;
-            data["tree"]=cur_flat;
+            data["tree_id"]=this.state.righttree.treeID;
+            data["tree"]=cur_flat_for_sending;
             data["channel"]=this.state.channel;
             socket.emit("deleteNode", data);
           }
@@ -401,8 +416,8 @@ class Main extends Component {
             var data = {};
             data["room_id"]=this.state.room_id;
             data["node_id"]=node_id;
-            data["treeid"]=this.state.righttree.treeID;
-            data["tree"]=prev_flat;
+            data["tree_id"]=this.state.righttree.treeID;
+            data["tree"]=prev_flat_for_sending;
             data["channel"]=this.state.channel;
             socket.emit("moveNode", data);
           }
