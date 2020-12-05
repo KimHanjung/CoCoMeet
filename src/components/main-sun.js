@@ -42,6 +42,7 @@ class Main extends Component {
       RightcheckedList: [],
       lastMoveNodeLeft: "NULL",
       lastMoveNodeRight: "NULL",
+      expandList: Array.apply(null, Array(1024)).map(i=>false),
     };
     this.onDropLeft = this.onDropLeft.bind(this);
     this.onDropRight = this.onDropRight.bind(this);
@@ -52,6 +53,7 @@ class Main extends Component {
     this.LeftmovedNodeIs = this.LeftmovedNodeIs.bind(this);
     this.RightmovedNodeIs = this.RightmovedNodeIs.bind(this);
     this.modifyState = this.modifyState.bind(this);
+    this.modifyExpandList = this.modifyExpandList.bind(this);
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////
     this.updateName = this.updateName.bind(this);
     this.updateChannel = this.updateChannel.bind(this);
@@ -512,8 +514,19 @@ class Main extends Component {
       socket.emit('changeTree', {channel: this.state.channel, room_id: this.state.room_id, tree_id: tree_id});
     }
   }
-  dropFunction=(data)=>{
-    
+  
+  modifyExpandList=(node_id,expanded)=>{
+    //node_id
+    //expand = true/false
+    let expandedList = this.state.expandList
+    if (expanded) {
+      expandedList[parseInt(node_id)]=true
+      this.setState({expandList: expandedList})
+    }
+    else {
+      expandedList[parseInt(node_id)]=false
+      this.setState({expandList: expandedList})
+    }
   }
   getAttrToBoard = (get_attr, msg) => {
     //data = {tree_id_list: {1: [1,3,4], 3:[6,2,5,7]}, color: "cyan"}
@@ -636,7 +649,7 @@ class Main extends Component {
                             <div className="font-sans text-lg font-semibold text-teal-500">Left Tree</div>
                           </div>
                           <BoardInternal tree={this.state.lefttree} sendChecked={this.getListFromBoard} movedNodeIs={this.LeftmovedNodeIs}
-                          msg_to_block={this.state.msg_to_block} printPDF={this.printDocument}
+                          msg_to_block={this.state.msg_to_block} printPDF={this.printDocument} toggle={this.modifyExpandList}
                           onDrop={this.onDropLeft} updateNode={this.updateNodeLeft} updateTree={this.updateTreeLeft}/>
                         </div>
                     </div>
@@ -646,7 +659,7 @@ class Main extends Component {
                             <div className="font-sans text-lg font-semibold text-teal-500">Right Tree</div>
                           </div>
                           <BoardInternal tree={this.state.righttree} sendChecked={this.getListFromBoard} movedNodeIs={this.RightmovedNodeIs}
-                          msg_to_block={this.state.msg_to_block} printPDF={this.printDocument}
+                          msg_to_block={this.state.msg_to_block} printPDF={this.printDocument} toggle={this.modifyExpandList}
                           onDrop={this.onDropRight} updateNode={this.updateNodeRight} updateTree={this.updateTreeRight}/>
                         </div>
                     </div>
