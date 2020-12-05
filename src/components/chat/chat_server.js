@@ -1,4 +1,5 @@
 const express = require('express');
+const { title } = require('process');
 const { ToastBody } = require('react-bootstrap');
 const app = express();
 const http = require('http').Server(app);
@@ -17,57 +18,83 @@ channel_server = io.of('/channel_server');
 
 
 const redis = require('redis');
-// const r_cli = redis.createClient({port : 6379, host : 'localhost'}); - 됨 (local)
-// const r_cli = redis.createClient(6379, 'localhost'); - 됨 (local)
-// const r_cli = redis.createClient({ host : "http://3.34.138.234", port : 6379}); - 안 됨.
-const r_cli_pub = redis.createClient({ host : "3.34.138.234", port : 6379}); 
-const r_cli_sub = redis.createClient({ host : "3.34.138.234", port : 6379}); 
-const r_cli_store = redis.createClient({ host : "3.34.138.234", port : 6379}); 
-//const r_cli = redis.createClient(6379, '3.34.138.234'); // - 안 됨
+// AWS
+const r_cli = redis.createClient(6379, "3.34.138.234");
+const pub = redis.createClient(6379, "3.34.138.234");
+const sub = redis.createClient(6379, "3.34.138.234");
 
-r_cli_sub.on("error", function(err) {
-    console.log("ERROR"+err);
-    process.exit(1);
-});
+// localhost
+// const r_cli = redis.createClient(6379, "localhost");
+// const pub = redis.createClient(6379, "localhost");
+// const sub = redis.createClient(6379, "localhost");
+
+sub.subscribe("merry");
+sub.subscribe('christ');
+
+
+// r_cli_sub.on("error", function(err) {
+//     console.log("ERROR"+err);
+//     process.exit(1);
+// });
+
 
 // sample
 // r_cli.hmset("R0_order", 0, "room0-tree0-order", 1, "room0-tree1-order");
 // r_cli.hmset("R0-0", "room_id", 0, "tree_id", 0, "node_id", 0, "title", "0-0", "parent", "NULL", "color", "blue", "deco", "normal", "weight", "normal");
 
 // default
-r_cli_store.set("Rnum", 0) // room 개수 저장
-r_cli_store.hmset("TID", 0, 1); // room별로 tree 개수 저장. room_id : tree_num
-r_cli_store.hmset("NID", 0, 1); // room별로 node 개수 저장. room_id : node_num
-r_cli_store.hmset("RCode",999,"cocomeet");
+r_cli.set("Rnum", 0) // room 개수 저장
+r_cli.hmset("TID", 0, 0); // room별로 tree 개수 저장. room_id : tree_num
+r_cli.hmset("NID", 0, 0); // room별로 node 개수 저장. room_id : node_num
+r_cli.hmset("RCode","zxcvbnm", 999);
+r_cli.hmset("RName",999,'cocococococo');
 
 function newRoom(roomCode, roomName) {
     // 생성될 room의 id
-    r_cli_sub.get("Rnum", (err, obj) => {
-        r_cli.hmset(roomCode, "room_id", Strint(obj), "room_name", roomName)
+    var id;
+    r_cli.get("Rnum", (err, obj) => {
+        id = obj;
+        r_cli.hmset("RCode", roomCode, String(id));
+        r_cli.hmset("RName", id, roomName);
     });
-    r_cli_store.incr("Rnum");
+    r_cli.incr("Rnum");
+
+    var tree_0 = newTree(room_id);
+    var tree_1 = newTree(room_id);
+
+    return id;
 }
 
 // tree 정보는 Key는 R0-0 이런식으로, 해당 value는 hash 형태로 저장한다
 function get_order(room_id, tree_id) {
+    //console.log("room_id", room_id, "tree_id", tree_id)
     var r_info = "R" + String(room_id)+"_order";
+    console.log(r_info)
     if (r_cli.EXISTS(r_info) == 0) {
         console.log("room does not exist")
         return null;
     }
     else {
         var order;
+
         r_cli.hmget(r_info, tree_id, (err,obj) => {
-            console.log(obj)
-            order = obj.split(",");
+ 
+            console.log(obj[0])
+            order = obj[0].split("");
+            order.shift();
+            order.pop();
+            console.log("getorder",order);
+            
+            return order;
         });
-        return order;
     }
 }
 
 function update_order(room_id, tree_id, order) {
     var r_info = "R" + String(room_id)+"_order";
+    //console.log("before order DB", "room_num", r_info, "tree_id", tree_id, "order", order)
     r_cli.hmset(r_info, tree_id, order);
+    return true;
 }
 
 function getTreeNum(room_id) {
@@ -77,17 +104,31 @@ function getTreeNum(room_id) {
 }
 
 // 들어갈 트리가 있는 경우. Node만 업데이트 해 주면 된다.
+
 function newApple(room_id, tree_id, text, parent) {
-    var newid;
-    r_cli_sub.hmget("NID", room_id, (err, obj) => {
+    
+    var newid;// = [999];
+    r_cli.hmget("NID", room_id, (err, obj) => {
+        if (err) {
+            console.log("newApple err",err)
+        }   
         // obj는 지금 만들어야 할 Node id가 담겨있음.
-        newid = obj;
+        //newid = newid.concat(obj);
+        newid=obj[0];
         var info = "R"+room_id+"-"+obj;
         // console.log(info);
-        r_cli_store.hmset(String(info), "room_id", String(room_id), "tree_id", String(tree_id), "node_id", String(obj), "title", text , "parent", String(parent), "color", "blue", "deco", "normal", "weight", "normal");
+        
+        r_cli.hmset(String(info), "room_id", String(room_id), "tree_id", String(tree_id), "node_id", String(obj), "title", text , "parent", String(parent), "color", "blue", "deco", "normal", "weight", "normal");
+        r_cli.HINCRBY("NID", room_id, 1); //해당 room_num의 node 개수 +1
+        let msg = {"content" : newid, "treeid" : tree_id};
+        msg = JSON.stringify(msg);
+
+        //console.log("merry ", msg);
+        pub.publish("merry", msg);
+
     });
-    r_cli_store.HINCRBY("NID", room_id, 1); //해당 room_num의 node 개수 +1
-    return newid;
+    return true;
+    
 }
 // new block은 new apple을 text, parent 지정해서 사용하면 된다.
 
@@ -139,40 +180,83 @@ chat_server.on('connection', function (socket) {
 board_server.on('connection', function(socket){
     socket.on('channelJoin', function(data){
         socket.join(data.channel);
-
+        
         //DB한테 트리 0, 1 요청 -o
         //DB한테 트리 개수 요청 -o
-        let treeLeft, treeRight;
+        let treeLeft = {};
+        let treeRight = {};
         let orderLeft, orderRight;
         let treenum;
-        orderLeft = get_order(data.room_id, 0);
-        orderRight = get_order(data.room_id, 1);
-        treenum = getTreeNum(data.room_id);
-        var info;
-        for (var elem in orderLeft) {
-            info = "R" + r_id+"-"+elem;
-            r_cli.HMGET(String(info), "node_id","room_id", "tree_id", "title", "parent", "color", "weight", "deco", (err, obj) => {
-                var treeeeee = {"room_id" : obj[1], "node_id" : obj[0], "tree_id" : obj[2], "title" : obj[3], "parent": obj[4], "color" : obj[5], "weight" : obj[6], "deco" : obj[7]};
-                treeLeft[elem] = treeeeee;
-            });
+
+        let room_id = data.room_id;
+        let r_info = "R"+room_id+"_order";
+        board_server.to(data.channel).emit('addTree', {treeId: 0});
+        if (r_cli.EXISTS(r_info) == 0) {
+            console.log("room does not exist")
         }
-        for (var elem in orderRight) {
-            info = "R" + r_id+"-"+elem;
-            r_cli.HMGET(String(info), "node_id","room_id", "tree_id", "title", "parent", "color", "weight", "deco", (err, obj) => {
-                var treeeeee = {"room_id" : obj[1], "node_id" : obj[0], "tree_id" : obj[2], "title" : obj[3], "parent": obj[4], "color" : obj[5], "weight" : obj[6], "deco" : obj[7]};
-                treeRight[elem] = treeeeee;
-            });
+        else {
+            r_cli.hmget(r_info, 0, 1, (err, obj) => {
+                orderLeft = obj[0];
+                orderLeft = orderLeft.split("");
+                orderLeft.shift();
+                orderLeft.pop();
+
+                orderRight = obj[1];
+                orderRight = orderRight.split("");
+                orderRight.shift();
+                orderRight.pop();
+
+                console.log("orderLeft", orderLeft);
+                console.log("orderRight", orderRight);
+
+                r_cli.hmget("TID", room_id, (err,obj) => {
+                    console.log("treenum", obj);
+                    treenum = obj;
+
+                    var info_l;
+                    var info_r;
+                    for (var elem in orderLeft) {
+                        info_l = "R" + room_id+"-"+elem;
+                        r_cli.HMGET(info_l, "node_id","room_id", "tree_id", "title", "parent", "color", "weight", "deco", (err, obj) => {
+                            var treeeeee = {"room_id" : obj[1], "node_id" : obj[0], "tree_id" : obj[2], "title" : obj[3], "parent": obj[4], "color" : obj[5], "weight" : obj[6], "deco" : obj[7]};
+                            treeLeft[elem] = treeeeee;
+                            
+                            pub.publish("merry", elem)
+                        });
+                    }
+
+                    for (var elem in orderRight) {
+                        info_r = "R" + room_id+"-"+elem;
+                        r_cli.HMGET(info_r, "node_id","room_id", "tree_id", "title", "parent", "color", "weight", "deco", (err, obj) => {
+                            var treeeeee = {"room_id" : obj[1], "node_id" : obj[0], "tree_id" : obj[2], "title" : obj[3], "parent": obj[4], "color" : obj[5], "weight" : obj[6], "deco" : obj[7]};
+                            treeRight[elem] = treeeeee;
+                            pub.publish("christ", elem)
+                        });
+                    }
+                    
+                    sub.on("message", (channel, message) => {
+                        if (channel === "merry" && message === orderLeft[orderLeft.length-1]) {
+                            rearrange(treeLeft, orderLeft);
+                            socket.to(data.channel).emit('sendTree', {treenum:treenum, treeid: 0, tree:treeLeft});
+
+                        }
+                        if (channel === "christ" && message === orderRight[orderRight.length-1]){
+                            rearrange(treeRight, orderRight);
+                            socket.to(data.channel).emit('sendTree', {treenum:treenum, treeid: 1, tree:treeRight});
+                        }
+                    })
+                    
+                    //socket.to(data.channel).emit('channelJoin', 
+                    //{treenum:treenum, tree: {Left:treeLeft, Right:treeRight}});
+                    
+            
+                    // console.log(data.channel);
+                });
+            })
         }
 
-        rearrange(treeLeft, orderLeft);
-        rearrange(treeRight, orderRight);
-        //socket.to(data.channel).emit('channelJoin', 
-        //{treenum:treenum, tree: {Left:treeLeft, Right:treeRight}});
-        socket.to(data.channel).emit('sendTree', {treenum:treenum, treeid: 0, tree:treeLeft});
-        socket.to(data.channel).emit('sendTree', {treenum:treenum, treeid: 1, tree:treeRight});
-
-        console.log(data.channel);
     });
+
     socket.on('channelLeave', function(data){
         socket.leave(data.channel);
         console.log(data.channel);
@@ -202,7 +286,7 @@ board_server.on('connection', function(socket){
         order = getOrder(data.tree);
         data.tree = data.tree.map((cur) => cur.id==='-1' ? cur.id=newnode_id : cur.id);
         newApple(data.room_id, data.tree_id, "newNode", "NULL");
-        socket.to(data.channel).emit('sendTree', {treeid: treeid, tree:data.tree});
+        socket.to(data.channel).emit('sendTree', {treeid: data.tree_id, tree:data.tree});
     });
 
     socket.on('deleteNode', function(data){
@@ -330,6 +414,8 @@ board_server.on('connection', function(socket){
     });
 });
 
+
+
 channel_server.on('connection', function(socket) {
     client_id = socket.id;
     socket.on('createChannel', function (data, callback) {    
@@ -339,23 +425,86 @@ channel_server.on('connection', function(socket) {
         code += possible.charAt(Math.floor(Math.random() * possible.length))
         });
         var room_id;
-        // 코드 - room_id 연결
-        console.log('hi');
-        r_cli_store.get("Rnum", (err, obj) => {
-            console.log('good');
-            room_id = obj;
-        });
-        console.log('bye');
-        r_cli_pub.hmset("RCode", String(code), room_id);
-        // 트리 2개 생성
-        newTree(room_id);
-        newTree(room_id);
 
-        callback(code);
-        channel_names[code] = data.channel;
+        // r_cli.get("Rnum", (err, obj) => {
+        //     console.log("say 123", obj);
+        // })
+        r_cli.get("Rnum", (err, obj) => { //일단 방 갯수를 알아와서
+            room_id = obj; //room _id를 설정하고
+            r_cli.hmset("RCode", code, String(room_id)); //room code - room id 설정,
+            r_cli.hmset("RName", room_id, data.channel); //room id - room name 설정
+
+            r_cli.incr("Rnum"); // 방 갯수 하나 ++
+            
+            var treeId=[]; // 방에 만들 트리 id를 담는 변수. 처음에는 0이 있는 게 맞음
+            console.log("roomid", room_id);
+            
+            r_cli.hmget("TID", room_id, (err, obj) => { //방에 있는 트리 개수를 받아옴. 0이 있겠지
+                if(err){
+                    console.log("hmget ERROR", err)
+                }
+                treeId = obj[0];
+                var check = newApple(room_id, treeId, "Left Initial Block", "NULL"); //트리에 들어갈 블록을 만든다
+                if (check) {
+                    sub.on('message', (channel, message) => {
+                        let msg = JSON.parse(message);
+                        if (msg.treeid === '0') {
+                            let ord = [msg.content];
+                            ord  = "["+ord+"]";
+
+                            console.log("--first order DB update--");
+                            update_order(room_id, msg.treeid, ord);
+                        }
+                    })
+                    
+                    r_cli.HINCRBY("TID", room_id, 1); //room에 있는 트리 개수 ++ => 1이 됨
+
+                    // 두 번째 트리를 만들기 위한 과정
+                    r_cli.hmget("TID", room_id, (err, obj) => {
+                        if(err){
+                            console.log("hmget2 ERROR", err)
+                        }
+                        treeId = obj[0];                    
+                        check = newApple(room_id, treeId, "Right Initial Block", "NULL");
+                        if (check) {
+                            sub.on('message', (channel, message) => {
+                                
+                                let msg = JSON.parse(message);
+
+                                if (msg.treeid === '1') {
+                                    let ord = [msg.content];
+                                    ord  = "["+ord+"]";
+                                    console.log("--second order DB update--");
+                                    let c = update_order(room_id, msg.treeid, ord);
+                                    if (c) {
+                                        r_cli.HINCRBY("TID", room_id, 1);
+                                        console.log("channel create", code, room_id,data.channel)
+                                        callback(code, room_id,data.channel);
+                                        channel_names[code] = data.channel;
+                                    }
+                                }
+                            })
+                        }
+                    })
+                    
+                }                
+            })         
         });
+        
+        });
+
     socket.on('joinChannel', function(data, callback) {
-        callback(channel_names[data.channel_code]);
+        var RID; // Room_id
+        var RNAME;
+        r_cli.hmget("RCode", String(data.channel_code), (err, obj) => {
+            RID = obj; // ROOM_ID 가 저장되어있음
+            console.log("RID", RID)
+            r_cli.hmget("RName", RID[0], (err,obj) => {
+                RNAME = obj;
+                console.log("channel join",data.channel_code, RID[0],RNAME[0])
+                callback(data.channel_code, RID[0],RNAME[0]);
+            });        
+        })
     });
 })
 

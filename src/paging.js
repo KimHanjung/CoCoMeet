@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import Main from './components/main-sun_2020_10_13';
+import Main from './components/main-sun.js';
 import './main.css';
 import Start from './start.js'
 import Enter from './enter.js'
