@@ -8,6 +8,8 @@ import { SortableTreeWithoutDndContext as SortableTree } from 'react-sortable-tr
 //import SortableTree from 'react-sortable-tree';
 import 'react-sortable-tree/style.css';
 import CustomTheme from 'react-sortable-tree-theme-solverboard';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 
 const externalNodeType = 'yourNodeType';
 const externalNodeSpec = {
@@ -110,7 +112,8 @@ class BoardIxternal extends Component {
           rev_text_deco: props.tree.text_deco,
           rev_font_weight: props.tree.font_weight,
         };
-        this.updateTree = this.updateTree.bind(this)
+        this.updateTree = this.updateTree.bind(this);
+        this.printDocument = this.printDocument.bind(this);
         //this.add = this.add.bind(this)
     }
     updateTree(newTreeData){
@@ -120,6 +123,18 @@ class BoardIxternal extends Component {
         this.setState({treeData: newTreeData})
         
     }
+    printDocument(id) {
+        alert('function in');
+        const input = document.getElementById(id);
+        html2canvas(input)
+          .then((canvas) => {
+            const imgData = canvas.toDataURL('image/png');
+            const pdf = new jsPDF();
+            pdf.addImage(imgData, 'JPEG', 0, 0);
+            // pdf.output('dataurlnewwindow');
+            pdf.save("download.pdf");
+          });
+      }
     /*add(){
         //console.log('adding new node to tree ' + this.props.treeId);
         this.setState({treeData: this.state.treeData.concat([{ title: <EditableText initialValue='Sun'/>, children: []}])});
@@ -145,7 +160,7 @@ class BoardIxternal extends Component {
                 
                 <div class="h-6/9 w-9/9 m-3 p-3" >
                     
-                    <SortableTree
+                    <SortableTree id='print_tree'
                         treeData={this.state.treeData}
                         onChange={treeData => this.updateTree(treeData)}
                         scaffoldBlockPxWidth={20}
@@ -167,7 +182,6 @@ class BoardIxternal extends Component {
                         theme={CustomTheme}
                         dndType={trashNodeType, externalNodeType}
                     />
-                    
                     <div class="h-2/9 w-full p-3">
                         <TrashNodeComponent>
                         <a class="flex items-center justify-center bg-transparent text-xl text-blue-500 font-semibold py-2 px-2 border border-blue-500 rounded">

@@ -14,6 +14,9 @@ import SplitterLayout from 'react-splitter-layout';
 import 'react-splitter-layout/lib/index.css';
 import { HTML5Backend } from 'react-dnd-html5-backend'
 import { DndProvider } from 'react-dnd'
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
+import ReactDOMServer from 'react-dom/server';
 
 class Main extends Component {
   constructor(props) {
@@ -58,6 +61,28 @@ class Main extends Component {
     this.updateChannel = this.updateChannel.bind(this);
     this.updateConnected = this.updateConnected.bind(this);
     this.updateMsgToBlock = this.updateMsgToBlock.bind(this);
+    this.printDocument = this.printDocument.bind(this);
+  }
+  printDocument3(id) {
+    alert('function in');
+    const input = document.getElementById(id);
+    html2canvas(input)
+      .then((canvas) => {
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF();
+        pdf.addImage(imgData, 'JPEG', 0, 0);
+        pdf.output('dataurlnewwindow');
+        pdf.save("download.pdf");
+      });
+  }
+  printDocument(id){
+    let pdf = new jsPDF('p', 'pt', 'letter');
+    pdf.html(document.getElementById(id), {
+      callback: function () {
+          pdf.save('myDocument.pdf');
+          //window.open(pdf.output('bloburl')); // To debug.
+      }
+    });
   }
   newTree = (id) => {
     var init_val = 'hello tree ID ' + id;
@@ -156,7 +181,8 @@ class Main extends Component {
                               <div class="border-b-2 border-gray-300 bg-gray-200 h-12 p-3 mb-3">
                                 <div class="font-sans text-lg font-semibold text-teal-500">{"Ch. " + this.state.channel}</div>
                               </div>
-                              <Name uname = {this.state.uname} onUpdate_name2={this.updateName} />
+                              <button onClick={()=>{this.printDocument('print_tree1'); this.printDocument('printprint');}}>make pdf</button>
+                              <Name uname = {this.state.uname} onUpdate_name2={this.updateName} channel_code = {this.state.channel_code}/>
                             </div>
                             <div class="mb-6 pb-3 shadow-md bg-gray-100 h-1/5">
                               <div class="border-b-2 border-gray-300 bg-gray-200 h-12 p-3 mb-3">
@@ -185,11 +211,11 @@ class Main extends Component {
                         </div>
                     </div>
                     <div class="w-3/9 p-3">
-                        <div class="shadow-md bg-gray-100 h-quaterscreen">
+                        <div id='print_tree1' class="shadow-md bg-gray-100 h-quaterscreen">
                           <div class="border-b-2 border-gray-300 bg-gray-200 h-12 p-3 mb-3">
                             <div class="font-sans text-lg font-semibold text-teal-500">Left Tree</div>
                           </div>
-                          <BoardInternal tree={this.state.trees[this.state.tree1]} treeId={this.state.tree1} msg_to_block={this.state.msg_to_block}
+                          <BoardInternal id='print_tree2' tree={this.state.trees[this.state.tree1]} treeId={this.state.tree1} msg_to_block={this.state.msg_to_block}
                           onDrop={this.onDropLeft} updateNode={this.updateNodeLeft} updateTree={this.updateTreeLeft}/>
                         </div>
                     </div>
@@ -208,6 +234,9 @@ class Main extends Component {
                             <div class="font-sans text-lg font-semibold text-teal-500">Chat</div>
                           </div>
                           <ChatView uname = {this.state.uname} channel={this.state.channel} connected={this.state.connected} OnupdateMsgToBlock={this.updateMsgToBlock}/> 
+                        </div>
+                        <div id='printprint'>
+                          <p>asdfasdfasdfasdfaskfaksdnf</p>
                         </div>
                     </div>
                 </div>
