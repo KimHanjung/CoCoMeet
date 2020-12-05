@@ -35,8 +35,8 @@ class Main extends Component {
       treenum: 2,
       lefttree: {treeID: 0, treeData: [{title: "dummy0"}]},
       righttree: {treeID: 1, treeData: [{title: "dummy1"}]},
-      leftModifying: false,
-      rightModifying: false,
+      leftModifying: false, //수정중일 때 true
+      rightModifying: false, //수정중일 때 true
       getcolor: "cyan",
       LeftcheckedList: [],
       RightcheckedList: [],
@@ -71,14 +71,13 @@ class Main extends Component {
   }
 
   applytoTree=(tree_id, new_node)=>{
-    if (this.state.lefttree.treeID !==tree_id){
+    if (this.state.lefttree.treeID ===tree_id){
       // traverse left tree
       var lflat = this.toFlatDataFrom(this.state.leftree);
       lflat.map(node => new_node.node_id === node.node_id ? new_node : node)
       console.log("apply서니1")
       this.setState({lefttree:this.toTreeDataFrom(lflat)})
-    }
-    if (this.state.righttree.treeID !==tree_id){
+    }else if (this.state.righttree.treeID ===tree_id){
       // traverse left tree
       var rflat = this.toFlatDataFrom(this.state.righttree);
       rflat.map(node => new_node.node_id === node.node_id ? new_node : node)
@@ -153,7 +152,7 @@ class Main extends Component {
     let cursor = this;
     // 방 들어왔을 때 실행되는 코드
     // channel uname ... 설정하는 코드
-    console.log("미스테리우스")
+    // console.log("미스테리우스")
     socket.emit('channelJoin',{channel: cursor.state.channel, room_id: cursor.state.room_id})
     
     socket.on('addTree', function(data){
@@ -165,15 +164,16 @@ class Main extends Component {
       console.log('Here on Change, we check received data',data)
       console.log("Here ON Change Tree [droped tree] [left tree] [right tree]", data.treeid, cursor.state.lefttree.treeID, cursor.state.righttree.treeID)
       if(data.treeid === cursor.state.lefttree.treeID){
-        
-        cursor.receive_sendtree('L', data);
-        console.log("left main data change tree to", data)
-        // set state
+        if (!cursor.state.leftModifying){
+          cursor.receive_sendtree('L', data);
+          console.log("left main data change tree to", data)
+        }
         //cursor.setState({lefttree: cursor.toTreeDataFrom(data.tree)})
       }else if(data.treeid === cursor.state.righttree.treeID){
-        
-        cursor.receive_sendtree('R', data);
-        console.log("right main data change tree to", data)
+        if (!cursor.state.rightModifying){
+          cursor.receive_sendtree('R', data);
+          console.log("right main data change tree to", data)
+        }
         //cursor.setState({righttree: cursor.toTreeDataFrom(data.tree)})
       }
     })
@@ -183,17 +183,28 @@ class Main extends Component {
       const treeID = data.treeid;
       //console.log('fine heredasf tree id Fine',treeID)
       if(treeID === cursor.state.lefttree.treeID){
-        //console.log('fine here')
-        cursor.receive_sendtree('L', data);
+        if (!cursor.state.leftModifying){
+          cursor.receive_sendtree('L', data);
+        }
       }else if(treeID === cursor.state.righttree.treeID){
-        cursor.receive_sendtree('R', data);
+        if (!cursor.state.rightModifying){
+          cursor.receive_sendtree('R', data);
+        }
       }
     })
     socket.on('sendNode', function(data){
       //changetext, changeattr
       console.log("sendNode서니")
-      cursor.applytoTree(data.treeid, data.node);
-      
+      const treeID = data.treeid;
+      if(treeID === cursor.state.leftree.treeID){
+        if (!cursor.state.leftModifying){
+          cursor.applytoTree(data.treeid, data.node_id);
+        }
+      }else if(treeID === cursor.state.righttree.treeID){
+        if (!cursor.state.rightModifying){
+          cursor.applytoTree(data.treeid, data.node_id);
+        }
+      }
     })
   }
   
@@ -489,7 +500,6 @@ class Main extends Component {
       this.setState({lefttree: ttree})
       console.log("befre change tree, we set lefttree id to", tree_id)
       socket.emit('changeTree', {channel: this.state.channel, room_id: this.state.room_id, tree_id: tree_id});
-      
     }
   }
   onDropRight = (tree_id) => {
@@ -500,18 +510,6 @@ class Main extends Component {
       this.setState({righttree: ttree})
       console.log("befre change tree, we set righttree id to", tree_id)
       socket.emit('changeTree', {channel: this.state.channel, room_id: this.state.room_id, tree_id: tree_id});
-      // let cursor = this;
-      // /////////////////////////////////////////////한중한테 emit한 cli한테 다시 보내기
-      // socket.on('changeTree',function(data){ 
-      //   console.log("무조건 실행2", tree_id) 
-      //   console.log("무조건 실행22", data.treeid)
-      //   if(data.treeid === tree_id){
-      //     console.log("right main data change tree", data)
-      //     cursor.receive_sendtree('R', data);
-      //   }else{
-      //     console.log("else2")
-      //   }
-      // })
     }
   }
   dropFunction=(data)=>{
