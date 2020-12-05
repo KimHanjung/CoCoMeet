@@ -1,10 +1,12 @@
 import React, { Component } from 'react';
 import Main from './components/main-sun.js';
 import './main.css';
-import Start from './start.js'
+//import Start from './start.js'
 import Enter from './enter.js'
 import Create from './create_room.js'
 import { Route } from 'react-router-dom';
+
+import Start from './test.js';
 
 class Paging extends Component {
     constructor(props) {
