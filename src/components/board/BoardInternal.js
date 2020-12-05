@@ -87,7 +87,7 @@ const toolsNodeType = 'tree';
 const toolsNodeSpec = {
     drop(props, monitor){
         const item = monitor.getItem();
-        console.log(monitor.getDropResult());
+        // console.log(monitor.getDropResult());
         //console.log(item);
         props.onDrop(item.treeId);
         return item.treeId;
@@ -150,7 +150,7 @@ class BoardInternal extends Component {
         return connectDropTarget(
             <div class="h-fullcalc w-full float-left" >
                 <div class='pl-8 pt-3'>
-                    <button class="bg-transparent hover:bg-blue-500 text-blue-500 font-semibold hover:text-white py-2 px-2 border border-blue-500 hover:border-transparent rounded"
+                    <button class="font-semibold py-2 px-2 border border-transparent rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                         onClick={this.props.updateNode}>
                         Add Block
                     </button>
@@ -204,8 +204,8 @@ class BoardInternal extends Component {
                                 }
                             };
                         }}
-                        
-                        onVisibilityToggle={args => ()=>this.props.toggle(args.node.node_id,args.node.expanded)}
+                        //()=>this.props.toggle(args.node.node_id,args.node.expanded)
+                        onVisibilityToggle={args => {this.props.toggle(args.node.node_id,args.expanded)}}
                         onMoveNode={args => {
                             recordCall('onMoveNode', args);
                             const { prevPath, nextPath, node } = args;

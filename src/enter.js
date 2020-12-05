@@ -22,7 +22,8 @@ class Enter extends Component {
         //alert(this.state.uname+' '+this.state.channel_code);
     }
     keysend(event){
-        if(event.keyCode===13) {
+        //event.key==="Enter"
+        if(event.key==="Enter") {
             socket.emit('joinChannel', {channel_code:this.state.channel_code}, (name, room_id, channel_name) => {
                 this.setState({channel_name: name}, () => {
                     this.props.history.push('/main', 
@@ -50,7 +51,7 @@ class Enter extends Component {
                         </div>
                         <div className="login-input-wrap input-password">
                             <i className="fas fa-key"></i>
-                            <input placeholder="Channel Code" type="text" onChange={(e)=>this.setState({channel_code: e.target.value})}/>
+                            <input placeholder="Channel Code" type="text" onChange={(e)=>this.setState({channel_code: e.target.value})} onKeyPress={this.keysend}/>
                         </div>
                     </div>
                     <div className="login-btn-wrap">

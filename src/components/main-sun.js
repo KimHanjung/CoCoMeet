@@ -72,22 +72,28 @@ class Main extends Component {
     this.applytoTree = this.applytoTree.bind(this);
   }
 
+  find_node_and_replace=(tree_data)=>{
+    var children = tree_data
+  }
+
   applytoTree=(tree_id, new_node)=>{
-    console.log("applytotree, tree_id and new node, respectively...\n",tree_id,new_node)
+    console.log("applytotree")
     // new_node['expanded']=this.state.expandList[parseInt(new_node.node_id)]
     if (this.state.lefttree.treeID ===tree_id){
       // traverse left tree
+      var ltree = this.state.lefttree.treeData
+
       var lflat = this.toFlatDataFrom(this.state.lefttree.treeData);
       lflat.map(node => new_node.node_id === node.node_id ? new_node : node)
       console.log("apply서니1")
-      this.setState({lefttree:this.toTreeDataFrom(lflat,tree_id)})
+      this.setState({lefttree:{treeID: tree_id, treeData: this.toTreeDataFrom(lflat,tree_id)}})
     }else if (this.state.righttree.treeID ===tree_id){
       // traverse right tree
       var rflat = this.toFlatDataFrom(this.state.righttree.treeData);
       console.log("apply서니1.5",rflat)
       rflat.map(node => new_node.node_id === node.node_id ? new_node : node)
       console.log("apply서니2",rflat, this.toTreeDataFrom(rflat,tree_id))
-      this.setState({righttree:this.toTreeDataFrom(rflat,tree_id)})
+      this.setState({righttree:{treeID: tree_id, treeData: this.toTreeDataFrom(rflat,tree_id)}})
     }
   }
   
@@ -145,7 +151,7 @@ class Main extends Component {
     }
   }
 
-  find_parent_of(id,flat){
+  find_parent_of=(id,flat)=>{
     return flat.find(i => i.node_id === id).parent
   }
   
@@ -166,13 +172,13 @@ class Main extends Component {
       if(data.treeid === cursor.state.lefttree.treeID){
         if (!cursor.state.leftModifying){
           cursor.receive_sendtree('L', data);
-          console.log("left main data change tree to", data)
+          // console.log("left main data change tree to", data)
         }
         //cursor.setState({lefttree: cursor.toTreeDataFrom(data.tree)})
       }else if(data.treeid === cursor.state.righttree.treeID){
         if (!cursor.state.rightModifying){
           cursor.receive_sendtree('R', data);
-          console.log("right main data change tree to", data)
+          // console.log("right main data change tree to", data)
         }
         //cursor.setState({righttree: cursor.toTreeDataFrom(data.tree)})
       }
@@ -181,7 +187,7 @@ class Main extends Component {
       // console.log("sendTree rannnn")
       //move, migrate, sunsapple, delete, addnode
       const treeID = data.treeid;
-      console.log('sendTree data from server',data)
+      // console.log('sendTree data from server',data)
       if(treeID === cursor.state.lefttree.treeID){
         if (!cursor.state.leftModifying){
           cursor.receive_sendtree('L', data);
@@ -232,7 +238,9 @@ class Main extends Component {
       data["tree"]=send_tree_flat
       data["node_title"]=this.state.msg_to_block;
       data["channel"]=this.state.channel;
-      data["node_parent"]=this.find_parent_of('-1',send_tree_flat)
+      var parent_id=this.find_parent_of('-1',send_tree_flat)
+      data["node_parent"]=parent_id
+      if (parent_id!='NULL') this.modifyExpandList(parent_id,true)
       socket.emit("sunsApple", data)
     }
     else if (node_id===this.state.lastMoveNodeRight){
@@ -251,13 +259,15 @@ class Main extends Component {
       data["target_tree"]=target_tree_flat;
       data["target_tree_id"]=this.state.righttree.treeID;
       data["channel"]=this.state.channel;
-      data["node_parent"]=this.find_parent_of(node_id,target_tree_flat)
+      var parent_id=this.find_parent_of(node_id,target_tree_flat)
+      data["node_parent"]=parent_id
+      if (parent_id!='NULL') this.modifyExpandList(parent_id,true)
       socket.emit("migrateNode", data);
 
     }
     else { // if this.state.lastMoveNodeRight==="NULL"
       var prev_flat = this.toFlatIDDataFrom(prev_tree);
-      var prev_flat_for_sending = this.toFlatDataFrom(prev_tree)
+      //var prev_flat_for_sending = this.toFlatDataFrom(prev_tree)
       if (prevIndex === nextIndex){
         //  then this node moved from right to left
         //  or this node moved inside left or did not move
@@ -296,7 +306,7 @@ class Main extends Component {
               data["channel"]=this.state.channel;
               var parent_id=this.find_parent_of(node_id,cur_flat_for_sending)
               data["node_parent"]=parent_id
-              this.modifyExpandList(parent_id,true)
+              if (parent_id!='NULL') this.modifyExpandList(parent_id,true)
               socket.emit("moveNode", data);
             }
           }
@@ -327,7 +337,9 @@ class Main extends Component {
             data["tree_id"]=this.state.lefttree.treeID;
             data["tree"]=cur_flat_for_sending;
             data["channel"]=this.state.channel;
-            data["node_parent"]=this.find_parent_of(node_id,cur_flat_for_sending)
+            var parent_id=this.find_parent_of(node_id,cur_flat_for_sending)
+            data["node_parent"]=parent_id
+            if (parent_id!='NULL') this.modifyExpandList(parent_id,true)
             socket.emit("moveNode", data);
           }
         }
@@ -355,7 +367,9 @@ class Main extends Component {
       data["tree"]=send_tree_flat
       data["node_title"]=this.state.msg_to_block
       data["channel"]=this.state.channel;
-      data["node_parent"]=this.find_parent_of('-1',send_tree_flat)
+      var parent_id=this.find_parent_of('-1',send_tree_flat)
+      data["node_parent"]=parent_id
+      if (parent_id!='NULL') this.modifyExpandList(parent_id,true)
       socket.emit("sunsApple", data)
     }
     else if (node_id===this.state.lastMoveNodeLeft){
@@ -374,13 +388,15 @@ class Main extends Component {
       data["target_tree"]=target_tree_flat
       data["target_tree_id"]=this.state.lefttree.treeID;
       data["channel"]=this.state.channel;
-      data["node_parent"]=this.find_parent_of(node_id,target_tree_flat)
+      var parent_id=this.find_parent_of(node_id,target_tree_flat)
+      data["node_parent"]=parent_id
+      if (parent_id!='NULL') this.modifyExpandList(parent_id,true)
       socket.emit("migrateNode", data);
 
     }
     else { // if this.state.lastMoveNodeLeft===NULL
       var prev_flat = this.toFlatIDDataFrom(prev_tree);
-      var prev_flat_for_sending = this.toFlatDataFrom(prev_tree);
+      // var prev_flat_for_sending = this.toFlatDataFrom(prev_tree);
       if (prevIndex === nextIndex){
         //  then this node moved from left to right 
         //  or this node moved inside right or did not move
@@ -450,7 +466,9 @@ class Main extends Component {
             data["tree_id"]=this.state.righttree.treeID;
             data["tree"]=cur_flat_for_sending;
             data["channel"]=this.state.channel;
-            data["node_parent"]=this.find_parent_of(node_id,cur_flat_for_sending)
+            var parent_id=this.find_parent_of(node_id,cur_flat_for_sending)
+            data["node_parent"]=parent_id
+            if (parent_id!='NULL') this.modifyExpandList(parent_id,true)
             socket.emit("moveNode", data);
           }
           
@@ -498,29 +516,35 @@ class Main extends Component {
     socket.emit("addNode", {channel: cursor.state.channel, room_id: this.state.room_id, tree_id: this.state.righttree.treeID, tree: this.toFlatDataFrom(addnode_righttree)});
   }
   onDropLeft = (tree_id) => {
-    console.log("left drop...",tree_id)
+    if (tree_id === this.state.righttree.treeID){
+      return
+    }
+    console.log("left drop...",tree_id,typeof(tree_id))
     if (tree_id !== this.state.lefttree.treeID) {
       let ttree = this.state.lefttree
       ttree['treeID'] = tree_id
       this.setState({lefttree: ttree})
-      console.log("befre change tree, we set lefttree id to", tree_id)
+      // console.log("befre change tree, we set lefttree id to", tree_id)
       socket.emit('changeTree', {channel: this.state.channel, room_id: this.state.room_id, tree_id: tree_id});
     }
   }
   onDropRight = (tree_id) => {
+    if(tree_id === this.state.lefttree.treeID){
+      return
+    }
     console.log("right drop...",tree_id) 
     if (tree_id !== this.state.righttree.treeID) {
       let ttree = this.state.righttree
       ttree['treeID'] = tree_id
       this.setState({righttree: ttree})
-      console.log("befre change tree, we set righttree id to", tree_id)
+      // console.log("befre change tree, we set righttree id to", tree_id)
       socket.emit('changeTree', {channel: this.state.channel, room_id: this.state.room_id, tree_id: tree_id});
     }
   }
   
   modifyExpandList=(node_id,expanded)=>{
-    //node_id
     //expand = true/false
+    // console.log("node_id",node_id, expanded)
     let expandedList = this.state.expandList
     if (expanded) {
       expandedList[parseInt(node_id)]=true

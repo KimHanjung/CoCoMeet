@@ -9,24 +9,25 @@ class Create extends Component {
         super(props);
         this.state = {uname: 'default', channel_name:'default', channel_code:undefined};
         this.send = this.send.bind(this);
-        this.keysend = this.send.bind(this);
+        this.keysend = this.keysend.bind(this);
     }
-    send(){
+    send(event){
+        // console.log("sending...",event)
         socket.emit('createChannel',{channel:this.state.channel_name}, (code, room_id, channel_name) => {
             this.setState({channel_code: code}, () => {
                 this.props.history.push('/main', 
                     {channel: channel_name, channel_code:this.state.channel_code, uname:this.state.uname, room_id:room_id});
             })
         });
-        //alert(this.state.uname+' '+this.state.channel_name);
     }
     keysend(event){
-        if(event.keyCode===13) {
-            socket.emit('joinChannel', {channel_code:this.state.channel_code}, (name, room_id, channel_name) => {
-                this.setState({channel_name: name}, () => {
+        if(event.key==="Enter") {
+            // console.log("sending by enter...")
+            socket.emit('createChannel',{channel:this.state.channel_name}, (code, room_id, channel_name) => {
+                this.setState({channel_code: code}, () => {
                     this.props.history.push('/main', 
                         {channel: channel_name, channel_code:this.state.channel_code, uname:this.state.uname, room_id:room_id});
-                });
+                })
             });
         }
     }
@@ -50,7 +51,7 @@ class Create extends Component {
                         </div>
                         <div className="login-input-wrap input-id">
                             <i className="far fa-envelope"></i>
-                            <input placeholder="Channel Name" type="text" onChange={(e)=>this.setState({channel_name: e.target.value})}/>
+                            <input placeholder="Channel Name" type="text" onChange={(e)=>this.setState({channel_name: e.target.value})} onKeyPress={this.keysend}/>
                         </div>
                     </div>
                     <div className="login-btn-wrap">

@@ -20,14 +20,14 @@ channel_server = io.of('/channel_server');
 
 const redis = require('redis');
 // // AWS
-// const r_cli = redis.createClient(6379, "3.34.138.234");
-// const pub = redis.createClient(6379, "3.34.138.234");
-// const sub = redis.createClient(6379, "3.34.138.234");
+const r_cli = redis.createClient(6379, "3.34.138.234");
+const pub = redis.createClient(6379, "3.34.138.234");
+const sub = redis.createClient(6379, "3.34.138.234");
 
 // localhost
-const r_cli = redis.createClient(6379, "localhost");
-const pub = redis.createClient(6379, "localhost");
-const sub = redis.createClient(6379, "localhost");
+// const r_cli = redis.createClient(6379, "localhost");
+// const pub = redis.createClient(6379, "localhost");
+// const sub = redis.createClient(6379, "localhost");
 
 sub.subscribe("merry");
 sub.subscribe('christ');
@@ -734,10 +734,7 @@ board_server.on('connection', function(socket){
                     //console.log(">>>>>before tree", tree);
                     tree = rearrange(tree, order);
                     //console.log(">>>>>>>>after tree", tree)
-                    //board_server.to(data.channel).emit('changeTree', {treeid: tid, tree:tree});
-                    //console.log("서니서니", socket)
-                    //console.log("서니서니2", socket.id)
-                    board_server.to(socket.id).emit('changeTree', {treeid: (tree[0].tree_id)*1, tree:tree});
+                    board_server.to(socket.id).emit('changeTree', {treeid: (tree[0].tree_id), tree:tree});
 
                 }
             }

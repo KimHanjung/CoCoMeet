@@ -14,6 +14,7 @@ class Tools extends Component {
   render() {
     let treearray = []
     for(let i=0;i<this.props.treenum;i++){
+      i = String(i)
       if (i===this.props.tree1) {
         treearray.push(<div key = {i} class="w-full text-red"><Tree treeId={i}/></div>);
       }
