@@ -50,7 +50,7 @@ class Enter extends Component {
                         </div>
                         <div className="login-input-wrap input-password">
                             <i className="fas fa-key"></i>
-                            <input placeholder="Channel Code" type="text" onChange={(e)=>this.setState({channel_code: e.target.value})} onKeyDown={this.keysend}/>
+                            <input placeholder="Channel Code" type="text" onChange={(e)=>this.setState({channel_code: e.target.value})}/>
                         </div>
                     </div>
                     <div className="login-btn-wrap">

@@ -267,12 +267,12 @@ board_server.on('connection', function(socket){
                             if (channel === "christ" && message.content === orderLeft[orderLeft.length-1]) {
                                 treeLeft = rearrange(message.treedata, orderLeft);
                                 //console.log("before sendtree", treeLeft)
-                                board_server.to(data.channel).emit('sendTree', {treenum:treenum, treeid: 0, tree:treeLeft});
+                                board_server.to(data.channel).emit('sendTree', {treenum:treenum, treeid: "0", tree:treeLeft});
 
                             }
                             if (channel === "merry" && message.content === orderRight[orderRight.length-1]){
                                 treeRight = rearrange(message.treedata, orderRight);
-                                board_server.to(data.channel).emit('sendTree', {treenum:treenum, treeid: 1, tree:treeRight});
+                                board_server.to(data.channel).emit('sendTree', {treenum:treenum, treeid: "1", tree:treeRight});
                                 
                             }
                         }
@@ -484,7 +484,7 @@ board_server.on('connection', function(socket){
                                 tree = msg.treedata;
                                 retree = rearrange(tree, msg.order);
                                 // console.log("Delete Node sendTree, treeid :",tid, "tree:", retree);
-                                socket.to(data.channel).emit('sendTree',{'treeid': tid, 'tree' : retree});
+                                board_server.to(data.channel).emit('sendTree',{'treeid': tid, 'tree' : retree});
                             }
                         }
                     })
@@ -611,7 +611,7 @@ board_server.on('connection', function(socket){
 
     socket.on('changeText', function(data) {
         //DB한테 data.text, data.tree_id, data.node_id 보냄 -o
-        console.log("changeText data",data)
+        console.log("changeText data", data)
         let rid = data.room_id;
         let nid = data.node_id;
         let tid = data.tree_id;
@@ -641,8 +641,8 @@ board_server.on('connection', function(socket){
                 message = JSON.parse(message);
                 if (message.type === "cText" && message.nid === nid) {
                     let node = message.nodedata;
-                    console.log(">>>>>>before sendNode, treeid", tid, "node", node)
-                    socket.to(data.channel).emit('sendNode', {treeid: tid, node:node});
+                    // console.log(">>>>>>before sendNode, treeid", tid, "node", node)
+                    board_server.to(data.channel).emit('sendNode', {treeid: tid, node:node});
                 }
             }
         })
@@ -652,27 +652,47 @@ board_server.on('connection', function(socket){
 
     socket.on('changeAttribute', function(data){
         // 얘네는 sendTree로 변경
-        //DB한테 data.color, data.deco, data.weight, data.tree_id, data.node_id 보냄
 
-        for (var treeid in data.tree_id_list) {
-            if(data.deco!==undefined)
-                // to_db = (treeid, data.tree_id_list[treeid], data.deco);
-                editAttr(data.room_id, data.node_id, "deco", data.deco);
-            if(data.color!==undefined)
-                // to_db = (treeid, data.tree_id_list[treeid], data.color);
-                editAttr(data.room_id, data.node_id, "color", data.color);
-            if(data.weight!==undefined)
-                // to_db = (treeid, data.tree_id_list[treeid], data.weight);
-                editAttr(data.room_id, data.node_id, "weight", data.weight);
+        console.log("changeAttr data", data);
+        let c_list = data.node_list;
+        let rid = data.room_id;
+
+        for (var i=0 , elem; elem = c_list[i]; i++) {
+            if(typeof data.deco !== "undefined"){
+                editAttr(rid, elem, "deco", data.deco, "changeAttr");
+            }
+            if(typeof data.color !== "undefined"){
+                editAttr(rid, elem, "color", data.color,"changeAttr");
+            }
+            if(typeof data.weight !== "undefined"){
+                editAttr(rid, elem, "weight", data.weight,"changeAttr");
+            }
         }
 
-        socket.to(data.channel).emit('sendNode', {treeid: treeid, node:data.node_data});
+        sub.on("message", (channel, message)=> {
+            if (channel === "mas") {
+                message = JSON.parse(message);
+                if (message.type === "edt" && message.sock_msg === "changeAttr") {
+                    let nn = message.node_id;
+                    let n_inf = "R" + rid + "-" + nn ;
+                    r_cli.HMGET(n_inf, "node_id","room_id", "tree_id", "title", "parent", "color", "weight", "deco", (err, obj) => {
+                        var node = {"room_id" : obj[1], "node_id" : obj[0], "tree_id" : obj[2], "title" : obj[3], "parent": obj[4], "color" : obj[5], "weight" : obj[6], "deco" : obj[7]};
+                        console.log(">>>>>>>>>>>before sendNode, treeid", node.tree_id, "node", node);
+                        board_server.to(data.channel).emit('sendNode', {treeid: node.tree_id, "node":node});
+                    });
+                }
+            }
+        })
+
+        
     });
+
+
+
     socket.on('changeTree', function(data){
         //DB로부터 새로운 tree 요청 data.tree_id
         let tid = data.tree_id;
         let rid = data.room_id;
-        //console.log("server_changeTree !! tid", tid, "rid", rid)
         let tree = {}
         get_order(rid, tid);
         

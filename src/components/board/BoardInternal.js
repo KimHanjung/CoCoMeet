@@ -128,10 +128,10 @@ class BoardInternal extends Component {
     handleChecked = (event) => {
         var test_checked = this.state.checkedList;
         if(event.target.checked === true){
-            this.props.sendChecked(this.props.tree.treeID, parseInt(event.target.value,10), true)
+            this.props.sendChecked(this.props.tree.treeID, event.target.value, true)
             //console.log(this.state.checkedList);
         }else if(event.target.checked === false){
-            this.props.sendChecked(this.props.tree.treeID, parseInt(event.target.value,10), false)
+            this.props.sendChecked(this.props.tree.treeID, event.target.value, false)
             //console.log(this.state.checkedList);
         }
     }
@@ -205,7 +205,7 @@ class BoardInternal extends Component {
                             };
                         }}
                         
-                        //onVisibilityToggle={args => recordCall('onVisibilityToggle', args)}
+                        onVisibilityToggle={args => ()=>this.props.toggle(args.node.node_id,args.node.expanded)}
                         onMoveNode={args => {
                             recordCall('onMoveNode', args);
                             const { prevPath, nextPath, node } = args;

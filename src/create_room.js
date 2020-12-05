@@ -9,6 +9,7 @@ class Create extends Component {
         super(props);
         this.state = {uname: 'default', channel_name:'default', channel_code:undefined};
         this.send = this.send.bind(this);
+        this.keysend = this.send.bind(this);
     }
     send(){
         socket.emit('createChannel',{channel:this.state.channel_name}, (code, room_id, channel_name) => {
@@ -18,6 +19,16 @@ class Create extends Component {
             })
         });
         //alert(this.state.uname+' '+this.state.channel_name);
+    }
+    keysend(event){
+        if(event.keyCode===13) {
+            socket.emit('joinChannel', {channel_code:this.state.channel_code}, (name, room_id, channel_name) => {
+                this.setState({channel_name: name}, () => {
+                    this.props.history.push('/main', 
+                        {channel: channel_name, channel_code:this.state.channel_code, uname:this.state.uname, room_id:room_id});
+                });
+            });
+        }
     }
     render() {
         return (
