@@ -611,11 +611,47 @@ board_server.on('connection', function(socket){
 
     socket.on('changeText', function(data) {
         //DB한테 data.text, data.tree_id, data.node_id 보냄 -o
-        editAttr(data.room_id, data.node_id, "title", data.text);
-        socket.to(data.channel).emit('sendNode', {treeid: treeid, node:data.node_data});
+        console.log("changeText data",data)
+        let rid = data.room_id;
+        let nid = data.node_id;
+        let tid = data.tree_id;
+        editAttr(rid, nid, "title", data.text, "changeText");
+        
+
+        sub.on("message", (channel, message)=>{
+            if (channel === "mas") {
+                message = JSON.parse(message);
+                if (message.type == "edt", message.sock_msg === "changeText" && message.node_id === nid) {
+                    let n_info = "R"+rid+"-"+nid;
+                    r_cli.HMGET(n_info, "node_id","room_id", "tree_id", "title", "parent", "color", "weight", "deco", (err, obj) => {
+                        var nodee = {"room_id" : obj[1], "node_id" : obj[0], "tree_id" : obj[2], "title" : obj[3], "parent": obj[4], "color" : obj[5], "weight" : obj[6], "deco" : obj[7]};
+                        let dic = {};
+                        dic["type"] = "cText";
+                        dic["nid"] = obj[0];
+                        dic["nodedata"] = nodee;
+                        dic = JSON.stringify(dic);
+                        pub.publish("christ", dic);
+                    });
+                }
+            }
+        })
+
+        sub.on("message", (channel, message) => {
+            if (channel === "christ") {
+                message = JSON.parse(message);
+                if (message.type === "cText" && message.nid === nid) {
+                    let node = message.nodedata;
+                    console.log(">>>>>>before sendNode, treeid", tid, "node", node)
+                    socket.to(data.channel).emit('sendNode', {treeid: tid, node:node});
+                }
+            }
+        })
     });
 
+
+
     socket.on('changeAttribute', function(data){
+        // 얘네는 sendTree로 변경
         //DB한테 data.color, data.deco, data.weight, data.tree_id, data.node_id 보냄
 
         for (var treeid in data.tree_id_list) {

@@ -73,6 +73,7 @@ class Main extends Component {
   }
 
   applytoTree=(tree_id, new_node)=>{
+    new_node['expanded']=this.state.expandList[parseInt(new_node.node_id)]
     if (this.state.lefttree.treeID ===tree_id){
       // traverse left tree
       var lflat = this.toFlatDataFrom(this.state.leftree);
@@ -92,8 +93,8 @@ class Main extends Component {
 
   toTreeDataFrom=(flat, tree_id)=>{
     return getTreeFromFlatData({
-      flatData: flat.map(node => ({ ...node, node_id: node.node_id, 
-        title: <EditableText modify={this.modifyState} tree_id={tree_id} node_id={node.node_id} initialValue={node.title}/>, 
+      flatData: flat.map(node => ({ ...node, node_id: node.node_id, expanded: this.state.expandList[parseInt(node.node_id)],
+        title: <EditableText modify={this.modifyState} room_id={node.room_id} tree_id={tree_id} node_id={node.node_id} initialValue={node.title}/>, 
                           color: node.color, weight: node.weight, deco: node.deco })),
       getKey: node => node.node_id,
       getParentKey: node => node.parent, 
@@ -200,11 +201,11 @@ class Main extends Component {
       const treeID = data.treeid;
       if(treeID === cursor.state.leftree.treeID){
         if (!cursor.state.leftModifying){
-          cursor.applytoTree(data.treeid, data.node_id);
+          cursor.applytoTree(treeID, data.node); //new_node= data.node_id
         }
       }else if(treeID === cursor.state.righttree.treeID){
         if (!cursor.state.rightModifying){
-          cursor.applytoTree(data.treeid, data.node_id);
+          cursor.applytoTree(treeID, data.node);
         }
       }
     })
