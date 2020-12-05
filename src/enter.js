@@ -3,17 +3,22 @@ import { Link, Route, BrowserRouter as Router } from "react-router-dom";
 import './enter.css'
 import io from 'socket.io-client';
 
-const socket = io('http://localhost:4002/');
+const socket = io('http://localhost:4002/channel_server');
 
 class Enter extends Component {
     constructor(props) {
         super(props);
-        this.state = {uname: 'default', channel_code:'default'};
+        this.state = {uname: 'default', channel_code:'default', channel_name:undefined};
         this.send = this.send.bind(this);
     }
     send(){
-        socket.emit('Channel_join', {channel_code:this.state.channel_code, uname:this.state.uname});
-        alert(this.state.uname+' '+this.state.channel_code);
+        socket.emit('joinChannel', {channel_code:this.state.channel_code}, (name, room_id, channel_name) => {
+            this.setState({channel_name: name}, () => {
+                this.props.history.push('/main', 
+                    {channel: channel_name, channel_code:this.state.channel_code, uname:this.state.uname, room_id:room_id});
+            });
+        });
+        //alert(this.state.uname+' '+this.state.channel_code);
     }
     render() {
         return (
@@ -39,9 +44,7 @@ class Enter extends Component {
                         </div>
                     </div>
                     <div className="login-btn-wrap">
-                        <Link to="/main">
-                            <button className="login-btn" onClick={this.send}>ENTER</button>
-                        </Link>
+                        <button className="login-btn" onClick={this.send}>ENTER</button>
                         <Link to="/">Back</Link>
                     </div>
                 </div>
