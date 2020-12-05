@@ -232,9 +232,11 @@ class Main extends Component {
       data["node_id"]=node_id;
       data["origin_tree"]=this.toFlatDataFrom(this.state.lefttree.treeData);
       data["origin_tree_id"]=this.state.lefttree.treeID;
-      data["target_tree"]=this.toFlatDataFrom(this.state.righttree.treeData);
+      var target_tree_flat =this.toFlatDataFrom(this.state.righttree.treeData);
+      data["target_tree"]=target_tree_flat;
       data["target_tree_id"]=this.state.righttree.treeID;
       data["channel"]=this.state.channel;
+      data["node_parent"]=this.find_parent_of(node_id,target_tree_flat)
       socket.emit("migrateNode", data);
 
     }
@@ -267,13 +269,19 @@ class Main extends Component {
               socket.emit("deleteNode", data);
             }
             else {
+              // prev flat에도 있고 cur_flat에도 있고.
               console.log("move inside left...EMIT!")
+              console.log("indendation move")
+              console.log("prev and cur respectively",prev_flat_for_sending,cur_flat_for_sending)
               var data = {};
               data["room_id"]=this.state.room_id;
               data["node_id"]=node_id;
               data["tree_id"]=this.state.lefttree.treeID;
-              data["tree"]=prev_flat_for_sending;
+              data["tree"]=cur_flat_for_sending;
+              //원래는 prev
               data["channel"]=this.state.channel;
+              data["node_parent"]=this.find_parent_of(node_id,cur_flat_for_sending)
+
               socket.emit("moveNode", data);
             }
           }
@@ -302,8 +310,9 @@ class Main extends Component {
             data["room_id"]=this.state.room_id;
             data["node_id"]=node_id;
             data["tree_id"]=this.state.lefttree.treeID;
-            data["tree"]=prev_flat_for_sending;
+            data["tree"]=cur_flat_for_sending;
             data["channel"]=this.state.channel;
+            data["node_parent"]=this.find_parent_of(node_id,cur_flat_for_sending)
             socket.emit("moveNode", data);
           }
         }
@@ -346,9 +355,11 @@ class Main extends Component {
       data["node_id"]=node_id;
       data["origin_tree"]=this.toFlatDataFrom(this.state.righttree.treeData);
       data["origin_tree_id"]=this.state.righttree.treeID;
-      data["target_tree"]=this.toFlatDataFrom(this.state.lefttree.treeData);
+      var target_tree_flat =this.toFlatDataFrom(this.state.lefttree.treeData);
+      data["target_tree"]=target_tree_flat
       data["target_tree_id"]=this.state.lefttree.treeID;
       data["channel"]=this.state.channel;
+      data["node_parent"]=this.find_parent_of(node_id,target_tree_flat)
       socket.emit("migrateNode", data);
 
     }
@@ -382,12 +393,16 @@ class Main extends Component {
             }
             else {
               console.log("move inside right...EMIT!")
+              console.log("indendation move")
+              console.log("prev and cur respectively",prev_flat_for_sending,cur_flat_for_sending)
               var data = {};
               data["room_id"]=this.state.room_id;
               data["node_id"]=node_id;
               data["tree_id"]=this.state.righttree.treeID;
-              data["tree"]=prev_flat_for_sending;
+              data["tree"]=cur_flat_for_sending;
+              //원래는 prev
               data["channel"]=this.state.channel;
+              data["node_parent"]=this.find_parent_of(node_id,cur_flat_for_sending)
               socket.emit("moveNode", data);
             }
           }
@@ -417,8 +432,9 @@ class Main extends Component {
             data["room_id"]=this.state.room_id;
             data["node_id"]=node_id;
             data["tree_id"]=this.state.righttree.treeID;
-            data["tree"]=prev_flat_for_sending;
+            data["tree"]=cur_flat_for_sending;
             data["channel"]=this.state.channel;
+            data["node_parent"]=this.find_parent_of(node_id,cur_flat_for_sending)
             socket.emit("moveNode", data);
           }
           
@@ -427,8 +443,8 @@ class Main extends Component {
           // this node is from left. (left에는 없었다)
           // 즉 left->right.
           // left에서 "migrateNode" emit
-          console.log("left->right")
           this.setState({lastMoveNodeRight: node_id})
+          console.log("left->right")
         }
       }
     }

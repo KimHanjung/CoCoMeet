@@ -656,17 +656,59 @@ board_server.on('connection', function(socket){
         editAttr(data.room_id, node_id, "parent", String(parent));
 
 
-        socket.to(data.channel).emit('sendTree', {treeid: origin_treeid, tree:db.origin_tree});
-        socket.to(data.channel).emit('sendTree', {treeid: target_treeid, tree:db.target_tree});
+        board_server.to(data.channel).emit('sendTree', {treeid: origin_treeid, tree:db.origin_tree});
+        board_server.to(data.channel).emit('sendTree', {treeid: target_treeid, tree:db.target_tree});
     });
     
     socket.on('moveNode', function(data){ //같은 트리 안에서의 이동
-        //옮긴 후의 flatdata 온다고 가정
         let order = getOrder(data.tree);
-        let parent = data.tree.filter(i => i.node_id===node_id)[0].parent;
+        let nid = data.node_id;
+        let tid = data.tree_id;
+        let rid = data.room_id;
+        let parent = data.node_parent;
+        let tree = {};
+        
+
+        // order 업데이트, parent 업데이트
+        let r_info = "R"+rid+"_order";
+        let n_info = "R"+rid+"-"+nid;
+        let strorder = "["+order.map(i=>parseInt(i)).toString()+"]";
+        r_cli.hmset(r_info, tid, strorder);
+        r_cli.hmset(n_info, "parent", parent);
+
+        // tree data 받아오는 과정
+        for (var i = 0, elem; elem = order[i]; i++) {
+            var info = "R"+rid+"-"+elem;
+            r_cli.HMGET(info, "node_id","room_id", "tree_id", "title", "parent", "color", "weight", "deco", (err, obj) => {
+                var treeeeee = {"room_id" : obj[1], "node_id" : obj[0], "tree_id" : obj[2], "title" : obj[3], "parent": obj[4], "color" : obj[5], "weight" : obj[6], "deco" : obj[7]};
+                tree[obj[0]] = treeeeee;
+                let dic = {};
+                dic["type"] = "mNode";
+                dic["n_id"] = obj[0];
+                dic["treedata"] = tree;
+                dic["order"] = order;
+                dic = JSON.stringify(dic);
+                pub.publish("christ", dic);
+            })
+        }
+
+        sub.on('message', (channel, message) => {
+            if (channel === "christ") {
+                let msg = JSON.parse(message);
+                if (msg.type === "mNode" && msg.n_id === order[order.length-1]) {
+                    tree = msg.treedata;
+                    order = msg.order;
+
+                    retree = rearrange(tree, order);
+                    console.log("before sendTree, treeid :",tid, "tree:", retree);
+                    socket.to(data.channel).emit('sendTree',{'treeid': tid, 'tree' : retree});
+                }
+            }
+        })
+        // let parent = data.tree.filter(i => i.node_id===node_id)[0].parent;
         //db1의 datas의 parent들 업뎃
-        editAttr(data.room_id, data.node_id, "parent", String(parent));
-        socket.to(data.channel).emit('treeid: treeid, sendTree', {tree:data.tree});
+        //editAttr(data.room_id, data.node_id, "parent", String(parent));
+ 
     });
 });
 
