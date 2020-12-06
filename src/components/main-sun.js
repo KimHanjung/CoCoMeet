@@ -196,6 +196,7 @@ class Main extends Component {
       //changetext, changeattr
       console.log("sendNode서니", data)
       const treeID = data.treeid; //'0'
+      // 미스테리........!!!!
       console.log("창열: ", cursor.state.lefttree.treeID, cursor.state.righttree.treeID, data.treeid)
       if(treeID === cursor.state.lefttree.treeID){
         console.log("left 들어옴")
