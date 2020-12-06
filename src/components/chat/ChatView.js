@@ -4,7 +4,7 @@ import React, { Component } from 'react';
 import io from 'socket.io-client';
 
 // local host의 chat_server와 연결하려고 할 때
-const socket = io('http://localhost:4002/');
+const socket = io('http://localhost:4002/chat_server');
 // aws의 chat_server와 연결하려고 할 떄
 //const socket = io('http://3.34.138.234:4000/');
 

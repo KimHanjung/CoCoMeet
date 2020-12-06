@@ -4,8 +4,8 @@ import { DragSource } from 'react-dnd';
 const spec = {
   beginDrag(props) {
     const item = { ...props };
-    console.log('beginDrag', item)
-    return props.tree;
+    console.log('beginDrag', item.treeId, typeof(item.treeId))
+    return props;
   },
   /*endDrag(props, monitor, component) {
     console.log('dropped ' + component);
@@ -35,7 +35,7 @@ class Tree extends Component {
     return connectDragSource(
       <div class="flex">
         <div class="w-1/2" style={{ opacity }}>
-          <span>Tree {this.props.tree.treeId}</span>
+          <span>Tree {this.props.treeId}</span>
         </div>
         <div class="w-1/2">
           <input type="checkbox" />

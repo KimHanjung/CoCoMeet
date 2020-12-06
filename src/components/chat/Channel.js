@@ -1,9 +1,7 @@
 import React, { Component } from 'react';
 //import { Input } from 'react-bootstrap';
 //import './Channel.css';
-import openSocket from 'socket.io-client';
-const socket = openSocket('http://localhost:4002');
-//const socket = openSocket('http://3.34.138.234:4000/');
+
 class AppChannel extends Component {
   constructor(props) {
     super(props);
@@ -25,7 +23,7 @@ class AppChannel extends Component {
   render() {
     return (
       <div class="p-2">
-        <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="username" type="text" placeholder="# Channel"  onBlur={this.updateChannel} onKeyDown={this.keyUpdateChannel}/>
+        <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="username" type="text" placeholder={'Ch. '+this.props.channel} readOnly/>
       </div>
     );
   }
