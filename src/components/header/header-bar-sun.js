@@ -1,11 +1,37 @@
 import React from "react";
 import { Link, Route, BrowserRouter as Router } from "react-router-dom";
+import { CopyToClipboard } from 'react-copy-to-clipboard'
 
 export default class HeaderBar extends React.Component {
   constructor(props) {
     super(props);
+    //channel
+    this.updateConnected = this.updateConnected.bind(this)
+    this.updateChannel = this.updateChannel.bind(this);
+    this.keyUpdateChannel = this.keyUpdateChannel.bind(this);
+    //name
+    this.updateName = this.updateName.bind(this);
+    this.keyUpdateName = this.keyUpdateName.bind(this);
   }
-
+  updateConnected(){
+    if(this.props.connected==='False') this.props.onUpdate_connect2('True');
+  }
+  updateChannel(event){
+    if(event.target.value!==this.props.channel) this.props.onUpdate_channel2(event.target.value);
+  }
+  keyUpdateChannel(event){
+    if(event.keyCode===13) {
+        if(event.target.value!==this.props.channel) this.props.onUpdate_channel2(event.target.value);
+    }
+  }
+  updateName(event){
+    if(event.target.value!==this.props.uname) this.props.onUpdate_name2(event.target.value);
+  }
+  keyUpdateName(event){
+    if(event.keyCode===13) {
+        if(event.target.value!==this.props.uname) this.props.onUpdate_name2(event.target.value);
+    }
+  }
   render() {
     return (
       <nav className="flex items-center justify-between flex-wrap bg-black p-3">
@@ -19,16 +45,16 @@ export default class HeaderBar extends React.Component {
           </button>
         </div>
         <div className="w-full block flex-grow lg:flex lg:items-center lg:w-auto">
-          <div className="text-sm lg:flex-grow md:hidden">
-            <a href="#responsive-header" className="block mt-4 lg:inline-block lg:mt-0 text-teal-200 hover:text-white mr-4">
-              About us
+          <div className="text-sm lg:flex-grow">
+            <a className="align-middle items-center object-center text-center place-self-center block mt-4 lg:inline-block lg:mt-0 text-teal-200 hover:text-white mr-4">
+              {'ID: '+this.props.uname}
             </a>
-            <a href="#responsive-header" className="block mt-4 lg:inline-block lg:mt-0 text-teal-200 hover:text-white mr-4">
-              Samples
-            </a>
-            <a href="#responsive-header" className="block mt-4 lg:inline-block lg:mt-0 text-teal-200 hover:text-white">
-              Blog
-            </a>
+            <CopyToClipboard text={this.props.channel_code}>
+                <button className="block mt-4 lg:inline-block lg:mt-0 text-teal-200 hover:text-white mr-4">Copy<br/>channel code</button>
+            </CopyToClipboard>
+            <a className="align-middle items-center object-center text-center place-self-center block mt-4 lg:inline-block lg:mt-0 text-teal-200 hover:text-white" id="username" >
+              {'Ch. '+this.props.channel}
+            </a>   
           </div>
           <div>
             <Link to="/">            

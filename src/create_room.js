@@ -12,7 +12,7 @@ class Create extends Component {
         this.keysend = this.keysend.bind(this);
     }
     send(event){
-        // console.log("sending...",event)
+        console.log("sending...")
         socket.emit('createChannel',{channel:this.state.channel_name}, (code, room_id, channel_name) => {
             this.setState({channel_code: code}, () => {
                 this.props.history.push('/main', 
@@ -22,7 +22,7 @@ class Create extends Component {
     }
     keysend(event){
         if(event.key==="Enter") {
-            // console.log("sending by enter...")
+            console.log("sending by enter...")
             socket.emit('createChannel',{channel:this.state.channel_name}, (code, room_id, channel_name) => {
                 this.setState({channel_code: code}, () => {
                     this.props.history.push('/main', 
