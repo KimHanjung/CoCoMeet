@@ -530,11 +530,13 @@ board_server.on('connection', function(socket){
                     // order[key]=value
                     // order = array != dict
                     // dict문법
-                    // console.log("-------------order", order);
-                    order[order.indexOf("-1")] = apple_id; // order -1로 되어있는 거 apple_id로 업데이트. apple_id를 미리 받아서 설정해둬야 한다.
+                    console.log("-----sunsapple--------order", order);
+                    if (order.indexOf("-1") !== -1) {
+                        order[order.indexOf("-1")] = apple_id; // order -1로 되어있는 거 apple_id로 업데이트. apple_id를 미리 받아서 설정해둬야 한다.
 
+                    }
+                    
                     // parent update 
-
                     console.log("AFTER -1 change", order)
 
                     // if (changeParent) {

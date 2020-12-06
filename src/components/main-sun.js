@@ -157,6 +157,18 @@ class Main extends Component {
       var new_tree = this.find_node_and_replace(new_node,rtree)
       if (new_tree)
         this.setState({righttree:{treeID: tree_id, treeData:new_tree}})
+      console.log("apply new-node to tree right")
+      // traverse right tree
+      var rtree = this.state.righttree.treeData
+      var new_tree = this.find_node_and_replace(new_node,rtree)
+      if (new_tree)
+        this.setState({righttree:{treeID: tree_id, treeData:new_tree}})
+      console.log("apply new-node to tree right")
+      // traverse right tree
+      var rtree = this.state.righttree.treeData
+      var new_tree = this.find_node_and_replace(new_node,rtree)
+      if (new_tree)
+        this.setState({righttree:{treeID: tree_id, treeData:new_tree}})
     }
   }
   
