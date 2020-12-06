@@ -20,14 +20,14 @@ channel_server = io.of('/channel_server');
 
 const redis = require('redis');
 // // AWS
-// const r_cli = redis.createClient(6379, "3.34.138.234");
-// const pub = redis.createClient(6379, "3.34.138.234");
-// const sub = redis.createClient(6379, "3.34.138.234");
+const r_cli = redis.createClient(6379, "3.34.138.234");
+const pub = redis.createClient(6379, "3.34.138.234");
+const sub = redis.createClient(6379, "3.34.138.234");
 
 // localhost
-const r_cli = redis.createClient(6379, "localhost");
-const pub = redis.createClient(6379, "localhost");
-const sub = redis.createClient(6379, "localhost");
+// const r_cli = redis.createClient(6379, "localhost");
+// const pub = redis.createClient(6379, "localhost");
+// const sub = redis.createClient(6379, "localhost");
 
 sub.subscribe("merry");
 sub.subscribe('christ');
@@ -132,7 +132,7 @@ function newApple(room_id, tree_id, text, parent, sock_msg) {
 }
 // new block은 new apple을 text, parent 지정해서 사용하면 된다.
 
-
+/*
 function newTree(room_id) {
     var treeId;
     r_cli.hmget("TID", room_id, (err, obj) => {
@@ -143,7 +143,7 @@ function newTree(room_id) {
     r_cli.HINCRBY("TID", room_id, 1);
     return treeId;
 }
-
+*/
 
 function editAttr(room_id, node_id, attr, content, sock_msg) {
     var target = "R" + room_id + "-" + node_id;
@@ -394,7 +394,7 @@ board_server.on('connection', function(socket){
                 let tree_keys = Object.keys(tree)
                 let before_tree="\n"
                 for(var k=0, tree_node; tree_node=tree[tree_keys[k]];k++){
-                    before_tree+="nodeid: "+tree_node.node_id+" treeid: "+tree_node.tree_id+"\n"
+                    before_tree+="be_nodeid: "+tree_node.node_id+" be_treeid: "+tree_node.tree_id+"\n"
                 }
                 console.log(">>a_node>>>>>>>>>>?>>>before>>>>", before_tree)
                 tree = rearrange(tree, order);
@@ -530,11 +530,13 @@ board_server.on('connection', function(socket){
                     // order[key]=value
                     // order = array != dict
                     // dict문법
-                    // console.log("-------------order", order);
-                    order[order.indexOf("-1")] = apple_id; // order -1로 되어있는 거 apple_id로 업데이트. apple_id를 미리 받아서 설정해둬야 한다.
+                    console.log("-----sunsapple--------order", order);
+                    if (order.indexOf("-1") !== -1) {
+                        order[order.indexOf("-1")] = apple_id; // order -1로 되어있는 거 apple_id로 업데이트. apple_id를 미리 받아서 설정해둬야 한다.
 
+                    }
+                    
                     // parent update 
-
                     console.log("AFTER -1 change", order)
 
                     // if (changeParent) {
@@ -734,10 +736,7 @@ board_server.on('connection', function(socket){
                     //console.log(">>>>>before tree", tree);
                     tree = rearrange(tree, order);
                     //console.log(">>>>>>>>after tree", tree)
-                    //board_server.to(data.channel).emit('changeTree', {treeid: tid, tree:tree});
-                    //console.log("서니서니", socket)
-                    //console.log("서니서니2", socket.id)
-                    board_server.to(socket.id).emit('changeTree', {treeid: (tree[0].tree_id)*1, tree:tree});
+                    board_server.to(socket.id).emit('changeTree', {treeid: (tree[0].tree_id), tree:tree});
 
                 }
             }
@@ -922,12 +921,17 @@ channel_server.on('connection', function(socket) {
             room_id = obj; //room _id를 설정하고
             r_cli.hmset("RCode", code, String(room_id)); //room code - room id 설정,
             r_cli.hmset("RName", room_id, data.channel); //room id - room name 설정
+            r_cli.hmset("Tnum", room_id, 0);
+            r_cli.hmset("TID", room_id, 0);
+            r_cli.hmset("Nnum", room_id, 0);
+            r_cli.hmset("NID", room_id, 0);
 
             r_cli.incr("Rnum"); // 방 갯수 하나 ++
             
             var treeId=[]; // 방에 만들 트리 id를 담는 변수. 처음에는 0이 있는 게 맞음
             console.log("roomid", room_id);
             
+
             r_cli.hmget("TID", room_id, (err, obj) => { //방에 있는 트리 개수를 받아옴. 0이 있겠지
                 if(err){
                     console.log("hmget ERROR", err)

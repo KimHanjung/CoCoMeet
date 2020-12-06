@@ -4,8 +4,7 @@ import { DragSource } from 'react-dnd';
 const spec = {
   beginDrag(props) {
     const item = { ...props };
-    console.log('beginDrag', item.treeId)
-    //console.log('bbbbbbing', props.treeId)
+    console.log('beginDrag', item.treeId, typeof(item.treeId))
     return props;
   },
   /*endDrag(props, monitor, component) {
