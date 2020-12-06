@@ -25,7 +25,7 @@ class externalNodeBaseComponent extends Component {
                 style={{
                     display: 'inline-block',
                     padding: '3px 5px',
-                    background: 'red',
+                    background: 'rgba(51, 85, 139)',
                     color: 'white',
                 }}
             >
@@ -170,9 +170,9 @@ class BoardInternal extends Component {
                             var reviseColor;
                             var reviseDeco;
                             var reviseWeight;
-                            reviseDeco = "underline";
+                            reviseDeco = "none";
                             reviseWeight = 'normal';
-                            reviseColor = 'cyan';
+                            reviseColor = 'grey';
                             // if(node.node_id === "1"){
                             //     reviseColor = 'yellow';
                             //     reviseDeco = 'line-through';
@@ -234,11 +234,7 @@ class BoardInternal extends Component {
                         </TrashNodeComponent>
                     </div>
                     <UExternalComponent node={{ node_id: '-1', title: this.props.msg_to_block }} />
-                    <div>{lastMoveNode && (
-          <div>
-            Node &quot;{lastMoveNode.node_id}&quot; moved to path [{lastMoveNextPath}].
-          </div>
-        )}</div>
+                    
                 </div>
                 
                 

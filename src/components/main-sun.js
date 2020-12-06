@@ -31,7 +31,7 @@ class Main extends Component {
       channel:this.props.history.location.state.channel, 
       uname:this.props.history.location.state.uname, channel_code: this.props.history.location.state.channel_code,
       room_id: this.props.history.location.state.room_id,
-      connected:'False', msg_to_block:'Select Message!',
+      connected:'False', msg_to_block:'Click Chat Balloon',
       treenum: 2,
       lefttree: {treeID: '0', treeData: [{title: "dummy0"}]},
       righttree: {treeID: '1', treeData: [{title: "dummy1"}]},
@@ -70,30 +70,93 @@ class Main extends Component {
     this.getListFromBoard = this.getListFromBoard.bind(this);
     this.find_parent_of = this.find_parent_of.bind(this);
     this.applytoTree = this.applytoTree.bind(this);
+    this.find_node_and_replace = this.find_node_and_replace.bind(this)
   }
 
-  find_node_and_replace=(tree_data)=>{
-    var children = tree_data
+  find_node_and_replace=(new_node, tree_data)=>{
+    // console.log(tree_data)
+    for(var i=0, node; node=tree_data[i]; i++){
+      // console.log(node.node_id)
+      if (new_node.node_id === node.node_id){
+        tree_data[i] = new_node
+        return tree_data
+      }
+      else {
+        if (node.children !== undefined) {
+          let result = this.find_node_and_replace(new_node, node.children)
+          if(result){
+            tree_data[i]['children'] = result
+            return tree_data
+          }
+        }
+      }
+    }
+    return false;
   }
 
   applytoTree=(tree_id, new_node)=>{
-    console.log("applytotree")
     // new_node['expanded']=this.state.expandList[parseInt(new_node.node_id)]
+    new_node = {node_id: new_node.node_id, expanded: this.state.expandList[parseInt(new_node.node_id)],
+        title: <EditableText modify={this.modifyState} channel={this.state.channel} room_id={new_node.room_id} tree_id={tree_id} node_id={new_node.node_id} initialValue={new_node.title}/>, 
+        color: new_node.color, weight: new_node.weight, deco: new_node.deco,
+        parent: new_node.parent, tree_id: new_node.tree_id}
+    console.log("input tree_id, cur left, right", tree_id,this.state.lefttree.treeID,this.state.righttree.treeID)
     if (this.state.lefttree.treeID ===tree_id){
+      console.log("apply new-node to tree left")
       // traverse left tree
       var ltree = this.state.lefttree.treeData
-
-      var lflat = this.toFlatDataFrom(this.state.lefttree.treeData);
-      lflat.map(node => new_node.node_id === node.node_id ? new_node : node)
-      console.log("apply서니1")
-      this.setState({lefttree:{treeID: tree_id, treeData: this.toTreeDataFrom(lflat,tree_id)}})
+      var new_tree = this.find_node_and_replace(new_node,ltree)
+      if (new_tree)
+        this.setState({lefttree:{treeID: tree_id, treeData:new_tree}})
     }else if (this.state.righttree.treeID ===tree_id){
+      console.log("apply new-node to tree right")
       // traverse right tree
-      var rflat = this.toFlatDataFrom(this.state.righttree.treeData);
-      console.log("apply서니1.5",rflat)
-      rflat.map(node => new_node.node_id === node.node_id ? new_node : node)
-      console.log("apply서니2",rflat, this.toTreeDataFrom(rflat,tree_id))
-      this.setState({righttree:{treeID: tree_id, treeData: this.toTreeDataFrom(rflat,tree_id)}})
+      var rtree = this.state.righttree.treeData
+      var new_tree = this.find_node_and_replace(new_node,rtree)
+      if (new_tree)
+        this.setState({righttree:{treeID: tree_id, treeData:new_tree}})
+      console.log("apply new-node to tree right")
+      // traverse right tree
+      var rtree = this.state.righttree.treeData
+      var new_tree = this.find_node_and_replace(new_node,rtree)
+      if (new_tree)
+        this.setState({righttree:{treeID: tree_id, treeData:new_tree}})
+      console.log("apply new-node to tree right")
+      // traverse right tree
+      var rtree = this.state.righttree.treeData
+      var new_tree = this.find_node_and_replace(new_node,rtree)
+      if (new_tree)
+        this.setState({righttree:{treeID: tree_id, treeData:new_tree}})
+      console.log("apply new-node to tree right")
+      // traverse right tree
+      var rtree = this.state.righttree.treeData
+      var new_tree = this.find_node_and_replace(new_node,rtree)
+      if (new_tree)
+        this.setState({righttree:{treeID: tree_id, treeData:new_tree}})
+      console.log("apply new-node to tree right")
+      // traverse right tree
+      var rtree = this.state.righttree.treeData
+      var new_tree = this.find_node_and_replace(new_node,rtree)
+      if (new_tree)
+        this.setState({righttree:{treeID: tree_id, treeData:new_tree}})
+      console.log("apply new-node to tree right")
+      // traverse right tree
+      var rtree = this.state.righttree.treeData
+      var new_tree = this.find_node_and_replace(new_node,rtree)
+      if (new_tree)
+        this.setState({righttree:{treeID: tree_id, treeData:new_tree}})
+      console.log("apply new-node to tree right")
+      // traverse right tree
+      var rtree = this.state.righttree.treeData
+      var new_tree = this.find_node_and_replace(new_node,rtree)
+      if (new_tree)
+        this.setState({righttree:{treeID: tree_id, treeData:new_tree}})
+      console.log("apply new-node to tree right")
+      // traverse right tree
+      var rtree = this.state.righttree.treeData
+      var new_tree = this.find_node_and_replace(new_node,rtree)
+      if (new_tree)
+        this.setState({righttree:{treeID: tree_id, treeData:new_tree}})
     }
   }
   
@@ -202,17 +265,17 @@ class Main extends Component {
       //changetext, changeattr
       console.log("sendNode서니", data)
       const treeID = data.treeid; //'0'
-      console.log("창열: ", cursor.state.lefttree.treeID, cursor.state.righttree.treeID, data.treeid)
+      // console.log("창열: ", cursor.state.lefttree.treeID, cursor.state.righttree.treeID, data.treeid)
       if(treeID === cursor.state.lefttree.treeID){
-        console.log("left 들어옴")
+        // console.log("left 들어옴")
         if (!cursor.state.leftModifying){
-          console.log("left 또 들어왔지롱")
+          // console.log("left 또 들어왔지롱")
           cursor.applytoTree(treeID, data.node); //new_node= data.node_id
         }
       }else if(treeID === cursor.state.righttree.treeID){
-        console.log("right 들어옴")
+        // console.log("right 들어옴")
         if (!cursor.state.rightModifying){
-          console.log("right 또 들어왔지롱")
+          // console.log("right 또 들어왔지롱")
           cursor.applytoTree(treeID, data.node);
         }
       }

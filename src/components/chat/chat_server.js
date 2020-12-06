@@ -132,7 +132,7 @@ function newApple(room_id, tree_id, text, parent, sock_msg) {
 }
 // new block은 new apple을 text, parent 지정해서 사용하면 된다.
 
-
+/*
 function newTree(room_id) {
     var treeId;
     r_cli.hmget("TID", room_id, (err, obj) => {
@@ -143,7 +143,7 @@ function newTree(room_id) {
     r_cli.HINCRBY("TID", room_id, 1);
     return treeId;
 }
-
+*/
 
 function editAttr(room_id, node_id, attr, content, sock_msg) {
     var target = "R" + room_id + "-" + node_id;
@@ -394,7 +394,7 @@ board_server.on('connection', function(socket){
                 let tree_keys = Object.keys(tree)
                 let before_tree="\n"
                 for(var k=0, tree_node; tree_node=tree[tree_keys[k]];k++){
-                    before_tree+="nodeid: "+tree_node.node_id+" treeid: "+tree_node.tree_id+"\n"
+                    before_tree+="be_nodeid: "+tree_node.node_id+" be_treeid: "+tree_node.tree_id+"\n"
                 }
                 console.log(">>a_node>>>>>>>>>>?>>>before>>>>", before_tree)
                 tree = rearrange(tree, order);
@@ -919,12 +919,17 @@ channel_server.on('connection', function(socket) {
             room_id = obj; //room _id를 설정하고
             r_cli.hmset("RCode", code, String(room_id)); //room code - room id 설정,
             r_cli.hmset("RName", room_id, data.channel); //room id - room name 설정
+            r_cli.hmset("Tnum", room_id, 0);
+            r_cli.hmset("TID", room_id, 0);
+            r_cli.hmset("Nnum", room_id, 0);
+            r_cli.hmset("NID", room_id, 0);
 
             r_cli.incr("Rnum"); // 방 갯수 하나 ++
             
             var treeId=[]; // 방에 만들 트리 id를 담는 변수. 처음에는 0이 있는 게 맞음
             console.log("roomid", room_id);
             
+
             r_cli.hmget("TID", room_id, (err, obj) => { //방에 있는 트리 개수를 받아옴. 0이 있겠지
                 if(err){
                     console.log("hmget ERROR", err)
