@@ -117,7 +117,7 @@ function newApple(room_id, tree_id, text, parent, sock_msg) {
         var info = "R"+room_id+"-"+obj;
         // console.log(info);
         
-        r_cli.hmset(String(info), "room_id", String(room_id), "tree_id", String(tree_id), "node_id", String(obj), "title", text , "parent", String(parent), "color", "blue", "deco", "normal", "weight", "normal");
+        r_cli.hmset(String(info), "room_id", String(room_id), "tree_id", String(tree_id), "node_id", String(obj), "title", text , "parent", String(parent), "color", "blue", "deco", "none", "weight", "normal");
         r_cli.HINCRBY("NID", room_id, 1); //해당 room_num의 node 개수 +1
         r_cli.HINCRBY("Nnum", room_id, 1);
         let msg = {"type" : "apple", "room_id" : room_id, "newid" : newid, "treeid" : tree_id, "sock_msg" : sock_msg};
@@ -273,12 +273,12 @@ board_server.on('connection', function(socket){
                             if (message.room_id === room_id && channel === "christ" && message.content === orderLeft[orderLeft.length-1]) {
                                 treeLeft = rearrange(message.treedata, orderLeft);
                                 //console.log("before sendtree", treeLeft)
-                                board_server.to(data.channel).emit('sendTree', {treenum:treenum, treeid: "0", tree:treeLeft});
+                                board_server.to(data.channel).emit('sendTree', {treenum:"2", treeid: "0", tree:treeLeft});
 
                             }
                             if (message.room_id === room_id && channel === "merry" && message.content === orderRight[orderRight.length-1]){
                                 treeRight = rearrange(message.treedata, orderRight);
-                                board_server.to(data.channel).emit('sendTree', {treenum:treenum, treeid: "1", tree:treeRight});
+                                board_server.to(data.channel).emit('sendTree', {treenum:"2", treeid: "1", tree:treeRight});
                                 
                             }
                         }
@@ -656,6 +656,8 @@ board_server.on('connection', function(socket){
                     let node = message.nodedata;
                     // console.log(">>>>>>before sendNode, treeid", tid, "node", node)
                     board_server.to(data.channel).emit('sendNode', {treeid: tid, node:node});
+                    //board_server.to(data.channel).emit('sendNode', {treeid: tid, node:node});
+                
                 }
             }
         })
@@ -691,7 +693,7 @@ board_server.on('connection', function(socket){
                     r_cli.HMGET(n_inf, "node_id","room_id", "tree_id", "title", "parent", "color", "weight", "deco", (err, obj) => {
                         var node = {"room_id" : obj[1], "node_id" : obj[0], "tree_id" : obj[2], "title" : obj[3], "parent": obj[4], "color" : obj[5], "weight" : obj[6], "deco" : obj[7]};
                         console.log(">>>>>>>>>>>before sendNode, treeid", node.tree_id, "node", node);
-                        board_server.to(data.channel).emit('sendNode', {treeid: node.tree_id, "node":node});
+                        boardserver.to(data.channel).emit('sendNode', {treeid: node.tree_id, "node":node});
                     });
                 }
             }

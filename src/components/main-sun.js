@@ -16,7 +16,7 @@ import 'react-sortable-tree/style.css';
 import io from 'socket.io-client';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
-
+import PrintTree from './pdf.js'
 
 const socket = io('http://localhost:4002/board_server');
 class Main extends Component {
@@ -78,6 +78,7 @@ class Main extends Component {
     for(var i=0, node; node=tree_data[i]; i++){
       // console.log(node.node_id)
       if (new_node.node_id === node.node_id){
+        new_node['children']=node['children']
         tree_data[i] = new_node
         return tree_data
       }
@@ -100,70 +101,16 @@ class Main extends Component {
         title: <EditableText modify={this.modifyState} channel={this.state.channel} room_id={new_node.room_id} tree_id={tree_id} node_id={new_node.node_id} initialValue={new_node.title}/>, 
         color: new_node.color, weight: new_node.weight, deco: new_node.deco,
         parent: new_node.parent, tree_id: new_node.tree_id}
-    console.log("input tree_id, cur left, right", tree_id,this.state.lefttree.treeID,this.state.righttree.treeID)
+    //console.log("input tree_id, cur left, right", tree_id,this.state.lefttree.treeID,this.state.righttree.treeID)
     if (this.state.lefttree.treeID ===tree_id){
-      console.log("apply new-node to tree left")
+      //console.log("apply new-node to tree left")
       // traverse left tree
       var ltree = this.state.lefttree.treeData
       var new_tree = this.find_node_and_replace(new_node,ltree)
       if (new_tree)
         this.setState({lefttree:{treeID: tree_id, treeData:new_tree}})
     }else if (this.state.righttree.treeID ===tree_id){
-      console.log("apply new-node to tree right")
-      // traverse right tree
-      var rtree = this.state.righttree.treeData
-      var new_tree = this.find_node_and_replace(new_node,rtree)
-      if (new_tree)
-        this.setState({righttree:{treeID: tree_id, treeData:new_tree}})
-      console.log("apply new-node to tree right")
-      // traverse right tree
-      var rtree = this.state.righttree.treeData
-      var new_tree = this.find_node_and_replace(new_node,rtree)
-      if (new_tree)
-        this.setState({righttree:{treeID: tree_id, treeData:new_tree}})
-      console.log("apply new-node to tree right")
-      // traverse right tree
-      var rtree = this.state.righttree.treeData
-      var new_tree = this.find_node_and_replace(new_node,rtree)
-      if (new_tree)
-        this.setState({righttree:{treeID: tree_id, treeData:new_tree}})
-      console.log("apply new-node to tree right")
-      // traverse right tree
-      var rtree = this.state.righttree.treeData
-      var new_tree = this.find_node_and_replace(new_node,rtree)
-      if (new_tree)
-        this.setState({righttree:{treeID: tree_id, treeData:new_tree}})
-      console.log("apply new-node to tree right")
-      // traverse right tree
-      var rtree = this.state.righttree.treeData
-      var new_tree = this.find_node_and_replace(new_node,rtree)
-      if (new_tree)
-        this.setState({righttree:{treeID: tree_id, treeData:new_tree}})
-      console.log("apply new-node to tree right")
-      // traverse right tree
-      var rtree = this.state.righttree.treeData
-      var new_tree = this.find_node_and_replace(new_node,rtree)
-      if (new_tree)
-        this.setState({righttree:{treeID: tree_id, treeData:new_tree}})
-      console.log("apply new-node to tree right")
-      // traverse right tree
-      var rtree = this.state.righttree.treeData
-      var new_tree = this.find_node_and_replace(new_node,rtree)
-      if (new_tree)
-        this.setState({righttree:{treeID: tree_id, treeData:new_tree}})
-      console.log("apply new-node to tree right")
-      // traverse right tree
-      var rtree = this.state.righttree.treeData
-      var new_tree = this.find_node_and_replace(new_node,rtree)
-      if (new_tree)
-        this.setState({righttree:{treeID: tree_id, treeData:new_tree}})
-      console.log("apply new-node to tree right")
-      // traverse right tree
-      var rtree = this.state.righttree.treeData
-      var new_tree = this.find_node_and_replace(new_node,rtree)
-      if (new_tree)
-        this.setState({righttree:{treeID: tree_id, treeData:new_tree}})
-      console.log("apply new-node to tree right")
+      //console.log("apply new-node to tree right")
       // traverse right tree
       var rtree = this.state.righttree.treeData
       var new_tree = this.find_node_and_replace(new_node,rtree)
@@ -234,10 +181,11 @@ class Main extends Component {
     let cursor = this;
     // 방 들어왔을 때 실행되는 코드
     // channel uname ... 설정하는 코드
-    // console.log("미스테리우스")
+    console.log("channelJoin이요")
     socket.emit('channelJoin',{channel: cursor.state.channel, room_id: cursor.state.room_id})
     
     socket.on('addTree', function(data){
+      console.log("tree추가됨")
       cursor.setState({treenum: data.treenum})
     })
     /////////////////////////////////////////////한중한테 emit한 cli한테 다시 보내기
@@ -259,7 +207,7 @@ class Main extends Component {
       }
     })
     socket.on('sendTree', function(data){
-      // console.log("sendTree rannnn")
+      console.log("sendTree rannnn",data.treenum)
       //move, migrate, sunsapple, delete, addnode
       const treeID = data.treeid;
       // console.log('sendTree data from server',data)
@@ -616,7 +564,7 @@ class Main extends Component {
       socket.emit('changeTree', {channel: this.state.channel, room_id: this.state.room_id, tree_id: tree_id});
     }
   }
-  
+
   modifyExpandList=(node_id,expanded)=>{
     //expand = true/false
     // console.log("node_id",node_id, expanded)
@@ -652,6 +600,9 @@ class Main extends Component {
     attr["channel"]=this.state.channel;
     console.log(attr);
     socket.emit('changeAttribute',attr);
+  }
+  uncheckLeft=()=>{
+    // this.setState
   }
   getListFromBoard = (tree_id, node_id, isChecked) => {
     var left_test_checked = this.state.LeftcheckedList;
@@ -693,33 +644,26 @@ class Main extends Component {
   
   printDocument(id) {
     //alert('function in');
-    const input = document.getElementById(id);
-    html2canvas(input)
-      .then((canvas) => {
-        const imgData = canvas.toDataURL('image/png');
-        const pdf = new jsPDF();
-        pdf.addImage(imgData, 'JPEG', 0, 0);
-        pdf.save("tree_"+id+"_pdf.pdf");
-      });
+    // const input = document.getElementById(id);
+    // html2canvas(input)
+    //   .then((canvas) => {
+    //     const imgData = canvas.toDataURL('image/png');
+    //     const pdf = new jsPDF();
+    //     pdf.addImage(imgData, 'JPEG', 0, 0);
+    //     pdf.save("tree_"+id+"_pdf.pdf");
+    //   });
   }
 
   render() {
     return (
       <div>
-        <HeaderBar />
+        <HeaderBar channel={this.state.channel} channel_code={this.state.channel_code} uname = {this.state.uname} onUpdate_name2={this.updateName} onUpdate_channel2={this.updateChannel} onUpdate_connect2={this.updateConnected} connected={this.state.connected} />
         <div className="h-full">
           <DndProvider backend={HTML5Backend}>
             <div >
                 <div className="flex m-4 ">
                     <div className="w-1/9 p-3">
                         <div className="h-quaterscreen">
-                            <div className="mb-6 pb-3 shadow-md bg-gray-100 h-1/5">
-                              <div className="border-b-2 border-gray-300 bg-gray-200 h-12 p-3 mb-3">
-                                <div className="font-sans text-lg font-semibold text-teal-500">Channel</div>
-                              </div>
-                              <Name uname = {this.state.uname} onUpdate_name2={this.updateName} channel_code={this.state.channel_code}/>
-                              <Channel channel={this.state.channel} connected={this.state.connected} onUpdate_channel2={this.updateChannel} onUpdate_connect2={this.updateConnected} /> 
-                            </div>
                             <div className="mb-6 pb-3 shadow-md bg-gray-100 h-1/5">
                               <div className="border-b-2 border-gray-300 bg-gray-200 h-12 p-3 mb-3">
                                 <div className="font-sans text-lg font-semibold text-teal-500">Block Colors</div>
@@ -730,7 +674,7 @@ class Main extends Component {
                               <div className="border-b-2 border-gray-300 bg-gray-200 h-12 p-3 mb-3">
                                 <div className="font-sans text-lg font-semibold text-teal-500">Font Style</div>
                               </div>
-                              <TextTools sendDeWe={this.getAttrToBoard}/>
+                              <TextTools sendDeco={this.getAttrToBoard} sendWeight={this.getAttrToBoard}/>
                             </div>
                             <div className="mb-6 pb-3 shadow-md bg-gray-100 h-1/5">
                               <div className="border-b-2 border-gray-300 bg-gray-200 h-12 p-3 mb-3">
@@ -778,6 +722,10 @@ class Main extends Component {
             </div>
           </DndProvider>
         </div>
+        <PrintTree/>
+        
+        
+        
       </div>
     );
   }

@@ -150,13 +150,17 @@ class BoardInternal extends Component {
         return connectDropTarget(
             <div class="h-fullcalc w-full float-left" >
                 <div class='pl-8 pt-3'>
-                    <button class="font-semibold py-2 px-2 border border-transparent rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                    <button class="mr-2 font-semibold py-2 px-2 border border-transparent rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                         onClick={this.props.updateNode}>
                         Add Block
                     </button>
-                    <button class="bg-transparent hover:bg-blue-500 text-blue-500 font-semibold hover:text-white py-2 px-2 border border-blue-500 hover:border-transparent rounded"
+                    <button class="mx-2 bg-transparent hover:bg-blue-500 text-blue-500 font-semibold hover:text-white py-2 px-2 border border-blue-500 hover:border-transparent rounded"
                         onClick={()=> {this.props.printPDF(this.props.tree.treeID+"tree")}}>
                         Print to PDF
+                    </button>
+                    <button class="mx-2 bg-transparent hover:bg-blue-500 text-blue-500 font-semibold hover:text-white py-2 px-2 border border-blue-500 hover:border-transparent rounded"
+                        onClick={()=>console.log('left for unchecking')}>
+                        Release
                     </button>
                 </div>
                 <div class="h-6/9 w-9/9 m-3 p-3" id={this.props.tree.treeID+"tree"}>
@@ -170,25 +174,10 @@ class BoardInternal extends Component {
                             var reviseColor;
                             var reviseDeco;
                             var reviseWeight;
-                            reviseDeco = "none";
-                            reviseWeight = 'normal';
-                            reviseColor = 'grey';
-                            // if(node.node_id === "1"){
-                            //     reviseColor = 'yellow';
-                            //     reviseDeco = 'line-through';
-                            //     reviseWeight = 'bold';
-                            // }else if(node.node_id === "2"){
-                            //     reviseColor = 'blue'
-                            //     reviseDeco = 'underline';
-                            //     reviseWeight = 'normal';
-                            // }else if(node.node_id === "9"){
-                            //     reviseColor = 'red';
-                            //     reviseDeco = 'overline';
-                            //     reviseWeight = 'normal';
-                            // }else{
-                            //     reviseColor = 'cyan';
-                            //     reviseWeight = 'normal';
-                            // }
+                            reviseDeco = node.deco;
+                            reviseWeight = node.weight;
+                            reviseColor = node.color;
+                            
                             
                             return {
                                 
