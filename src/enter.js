@@ -10,15 +10,29 @@ class Enter extends Component {
         super(props);
         this.state = {uname: 'default', channel_code:'default', channel_name:undefined};
         this.send = this.send.bind(this);
+        this.keysend = this.keysend.bind(this);
     }
     send(){
-        socket.emit('joinChannel', {channel_code:this.state.channel_code}, (name) => {
+        console.log("enter send")
+        socket.emit('joinChannel', {channel_code:this.state.channel_code}, (name, room_id, channel_name) => {
             this.setState({channel_name: name}, () => {
                 this.props.history.push('/main', 
-                    {channel: this.state.channel_name, channel_code:this.state.channel_code, uname:this.state.uname});
+                    {channel: channel_name, channel_code:this.state.channel_code, uname:this.state.uname, room_id:room_id});
             });
         });
-        alert(this.state.uname+' '+this.state.channel_code);
+        //alert(this.state.uname+' '+this.state.channel_code);
+    }
+    keysend(event){
+        //event.key==="Enter"
+        if(event.key==="Enter") {
+            console.log("enter enter send")
+            socket.emit('joinChannel', {channel_code:this.state.channel_code}, (name, room_id, channel_name) => {
+                this.setState({channel_name: name}, () => {
+                    this.props.history.push('/main', 
+                        {channel: channel_name, channel_code:this.state.channel_code, uname:this.state.uname, room_id:room_id});
+                });
+            });
+        }
     }
     render() {
         return (
@@ -27,7 +41,6 @@ class Enter extends Component {
             <div className="login-form-container shadow">
                 <div className="login-form-right-side">
                     <div className="top-logo-wrap">
-                        
                     </div>
                     <h1>Welcome to COCOMEET!</h1>
                     <p>Convenient Co-work!<br/>COCOMEET is the best web meeting flatform. Discuss through chatting and organize the content easily. 'We are smarter than me.'</p>
@@ -40,7 +53,7 @@ class Enter extends Component {
                         </div>
                         <div className="login-input-wrap input-password">
                             <i className="fas fa-key"></i>
-                            <input placeholder="Channel Code" type="text" onChange={(e)=>this.setState({channel_code: e.target.value})}/>
+                            <input placeholder="Channel Code" type="text" onChange={(e)=>this.setState({channel_code: e.target.value})} onKeyPress={this.keysend}/>
                         </div>
                     </div>
                     <div className="login-btn-wrap">

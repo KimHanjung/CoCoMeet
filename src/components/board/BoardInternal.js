@@ -25,7 +25,7 @@ class externalNodeBaseComponent extends Component {
                 style={{
                     display: 'inline-block',
                     padding: '3px 5px',
-                    background: 'red',
+                    background: 'rgba(51, 85, 139)',
                     color: 'white',
                 }}
             >
@@ -87,10 +87,10 @@ const toolsNodeType = 'tree';
 const toolsNodeSpec = {
     drop(props, monitor){
         const item = monitor.getItem();
-        console.log(monitor.getDropResult());
-        console.log(item);
-        props.onDrop(item);
-        return item;
+        // console.log(monitor.getDropResult());
+        //console.log(item);
+        props.onDrop(item.treeId);
+        return item.treeId;
     }
 };
 const toolsNodeCollect = (connect, monitor) => ({
@@ -128,34 +128,38 @@ class BoardInternal extends Component {
     handleChecked = (event) => {
         var test_checked = this.state.checkedList;
         if(event.target.checked === true){
-            this.props.sendChecked(this.props.tree.treeID, parseInt(event.target.value,10), true)
+            this.props.sendChecked(this.props.tree.treeID, event.target.value, true)
             //console.log(this.state.checkedList);
         }else if(event.target.checked === false){
-            this.props.sendChecked(this.props.tree.treeID, parseInt(event.target.value,10), false)
+            this.props.sendChecked(this.props.tree.treeID, event.target.value, false)
             //console.log(this.state.checkedList);
         }
     }
     render() {
         const { connectDropTarget, hovered } = this.props;
         const backgroundColor = hovered ? 'lightyellow' : 'white';
-        const getNodeKey = ({ node: {id}}) => id;
+        const getNodeKey = ({ node: {node_id}}) => node_id;
         const recordCall = (name, args) => {
             //console.log(`${name} called with tree id ${this.props.tree.treeID} with arguments:`, args);
             //console.log('left', this.state.treeData)
             //console.log(this.props.tree.treeID, this.state.treeData)
-            this.props.movedNodeIs(args.node.id, this.state.prevtreeData, args.prevTreeIndex, args.nextTreeIndex, args.prevPath, args.nextPath);
+            this.props.movedNodeIs(args.node, this.state.prevtreeData, args.prevTreeIndex, args.nextTreeIndex, args.prevPath, args.nextPath);
             
         };
         const { lastMovePrevPath, lastMoveNextPath, lastMoveNode } = this.state;
         return connectDropTarget(
             <div class="h-fullcalc w-full float-left" >
                 <div class='pl-8 pt-3'>
-                    <button class="bg-transparent hover:bg-blue-500 text-blue-500 font-semibold hover:text-white py-2 px-2 border border-blue-500 hover:border-transparent rounded"
+                    <button class="mr-2 font-semibold py-2 px-2 border border-transparent rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                         onClick={this.props.updateNode}>
                         Add Block
                     </button>
+                    <button class="mx-2 bg-transparent hover:bg-blue-500 text-blue-500 font-semibold hover:text-white py-2 px-2 border border-blue-500 hover:border-transparent rounded"
+                        onClick={()=>console.log('left for unchecking')}>
+                        Release
+                    </button>
                 </div>
-                <div class="h-6/9 w-9/9 m-3 p-3" >
+                <div class="h-6/9 w-9/9 m-3 p-3" id={this.props.tree.treeID+"tree"}>
                     
                     <SortableTree
                         treeData={this.state.treeData}
@@ -166,27 +170,14 @@ class BoardInternal extends Component {
                             var reviseColor;
                             var reviseDeco;
                             var reviseWeight;
-                            reviseColor = 'cyan';
-                            if(node.id === "1"){
-                                reviseColor = 'yellow';
-                                reviseDeco = 'line-through';
-                                reviseWeight = 'bold';
-                            }else if(node.id === "2"){
-                                reviseColor = 'blue'
-                                reviseDeco = 'underline';
-                                reviseWeight = 'normal';
-                            }else if(node.id === "9"){
-                                reviseColor = 'red';
-                                reviseDeco = 'overline';
-                                reviseWeight = 'normal';
-                            }else{
-                                reviseColor = 'cyan';
-                                reviseWeight = 'normal';
-                            }
+                            reviseDeco = node.deco;
+                            reviseWeight = node.weight;
+                            reviseColor = node.color;
+                            
                             
                             return {
                                 
-                                buttons:[(<input class="mr-6" type="checkbox" onClick={this.handleChecked} value={node.id} ></input>)],
+                                buttons:[(<input class="mr-6" type="checkbox" onClick={this.handleChecked} value={node.node_id} ></input>)],
                                 style:{
                                     backgroundColor: `${reviseColor}`,
                                     border: `1px solid ${reviseColor}`,
@@ -194,12 +185,12 @@ class BoardInternal extends Component {
                                     textDecoration: `${reviseDeco}`,
                                     fontSize: `15px`,
                                     fontWeight: `${reviseWeight}`,
-                                    fontStyle: `${FontWgt[2]}`,
+                                    fontStyle: `${FontWgt[0]}`,
                                 }
                             };
                         }}
-                        
-                        //onVisibilityToggle={args => recordCall('onVisibilityToggle', args)}
+                        //()=>this.props.toggle(args.node.node_id,args.node.expanded)
+                        onVisibilityToggle={args => {this.props.toggle(args.node.node_id,args.expanded)}}
                         onMoveNode={args => {
                             recordCall('onMoveNode', args);
                             const { prevPath, nextPath, node } = args;
@@ -227,12 +218,8 @@ class BoardInternal extends Component {
                         </a>
                         </TrashNodeComponent>
                     </div>
-                    <UExternalComponent node={{ id: -1, title: this.props.msg_to_block }} />
-                    <div>{lastMoveNode && (
-          <div>
-            Node &quot;{lastMoveNode.id}&quot; moved to path [{lastMoveNextPath}].
-          </div>
-        )}</div>
+                    <UExternalComponent node={{ node_id: '-1', title: this.props.msg_to_block }} />
+                    
                 </div>
                 
                 

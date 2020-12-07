@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import Main from './components/main-sun_2020_10_13';
+import Main from './components/main-sun.js';
 import './main.css';
 import Start from './start.js'
 import Enter from './enter.js'
@@ -16,10 +16,10 @@ class Paging extends Component {
                 <Route path="/" component={Start} exact/>
                 <Route path="/enter" component={Enter} />
                 <Route path="/create_room" component={Create} />
-                <Route path="/main" component={Main} />
+                <Route path="/main" component={Main}/>
             </div>
         );
     }
 }
 
-export default Paging;    
+export default Paging;      

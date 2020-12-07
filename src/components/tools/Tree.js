@@ -1,10 +1,11 @@
 import React, { Component } from 'react';
 import { DragSource } from 'react-dnd';
+import PrintTree from './pdf.js'
 
 const spec = {
   beginDrag(props) {
     const item = { ...props };
-    console.log('beginDrag', item)
+    console.log('beginDrag', item.treeId, typeof(item.treeId))
     return props;
   },
   /*endDrag(props, monitor, component) {
@@ -39,6 +40,7 @@ class Tree extends Component {
         </div>
         <div class="w-1/2">
           <input type="checkbox" />
+          <PrintTree/>
         </div>
       </div>
     );
