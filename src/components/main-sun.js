@@ -177,7 +177,7 @@ class Main extends Component {
     //console.log("inside receive send tree", treeID)
     console.log("레프트라이트판별",tree_leftright, data)
     if(tree_leftright==='L'){
-      console.log("left", treeID)
+      //console.log("left", treeID)
       const left_tree = this.toTreeDataFrom(data.tree, treeID);
       if(data.treenum === undefined){
         console.log("리시브왼언", data)
@@ -187,7 +187,7 @@ class Main extends Component {
         this.setState({treenum: data.treenum, lefttree: {treeID: treeID, treeData: left_tree}});
       }
     }else if(tree_leftright==='R'){
-      console.log("right", treeID)
+      //console.log("right", treeID)
       const right_tree = this.toTreeDataFrom(data.tree, treeID);
       if(data.treenum === undefined){
         console.log("리시브오언", data)
@@ -214,9 +214,9 @@ class Main extends Component {
       cursor.setState({treenum: data.treenum})
     })
     socket.on('download', function(data){
-      console.log("pdfmain 출력", data)
+      //console.log("pdfmain 출력", data)
       if(data.sunny === cursor.state.channel){
-        console.log("같은채널 같은 아이디", data.tree)
+        //console.log("같은채널 같은 아이디", data.tree)
         cursor.setState({pdfdata:data});
       }
     })
@@ -245,15 +245,15 @@ class Main extends Component {
       if(cursor.state.channel === data.sunny){
         console.log("sendTree 같은채널")
         if(treeID === cursor.state.lefttree.treeID){
-          console.log("sendTree 왼쪽1")
+          //console.log("sendTree 왼쪽1")
           if (!cursor.state.leftModifying){
-            console.log("sendTree 왼쪽2")
+            //console.log("sendTree 왼쪽2")
             cursor.receive_sendtree('L', data);
           }
         }else if(treeID === cursor.state.righttree.treeID){
-          console.log("sendTree 오른쪽1")
+          //console.log("sendTree 오른쪽1")
           if (!cursor.state.rightModifying){
-            console.log("sendTree 오른쪽2")
+            //console.log("sendTree 오른쪽2")
             cursor.receive_sendtree('R', data);
           }
         }

@@ -19,14 +19,14 @@ channel_server = io.of('/channel_server');
 
 
 const redis = require('redis');
-const r_cli = redis.createClient(6379, "3.34.138.234");
-const pub = redis.createClient(6379, "3.34.138.234");
-const sub = redis.createClient(6379, "3.34.138.234");
+// const r_cli = redis.createClient(6379, "3.34.138.234");
+// const pub = redis.createClient(6379, "3.34.138.234");
+// const sub = redis.createClient(6379, "3.34.138.234");
 //sub.setMaxListeners(0);
 // localhost
-// const r_cli = redis.createClient(6379, "localhost");
-// const pub = redis.createClient(6379, "localhost");
-// const sub = redis.createClient(6379, "localhost");
+const r_cli = redis.createClient(6379, "localhost");
+const pub = redis.createClient(6379, "localhost");
+const sub = redis.createClient(6379, "localhost");
 
 sub.subscribe("merry");
 sub.subscribe('christ');
@@ -57,7 +57,7 @@ r_cli.hmset("RName",999,'cocococococo');
 function get_order(room_id, tree_id, sock_msg) {
     //console.log("room_id", room_id, "tree_id", tree_id)
     var r_info = "R" + String(room_id)+"_order";
-    console.log("r_info" , r_info)
+    //console.log("r_info" , r_info)
     if (r_cli.EXISTS(r_info) == 0) {
         console.log("room does not exist")
         return null;
@@ -65,14 +65,14 @@ function get_order(room_id, tree_id, sock_msg) {
     else {
         var order;
 
-        console.log("tree_id", tree_id);        
+        //console.log("tree_id", tree_id);        
         r_cli.hmget(r_info, tree_id, (err,obj) => {
-            console.log('r_order', obj[0])
+            //console.log('r_order', obj[0])
             order = obj[0].split("");
             order.shift();
             order.pop();
             order = order.filter(i => i !== ',');
-            console.log("getorder",order);
+            //console.log("getorder",order);
             let dic = {}
             dic['room_id'] = room_id;
             dic['tree_id'] = tree_id;
@@ -199,7 +199,7 @@ board_server.on('connection', function(socket){
 
         let room_id = data.room_id;
         let r_info = "R"+room_id+"_order";
-        console.log(socket.id,"+room_id : ", data.room_id, room_id)
+        //console.log(socket.id,"+room_id : ", data.room_id, room_id)
         if (r_cli.EXISTS(r_info) == 0) {
             console.log("room does not exist")
         }
@@ -295,7 +295,7 @@ board_server.on('connection', function(socket){
     socket.on('download', function(data){
         // 승연누나
         //데이터 오는거 {channel: this.props.channel, room_id: this.props.room_id, tree_id: this.props.treeId}
-        console.log("download 신호옴", data)
+        //console.log("download 신호옴", data)
         get_order(data.room_id, data.tree_id, "download");
         sub.on("message", (channel, message) => {
             if (channel === "christ") {
@@ -334,7 +334,7 @@ board_server.on('connection', function(socket){
                     let ORDER = message.order;
 
                     let RETREE = rearrange(TREE, ORDER);
-                    console.log("다운로드 보내기전", RETREE)
+                    //console.log("다운로드 보내기전", RETREE)
                     board_server.to(data.channel).emit('download', {sunny: data.channel, treeid : message.tree_id, tree: RETREE});
                 }
             }
@@ -488,7 +488,7 @@ board_server.on('connection', function(socket){
                 message = JSON.parse(message);
                 if (message.room_id === data.room_id && message.type === "gord" && message.tree_id === tid) {
                     let prev_order = message.order;
-                    console.log("prev_order", prev_order);
+                    //console.log("prev_order", prev_order);
 
                     dellist = prev_order.reduce((sequence, cur) => { //db의 order와 client의 order 비교 후 삭제 된 node들 추출
                         if(!post_order.includes(cur))
@@ -928,13 +928,14 @@ board_server.on('connection', function(socket){
                 let msg = JSON.parse(message);
                 if (msg.room_id === data.room_id && msg.type === "mNode" && msg.n_id === msg.order[msg.order.length-1]) {
                     tree = msg.treedata;
-                    console.log("전전",Object.keys(tree),",",msg.n_id,",",msg.order)
+                    //console.log("전전",Object.keys(tree),",",msg.n_id,",",msg.order)
                     order = msg.order;
-                    console.log("무브노드전",Object.keys(tree),",",msg.n_id,",",order)
+                    //console.log("무브노드전",Object.keys(tree),",",msg.n_id,",",order)
                     retree = rearrange(tree, order);
                     // console.log("before sendTree, treeid :",tid, "tree:", retree);
-                    console.log("movenode emit됨", retree)
-                    board_server.to(data.channel).emit('sendTree',{sunny: data.channel, 'treeid': data.tree_id, 'tree' : retree});
+                    //console.log("movenode emit됨", retree)
+                    //console.log("잠시잠시",data.tree_id, retree[0].tree_id)
+                    board_server.to(data.channel).emit('sendTree',{sunny: data.channel, 'treeid': retree[0].tree_id, 'tree' : retree});
                 }
             }
         })
@@ -1001,7 +1002,7 @@ channel_server.on('connection', function(socket) {
                                 console.log("hmget2 ERROR", err)
                             }
                             treeId = obj[0];
-                            console.log("real for real?",treeId)
+                            //console.log("real for real?",treeId)
                             newApple(room_id, treeId, "Right Initial Block", "NULL", "createChannel");
                         
                         
