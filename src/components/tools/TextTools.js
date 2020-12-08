@@ -30,12 +30,19 @@ class TextTools extends Component {
     return (
       <div class="w-full mb-2 mt-2 flex flex-wrap">
         
-        <div class="w-full ml-3 mt-2 mb-1">
-          <button class="w-6 h-6 mx-2 mb-2 border-solid border-2 bg-white transition duration-200 hover:shadow-outline font-serif leading-none text-lg text-red" value={"normal"} onClick={(e)=>{this.handleClickW(e); this.handleClickD(e)}}>-</button>
-          <button class="w-6 h-6 mx-2 mb-2 border-solid border-2 bg-white transition duration-200 hover:shadow-outline font-serif leading-none text-lg font-extrabold" value={"bold"} onClick={this.handleClickW}>B</button>
-          <button class="w-6 h-6 mx-2 mb-2 border-solid border-2 bg-white transition duration-200 hover:shadow-outline font-serif leading-none text-lg line-through" value={"line-through"} onClick={this.handleClickD}>T</button>
-          <button class="w-6 h-6 mx-2 mb-2 border-solid border-2 bg-white transition duration-200 hover:shadow-outline font-serif leading-none text-lg underline" value={"underline"} onClick={this.handleClickD}>U</button>
-          
+        <div class="w-full ml-3 mt-2 mb-1 flex">
+          <div class="w-1/4">
+            <button class="w-6 h-6 mx-1 border-solid border-2 bg-white transition duration-200 hover:shadow-outline font-serif leading-none text-lg text-red" value={"normal"} onClick={(e)=>{this.handleClickW(e); this.handleClickD(e)}}>-</button>
+          </div>
+          <div class="w-1/4">
+            <button class="w-6 h-6 mx-1 border-solid border-2 bg-white transition duration-200 hover:shadow-outline font-serif leading-none text-lg font-extrabold" value={"bold"} onClick={this.handleClickW}>B</button>
+          </div>  
+          <div class="w-1/4">
+            <button class="w-6 h-6 mx-1 border-solid border-2 bg-white transition duration-200 hover:shadow-outline font-serif leading-none text-lg underline" value={"underline"} onClick={this.handleClickD}>U</button>
+          </div>  
+          <div class="w-1/4">
+            <button class="w-6 h-6 mx-1 border-solid border-2 bg-white transition duration-200 hover:shadow-outline font-serif leading-none text-lg line-through" value={"line-through"} onClick={this.handleClickD}>T</button>
+          </div>
         </div>
         <div class="w-full ml-3">
         </div>
