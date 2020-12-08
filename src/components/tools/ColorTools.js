@@ -13,8 +13,8 @@ class ColorTools extends Component {
   handleClick = (event) => {
     //this.props.handleClick(event);
     this.props.sendColor(event.target.value, 'c');
-    console.log("rxxcolor");
-    console.log(event.target.value);
+    //console.log("rxxcolor");
+    //console.log(event.target.value);
     
   }
   render() {
