@@ -10,8 +10,10 @@ module.exports = {
     extend: {
       maxWidth: {
         '4/5': '80%',
+        '1/5': '20%',
       },
       width: {
+        'block': '5.625rem',
         '1/11': '9.09090909%',
         '2/11': '18.18181818%',
         '3/11': '27.27272727%',
@@ -43,7 +45,8 @@ module.exports = {
         '7/9': '77.7777777%',
         '8/9': '88.8888888%',
         '9/9': '99.9999999%',
-
+        'overff': 'calc(100% - 3rem)',
+        'overfw': 'calc(95% - 3rem)',
         'fullcalc': 'calc( 100% - 3.75rem)',
         'quaterscreen': '85vh',
         'ct/h': '500px',
@@ -55,15 +58,23 @@ module.exports = {
         'ct/r': '55px',
       },
       backgroundColor: {
-        'red': '#FF0000',
-        'orange': '#FFA500',
-        'yellow': '#FFFF00',
-        'green': '#008000',
-        'blue': '#0000FF',
+        'red': '#E9BDB3',
+        'orange': '#FFD8B0',
+        'yellow': '#FFF1B9',
+        'green': '#BBDBBF',
+        'blue': '#87A8C2',
         'blue-500': '#4299e1',
-        'cyan': '#00FFFF',
-        'lime': '#00FF00', 
-        'purple': '#800080',
+        'blacky': '#848993',
+        'lime': '#59C9B8', 
+        'purple': '#B3B6E9',
+        'paint-black': '#292C36',
+        'paint-white': '#f7f7f7',
+        'paint-skyblue': '#F8FFFF',
+        'paint-blue': '#5992BC',
+        'paint-chatme': '#4F86C6',
+        'paint-chatyou': '#FFF2CC',
+        'paint-heheh': '#D9DEE3',
+
       },
       textColor:{
         'red': '#FF0000',
@@ -75,6 +86,9 @@ module.exports = {
         'cyan': '#00FFFF',
         'lime': '#00FF00', 
         'purple': '#800080',
+        'paint-blacky': '#515c68',
+        'paint-black': '#292C36',
+        'paint-blue': '#5992BC',
       },
     }
   },

@@ -62,24 +62,24 @@ class ChatView extends Component {
             return(
                 <div key={index}>
                     {item.chat.uname==this.state.uname?
-                    <div class="flex flex-row-reverse">
+                    <div class="flex flex-row-reverse text-sm text-gray-800">
                         <div>{item.chat.uname}</div>
                     </div>
                     :
-                    <div class="flex flex-row">
+                    <div class="flex flex-row text-sm text-gray-800">
                         <div>{item.chat.uname}</div>
                     </div>
                    }
                    
                     {item.chat.uname==this.state.uname?
                     <div class="flex items-end flex-row-reverse">
-                        <button type="button" class="max-w-4/5 bg-blue-500 mb-3 ml-1 p-2 text-left text-white text-base font-bold border-none rounded-lg break-words" value={item.chat.msg} onClick={(e)=>this.props.OnupdateMsgToBlock(e.target.value)}>{item.chat.msg}</button>
-                        <div class="mb-2">{date.getHours()}시 {date.getMinutes()}분</div>
+                        <button type="button" class="max-w-4/5 bg-paint-chatme mb-3 ml-1 p-2 text-left text-white text-base font-normal border-none rounded-lg break-words" value={item.chat.msg} onClick={(e)=>this.props.OnupdateMsgToBlock(e.target.value)}>{item.chat.msg}</button>
+                        <div class="mb-2 text-xs text-gray-600">{date.getHours()}시 {date.getMinutes()}분</div>
                     </div>
                     :
                     <div className="flex items-end flex-row">
-                        <button type="button" class="max-w-4/5 bg-blue-500 mb-3 ml-1 p-1 text-left text-white text-base font-bold border-none rounded break-words" value={item.chat.msg} onClick={(e)=>this.props.OnupdateMsgToBlock(e.target.value)}>{item.chat.msg}</button>
-                        <div class="mb-2">{date.getHours()}시 {date.getMinutes()}분</div>
+                        <button type="button" class="max-w-4/5 bg-paint-chatyou mb-3 ml-1 p-2 text-left text-blacky text-base font-noraml border-none rounded-lg break-words" value={item.chat.msg} onClick={(e)=>this.props.OnupdateMsgToBlock(e.target.value)}>{item.chat.msg}</button>
+                        <div class="mb-2 text-xs text-gray-600">{date.getHours()}시 {date.getMinutes()}분</div>
                     </div>
                    }
                 </div>
@@ -92,8 +92,8 @@ class ChatView extends Component {
                     <div className="chattingView-chat">{list}</div>
                 </div>
                 <div class="flex h-1/9 w-full bg-gray-200">
-                    <input type="text" class="pl-4 my-4 ml-4 mr-1 w-7/9 border border-blue-500 rounded-md inputMsg" placeholder="Input message..."  onChange={this.inputMSG} onKeyDown={this.keysend}/>
-                    <button  type="button" class="my-4 mr-4 ml-1 w-2/9 bg-transparent hover:bg-blue-500 text-blue-500 font-semibold hover:text-white py-2 px-2 border border-blue-500 hover:border-transparent rounded" onClick={this.send}>보내기</button>
+                    <input type="text" class="pl-4 my-4 ml-4 mr-1 w-7/9 border border-transparent focus:outline-none rounded-md inputMsg" placeholder="Input message..."  onChange={this.inputMSG} onKeyDown={this.keysend}/>
+                    <button  type="button" class="my-4 mr-4 ml-1 w-2/9 bg-transparent hover:bg-paint-blue text-blue-500 font-semibold hover:text-white py-2 px-2 bg-paint-skyblue hover:border-transparent rounded" onClick={this.send}>보내기</button>
                 </div>
             </div>
         );

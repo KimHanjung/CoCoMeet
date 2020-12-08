@@ -54,7 +54,7 @@ r_cli.hmset("RName",999,'cocococococo');
 
 
 // tree 정보는 Key는 R0-0 이런식으로, 해당 value는 hash 형태로 저장한다
-function get_order(room_id, tree_id) {
+function get_order(room_id, tree_id, sock_msg) {
     //console.log("room_id", room_id, "tree_id", tree_id)
     var r_info = "R" + String(room_id)+"_order";
     console.log("r_info" , r_info)
@@ -78,6 +78,7 @@ function get_order(room_id, tree_id) {
             dic['tree_id'] = tree_id;
             dic['order'] = order;
             dic['type']="gord";
+            dic['sock_msg'] = sock_msg;
             dic = JSON.stringify(dic);
 
             pub.publish("christ", dic);
@@ -115,7 +116,7 @@ function newApple(room_id, tree_id, text, parent, sock_msg) {
         newid=obj[0];
         var info = "R"+room_id+"-"+obj;
         
-        r_cli.hmset(String(info), "room_id", String(room_id), "tree_id", String(tree_id), "node_id", String(obj), "title", text , "parent", String(parent), "color", "blue", "deco", "none", "weight", "normal");
+        r_cli.hmset(String(info), "room_id", String(room_id), "tree_id", String(tree_id), "node_id", String(obj), "title", text , "parent", String(parent), "color", "#848993", "deco", "none", "weight", "normal");
         r_cli.HINCRBY("NID", room_id, 1); //해당 room_num의 node 개수 +1
         r_cli.HINCRBY("Nnum", room_id, 1);
         let msg = {"type" : "apple", "room_id" : room_id, "newid" : newid, "treeid" : tree_id, "sock_msg" : sock_msg};
@@ -291,7 +292,59 @@ board_server.on('connection', function(socket){
         socket.leave(data.channel);
         console.log(data.channel);
     });
+    socket.on('download', function(data){
+        // 승연누나
+        //데이터 오는거 {channel: this.props.channel, room_id: this.props.room_id, tree_id: this.props.treeId}
+        console.log("download 신호옴", data)
+        get_order(data.room_id, data.tree_id, "download");
+        sub.on("message", (channel, message) => {
+            if (channel === "christ") {
+                message = JSON.parse(message);
+                let tree = {};
+                if (message.room_id === data.room_id && message.sock_msg === "download" && message.type === "gord" && message.tree_id === data.tree_id) {
+                    let Order = message.order;
+                    let rid = message.room_id;
+                    for (var i = 0, elem; elem = Order[i]; i++) {
+                        var info = "R"+rid+"-"+elem;
+                        r_cli.HMGET(info, "node_id","room_id", "tree_id", "title", "parent", "color", "weight", "deco", (err, obj) => {
+                            var treeeeee = {"room_id" : obj[1], "node_id" : obj[0], "tree_id" : obj[2], "title" : obj[3], "parent": obj[4], "color" : obj[5], "weight" : obj[6], "deco" : obj[7]};
+                            tree[obj[0]] = treeeeee;
+                            let dic = {};
+                            dic["type"] = "download"
+                            dic["tree_id"] = obj[2];
+                            dic["room_id"] = obj[1];
+                            dic["node_id"] = obj[0];
+                            dic["treedata"] = tree;
+                            dic["order"] = Order;
+                            dic = JSON.stringify(dic);
+                            pub.publish("merry", dic);
+                            
+                        })
+                    }
+            
+                }
+            }
+        })
+        
+        sub.on("message", (channel, message) => {
+            if (channel === "merry") {
+                message = JSON.parse(message);
+                if (message.room_id === data.room_id && message.type === "download" && message.tree_id === data.tree_id && message.node_id === message.order[message.order.length - 1]) {
+                    let TREE = message.treedata;
+                    let ORDER = message.order;
 
+                    let RETREE = rearrange(TREE, ORDER);
+                    console.log("다운로드 보내기전", RETREE)
+                    board_server.to(data.channel).emit('download', {sunny: data.channel, treeid : message.tree_id, tree: RETREE});
+                }
+            }
+        })
+        
+
+
+        
+
+    })
     socket.on('addTree', function(data){ 
         let treenum, treeid;
         let room_id = data.room_id;
@@ -319,7 +372,7 @@ board_server.on('connection', function(socket){
                 }
             })
             //r_cli.HINCRBY("TID", room_id, 1);
-            console.log("여긴 오면 안 되는 Tnum")
+            //console.log("여긴 오면 안 되는 Tnum")
             r_cli.HINCRBY("Tnum", room_id, 1);
             r_cli.hmget("Tnum", room_id, (err, obj) => {
                 treenum = obj;
@@ -928,10 +981,8 @@ channel_server.on('connection', function(socket) {
                     console.log("hmget ERROR", err)
                 }
                 treeId = obj[0];
-                // 승연 여기임
 
                 newApple(room_id, treeId, "Left Initial Block", "NULL", "createChannel"); //트리에 들어갈 블록을 만든다
-                
                 
                 sub.on('message', (channel, message) => {
                     let msg = JSON.parse(message);

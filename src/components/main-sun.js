@@ -26,7 +26,7 @@ class Main extends Component {
       channel:this.props.history.location.state.channel, 
       uname:this.props.history.location.state.uname, channel_code: this.props.history.location.state.channel_code,
       room_id: this.props.history.location.state.room_id,
-      connected:'False', msg_to_block:'Click Chat Balloon',
+      connected:'False', msg_to_block:'채팅 말풍선을 클릭하세요!',
       treenum: 2,
       lefttree: {treeID: '0', treeData: [{title: "dummy0"}]},
       righttree: {treeID: '1', treeData: [{title: "dummy1"}]},
@@ -38,6 +38,7 @@ class Main extends Component {
       lastMoveNodeLeft: "NULL",
       lastMoveNodeRight: "NULL",
       expandList: Array.apply(null, Array(1024)).map(i=>false),
+      pdfdata: [],
     };
     this.onDropLeft = this.onDropLeft.bind(this);
     this.onDropRight = this.onDropRight.bind(this);
@@ -55,6 +56,8 @@ class Main extends Component {
     this.updateConnected = this.updateConnected.bind(this);
     this.updateMsgToBlock = this.updateMsgToBlock.bind(this);
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+    this.reset_pdfdata = this.reset_pdfdata.bind(this)
+    ////
     this.toFlatDataFrom = this.toFlatDataFrom.bind(this);
     this.toFlatIDDataFrom = this.toFlatIDDataFrom.bind(this);
     this.toTreeDataFrom = this.toTreeDataFrom.bind(this);
@@ -67,6 +70,7 @@ class Main extends Component {
     this.migrate_remove_CheckedList = this.migrate_remove_CheckedList.bind(this)
     this.delete_remove_CheckedList = this.delete_remove_CheckedList.bind(this)
   }
+
   delete_remove_CheckedList=(leftright,node_id)=>{
     if (leftright==='L'){
       var left_test_checked = this.state.LeftcheckedList;
@@ -209,6 +213,13 @@ class Main extends Component {
       console.log("tree추가됨")
       cursor.setState({treenum: data.treenum})
     })
+    socket.on('download', function(data){
+      console.log("pdfmain 출력", data)
+      if(data.sunny === cursor.state.channel){
+        console.log("같은채널 같은 아이디", data.tree)
+        cursor.setState({pdfdata:data});
+      }
+    })
     /////////////////////////////////////////////한중한테 emit한 cli한테 다시 보내기
     socket.on('changeTree',function(data){
       //console.log('Here on Change, we check received data',data)
@@ -230,7 +241,7 @@ class Main extends Component {
     socket.on('sendTree', function(data){
       //move, migrate, sunsapple, delete, addnode
       const treeID = data.treeid;
-      //console.log('sendTree',data)
+      console.log('sendTree',data)
       if(cursor.state.channel === data.sunny){
         console.log("sendTree 같은채널")
         if(treeID === cursor.state.lefttree.treeID){
@@ -681,6 +692,10 @@ class Main extends Component {
     this.setState({msg_to_block: msg_to_block});
   }
 
+  reset_pdfdata=()=>{
+    this.setState({pdfdata:[]});
+  }
+
   render() {
     return (
       <div>
@@ -691,35 +706,35 @@ class Main extends Component {
                 <div className="flex m-4 ">
                     <div className="w-1/9 p-3">
                         <div className="h-quaterscreen">
-                            <div className="mb-6 pb-3 shadow-md bg-gray-100 h-1/5">
-                              <div className="border-b-2 border-gray-300 bg-gray-200 h-12 p-3 mb-3">
-                                <div className="font-sans text-lg font-semibold text-teal-500">Tree Lists</div>
+                            <div className="mb-6 pb-3 shadow-md bg-paint-white h-4/9 ">
+                              <div className="border-b-2 border-gray-300 bg-paint-heheh h-12 p-3 mb-3">
+                                <div className="text-center font-bold font-sans text-lg text-paint-blacky">회의록 리스트</div>
                               </div>
-                              <div className="ml-3">
-                                <button className="bg-transparent border-transparent text-blue-500 font-extrabold hover:underline py-2" onClick={this.addTree} >Add New Tree</button>
-                                <div className="pl-2">
-                                  <Tools treenum={this.state.treenum} tree1={this.state.lefttree.treeID} tree2={this.state.righttree.treeID}/>
+                              <div className="ml-3 pb-4 h-overff">
+                                <button className="focus:outline-none bg-transparent border-transparent text-paint-blue font-extrabold hover:underline pl-2 py-2" onClick={this.addTree} >회의록 추가 +</button>
+                                <div className="pl-2 h-overfw overflow-y-scroll">
+                                  <Tools treenum={this.state.treenum} tree1={this.state.lefttree.treeID} tree2={this.state.righttree.treeID} room_id={this.state.room_id} channel={this.state.channel} pdfdata={this.state.pdfdata} reset_pdfdata={this.reset_pdfdata}/>
                                 </div>
                               </div>
                             </div>
-                            <div className="mb-6 pb-3 shadow-md bg-gray-100 h-1/5">
-                              <div className="border-b-2 border-gray-300 bg-gray-200 h-12 p-3 mb-3">
-                                <div className="font-sans text-lg font-semibold text-teal-500">Block Colors</div>
+                            <div className="mb-6 pb-3 shadow-md bg-paint-white h-1/5">
+                              <div className="border-b-2 border-gray-300 bg-paint-heheh h-12 p-3 mb-3">
+                                <div className="text-center font-sans text-lg font-semibold text-paint-blacky">색 상</div>
                               </div>
                               <ColorTools sendColor={this.getAttrToBoard}/>
                             </div>
-                            <div className="mb-6 pb-3 shadow-md bg-gray-100 h-1/5">
-                              <div className="border-b-2 border-gray-300 bg-gray-200 h-12 p-3 mb-3">
-                                <div className="font-sans text-lg font-semibold text-teal-500">Font Style</div>
+                            <div className="mb-6 pb-3 shadow-md bg-paint-white h-1/5">
+                              <div className="border-b-2 border-gray-300 bg-paint-heheh h-12 p-3 mb-3">
+                                <div className="text-center font-sans text-lg font-semibold text-paint-blacky">스타일</div>
                               </div>
                               <TextTools sendDeco={this.getAttrToBoard} sendWeight={this.getAttrToBoard}/>
                             </div>
                         </div>
                     </div>
                     <div className="w-3/9 p-3">
-                        <div className="shadow-md bg-gray-100 h-quaterscreen">
-                          <div className="border-b-2 border-gray-300 bg-gray-200 h-12 p-3 mb-3">
-                            <div className="font-sans text-lg font-semibold text-teal-500">Tree {this.state.lefttree.treeID}</div>
+                        <div className="shadow-md bg-paint-skyblue h-quaterscreen">
+                          <div className="border-b-2 border-gray-300 bg-paint-blue h-12 p-3 mb-3">
+                            <div className="font-sans text-lg font-semibold text-white">회의록 {this.state.lefttree.treeID}</div>
                           </div>
                           <BoardInternal tree={this.state.lefttree} sendChecked={this.getListFromBoard} movedNodeIs={this.LeftmovedNodeIs}
                           msg_to_block={this.state.msg_to_block} toggle={this.modifyExpandList}
@@ -727,9 +742,9 @@ class Main extends Component {
                         </div>
                     </div>
                     <div className="w-3/9 p-3">
-                        <div className="shadow-md bg-gray-100 h-quaterscreen">
-                          <div className="border-b-2 border-gray-300 bg-gray-200 h-12 p-3 mb-3">
-                            <div className="font-sans text-lg font-semibold text-teal-500">Tree {this.state.righttree.treeID}</div>
+                        <div className="shadow-md bg-paint-skyblue h-quaterscreen">
+                          <div className="border-b-2 border-gray-300 bg-paint-blue h-12 p-3 mb-3">
+                            <div className="font-sans text-lg font-semibold text-white">회의록 {this.state.righttree.treeID}</div>
                           </div>
                           <BoardInternal tree={this.state.righttree} sendChecked={this.getListFromBoard} movedNodeIs={this.RightmovedNodeIs}
                           msg_to_block={this.state.msg_to_block} toggle={this.modifyExpandList}
@@ -737,9 +752,9 @@ class Main extends Component {
                         </div>
                     </div>
                     <div className="w-2/9 p-3">
-                        <div className="shadow-md bg-gray-100 h-quaterscreen">
-                          <div className="border-b-2 border-gray-300 bg-gray-200 h-12 p-3 mb-3">
-                            <div className="font-sans text-lg font-semibold text-teal-500">Chat</div>
+                        <div className="shadow-md bg-paint-skyblue h-quaterscreen">
+                          <div className="border-b-2 border-gray-300 bg-paint-blue h-12 p-3 mb-3">
+                            <div className="font-sans text-lg font-semibold text-white">채팅</div>
                           </div>
                           <ChatView uname = {this.state.uname} channel={this.state.channel} connected={this.state.connected} OnupdateMsgToBlock={this.updateMsgToBlock}/> 
                         </div>
@@ -748,8 +763,6 @@ class Main extends Component {
             </div>
           </DndProvider>
         </div>
-        
-        
       </div>
     );
   }
