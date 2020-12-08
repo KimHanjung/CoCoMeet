@@ -175,16 +175,16 @@ class BoardInternal extends Component {
                             var reviseDeco;
                             var reviseWeight;
                             reviseDeco = node.deco;
-                            reviseWeight = node.weight;
-                            reviseColor = node.color;
+                            reviseWeight = node.weight; 
+                            reviseColor = node.color;  
                             
                             
                             return {
                                 
                                 buttons:[(<input class="mr-6" type="checkbox" onClick={this.handleChecked} value={node.node_id} ></input>)],
                                 style:{
-                                    backgroundColor: `${reviseColor}`,
-                                    border: `1px solid ${reviseColor}`,
+                                    backgroundColor: `${reviseColor}`, //node 배경 색
+                                    border: `1px solid ${reviseColor}`, // node 경계 색
                                     borderRadius: `8px`,
                                     textDecoration: `${reviseDeco}`,
                                     fontSize: `15px`,

@@ -327,7 +327,7 @@ board_server.on('connection', function(socket){
                 }
             })
             //r_cli.HINCRBY("TID", room_id, 1);
-            console.log("여긴 오면 안 되는 Tnum")
+            // console.log("여긴 오면 안 되는 Tnum")
             r_cli.HINCRBY("Tnum", room_id, 1);
             r_cli.hmget("Tnum", room_id, (err, obj) => {
                 treenum = obj;
