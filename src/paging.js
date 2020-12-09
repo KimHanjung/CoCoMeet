@@ -16,7 +16,7 @@ class Paging extends Component {
                 <Route path="/" component={Start} exact/>
                 <Route path="/enter" component={Enter} />
                 <Route path="/create_room" component={Create} />
-                <Route path="/main" component={Main} />
+                <Route path="/main" component={Main}/>
             </div>
         );
     }

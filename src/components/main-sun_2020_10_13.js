@@ -66,13 +66,13 @@ class Main extends Component {
   }
   componentDidMount(){
     let cursor=this;
-    console.log(this.state);
+    // console.log(this.state);
     socket.emit('channelJoin', {channel:this.state.channel, channel_code:this.state.channel_code, uname:this.state.uname, trees:this.state.trees});
     socket.on('receive', function (data) {
-      console.log(data.trees);
+      // console.log(data.trees);
       //cursor.setState({trees: data.trees});
-      console.log('================');
-      console.log(cursor.state.trees);
+      // console.log('================');
+      // console.log(cursor.state.trees);
     });
     socket.on('addTree', function(data){
       var tree_num = cursor.state.treenum +1;
@@ -82,7 +82,7 @@ class Main extends Component {
                         
                         return matches ? Symbol.for(matches[1]) : v;
       }))},function(){
-        console.log(cursor.state);
+        // console.log(cursor.state);
       });
     });
 }/*
@@ -117,7 +117,7 @@ componentWillReceiveProps(changeProps){
       socket.emit('addTree', {channel:this.state.channel,
                               tree:JSON.stringify(this.state.trees[this.state.trees.length - 1], (k, v) => {
                                   if (typeof v === 'function')
-                                    console.log(v);
+                                    // console.log(v);
                                   if (typeof v === 'symbol')
                                     return `$$Symbol:${Symbol.keyFor(v)}`;
                                   else
@@ -125,14 +125,14 @@ componentWillReceiveProps(changeProps){
                               }
                                   )});
       var order=[1,2,[3,4,[5]]];
-      console.log(order.flat(Infinity));
+      // console.log(order.flat(Infinity));
     });
     //socket.emit('addTree', {channel:this.state.channel, tree:this.state.trees[this.state.trees.length - 1]});
   }
   updateTreeLeft = (newTreeData) => {
     const id = this.state.tree1
     let newT = {treeId: id, treeData: newTreeData}
-    //console.log(newT)
+    //// console.log(newT)
     this.setState({
       trees: this.state.trees.map(t => t.treeId === id ? {...t, ...newT} : t)
     });
@@ -141,7 +141,7 @@ componentWillReceiveProps(changeProps){
   updateTreeRight = (newTreeData) =>{
     const id = this.state.tree2
     let newT = {treeId: id, treeData: newTreeData}
-    //console.log(newT)
+    //// console.log(newT)
     this.setState({
       trees: this.state.trees.map(t => t.treeId === id ? {...t, ...newT} : t)
     });
@@ -149,7 +149,7 @@ componentWillReceiveProps(changeProps){
   }
 
   updateNodeLeft = () => {
-    //console.log('adding new node to tree ' + id);
+    //// console.log('adding new node to tree ' + id);
     const id = this.state.tree1
     const elementsIndex = this.state.trees.findIndex(tree => tree.treeId == id )
     let newtrees = [...this.state.trees]
@@ -160,7 +160,7 @@ componentWillReceiveProps(changeProps){
     });
   }
   updateNodeRight = () => {
-    //console.log('adding new node to tree ' + id);
+    //// console.log('adding new node to tree ' + id);
     const id = this.state.tree2
     const elementsIndex = this.state.trees.findIndex(tree => tree.treeId == id )
     let newtrees = [...this.state.trees]

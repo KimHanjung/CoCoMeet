@@ -13,15 +13,28 @@ class Tools extends Component {
 
   render() {
     let treearray = []
+    //// console.log("here is fine", this.props.pdfdata)
     for(let i=0;i<this.props.treenum;i++){
+      i = String(i)
       if (i===this.props.tree1) {
-        treearray.push(<div key = {i} class="w-full text-red"><Tree treeId={i}/></div>);
+        if (i===this.props.pdfdata.treeid){
+          treearray.push(<div key = {i} class="w-full text-red"><Tree treeId={i} room_id={this.props.room_id} channel={this.props.channel} pdfdata={this.props.pdfdata} reset_pdfdata={this.props.reset_pdfdata}/></div>);
+        }
+        else {
+          treearray.push(<div key = {i} class="w-full text-red"><Tree treeId={i} room_id={this.props.room_id} channel={this.props.channel} pdfdata={[]} reset_pdfdata={this.props.reset_pdfdata}/></div>);
+        }
       }
       else if (i===this.props.tree2){
-        treearray.push(<div key = {i} class="w-full text-blue-500"><Tree treeId={i}/></div>);
+        if (i===this.props.pdfdata.treeid){
+          treearray.push(<div key = {i} class="w-full text-blue-500"><Tree treeId={i} room_id={this.props.room_id} channel={this.props.channel} pdfdata={this.props.pdfdata} reset_pdfdata={this.props.reset_pdfdata}/></div>);
+        }
+        else treearray.push(<div key = {i} class="w-full text-blue-500"><Tree treeId={i} room_id={this.props.room_id} channel={this.props.channel} pdfdata={[]} reset_pdfdata={this.props.reset_pdfdata}/></div>);
       }
       else {
-        treearray.push(<div key = {i} class="w-full"><Tree treeId={i}/></div>);
+        if (i===this.props.pdfdata.treeid){
+          treearray.push(<div key = {i} class="w-full"><Tree treeId={i} room_id={this.props.room_id} channel={this.props.channel} pdfdata={this.props.pdfdata} reset_pdfdata={this.props.reset_pdfdata}/></div>);
+        }
+        else treearray.push(<div key = {i} class="w-full"><Tree treeId={i} room_id={this.props.room_id} channel={this.props.channel} pdfdata={[]} reset_pdfdata={this.props.reset_pdfdata}/></div>);
       }
     }
     return (
