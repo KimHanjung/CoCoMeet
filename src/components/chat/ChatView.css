@@ -29,7 +29,7 @@
     left: 0px;
     right: 55px;
     bottom: 0px;
-    max-height: 700px;
+    max-height: 100%;
     max-width: 400px;
     padding-top: 10px;
     padding-right: 10px;
@@ -80,7 +80,7 @@ button.chattingView-msg-from-me{
     padding: 5px;
     font-size: 13px;
     color: white;
-    background: rgba(3, 111, 209, 1);
+    background: rgba(255, 242, 204, 1);
     align-self: right;
     border-radius: 10px;
     font-weight: bold;

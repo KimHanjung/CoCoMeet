@@ -13,6 +13,7 @@ class Enter extends Component {
         this.keysend = this.keysend.bind(this);
     }
     send(){
+        console.log("enter send")
         socket.emit('joinChannel', {channel_code:this.state.channel_code}, (name, room_id, channel_name) => {
             this.setState({channel_name: name}, () => {
                 this.props.history.push('/main', 
@@ -24,6 +25,7 @@ class Enter extends Component {
     keysend(event){
         //event.key==="Enter"
         if(event.key==="Enter") {
+            console.log("enter enter send")
             socket.emit('joinChannel', {channel_code:this.state.channel_code}, (name, room_id, channel_name) => {
                 this.setState({channel_name: name}, () => {
                     this.props.history.push('/main', 
