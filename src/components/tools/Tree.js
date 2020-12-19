@@ -158,7 +158,7 @@ class Tree extends Component {
         <div className="App">
           {this.state.select || this.props.pdfdata.treeid === undefined ? <img onClick={this.emitdata} src={Icon} width='16' height='12'/>:
             <PDFDownloadLink document={<MyDoc/>} fileName={"회의록 "+String(this.props.treeId)+"번.pdf"}>
-              {({ blob, url, loading, error }) => <img onClick={()=>{this.setState({select:true});this.props.reset_pdfdata();// console.log(loading, error, url)}} src={ComIcon} width='16' height='12'/>}
+              {({ blob, url, loading, error }) => <img onClick={()=>{this.setState({select:true});this.props.reset_pdfdata();}} src={ComIcon} width='16' height='12'/>}
             </PDFDownloadLink>
           }
         </div>

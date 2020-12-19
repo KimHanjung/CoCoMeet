@@ -975,8 +975,8 @@ channel_server.on('connection', function(socket) {
     });
 })
 
-http.listen(4002, function(){
-    // console.log('listening on *:4002');
+http.listen(4000, function(){
+    console.log('listening on *:4000');
 });
 
 function delNode(tree, node_id) { // 吏 곕뒗  몃뱶 id   return

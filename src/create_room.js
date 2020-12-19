@@ -4,7 +4,7 @@ import './enter.css'
 import io from 'socket.io-client';
 
 //const socket = io('http://localhost:4002/channel_server');
-const socket = io('http://3.34.138.234:4000/board_server');
+const socket = io('http://3.34.138.234:4000/channel_server');
 class Create extends Component {
     constructor(props) {
         super(props);
