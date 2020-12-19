@@ -12,6 +12,9 @@ import { DndProvider } from 'react-dnd'
 import { getFlatDataFromTree, getTreeFromFlatData } from 'react-sortable-tree';
 import 'react-sortable-tree/style.css';
 import io from 'socket.io-client';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
+import PrintTree from './pdf.js'
 
 //const socket = io('http://localhost:4002/board_server');
 const socket = io('http://3.34.138.234:4000/board_server');
@@ -56,6 +59,8 @@ class Main extends Component {
     this.updateChannel = this.updateChannel.bind(this);
     this.updateConnected = this.updateConnected.bind(this);
     this.updateMsgToBlock = this.updateMsgToBlock.bind(this);
+
+    this.printDocument = this.printDocument.bind(this);
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////
     this.reset_pdfdata = this.reset_pdfdata.bind(this)
     ////
@@ -759,6 +764,10 @@ class Main extends Component {
             </div>
           </DndProvider>
         </div>
+        <PrintTree/>
+        
+        
+        
       </div>
     );
   }

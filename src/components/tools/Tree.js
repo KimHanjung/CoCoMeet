@@ -154,7 +154,7 @@ class Tree extends Component {
         <div class="w-1/2 ml-2 text-xs" style={{ opacity }}>
           <span>회의록 {this.props.treeId}</span>
         </div>
-        <div class="w-1/2 ml-2 pl-2">
+        <div class="w-1/2 pl-2">
         <div className="App">
           {this.state.select || this.props.pdfdata.treeid === undefined ? <img onClick={this.emitdata} src={Icon} width='16' height='12'/>:
             <PDFDownloadLink document={<MyDoc/>} fileName={"회의록 "+String(this.props.treeId)+"번.pdf"}>
