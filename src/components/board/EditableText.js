@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import io from 'socket.io-client';
 
-const socket = io('http://localhost:4002/board_server');
+// const socket = io('http://localhost:4002/board_server');
+const socket = io('http://3.34.138.234:4000/board_server');
 
 class EditableText extends Component{
     constructor(props){
@@ -37,7 +38,7 @@ class EditableText extends Component{
       if (this.state.flag===true){
         this.setState({flag:false})
         // socket emit
-        console.log("text changed...EMIT!")
+        // // console.log("text changed...EMIT!")
         var data ={};
         data["channel"]=this.props.channel;
         data["room_id"]=this.props.room_id;
@@ -57,7 +58,7 @@ class EditableText extends Component{
     if (this.state.flag===true){
       this.setState({flag:false})
       // socket emit
-      console.log("text changed...EMIT!")
+      // // console.log("text changed...EMIT!")
       var data ={};
       data["room_id"]=this.props.room_id;
       data["text"]=this.state.text;

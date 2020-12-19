@@ -5,7 +5,8 @@ import d2_bold from "./D2CodingBold.ttf";
 import Icon from "./download.svg"
 import io from 'socket.io-client';
 
-const socket = io('http://localhost:4002/board_server');
+// const socket = io('http://localhost:4002/board_server');
+const socket = io('http://3.34.138.234:4000/board_server');
 function App(props) {
   const tree_data = 
   [ 
@@ -151,12 +152,12 @@ function App(props) {
     
   ]
 const convert = () => {
-    console.log("채널 확인", props.channel)
-    console.log("룸 확인", props.room_id)
-    console.log("트리아이디 확인", props.treeId)
+    // console.log("채널 확인", props.channel)
+    // console.log("룸 확인", props.room_id)
+    // console.log("트리아이디 확인", props.treeId)
     // socket.emit('download',{channel: this.props.channel, room_id: this.props.room_id, tree_id: this.props.treeId})
     // socket.on('download', function(data){
-    //   console.log("pdf출력", data)
+    //   // console.log("pdf출력", data)
     //   return(convert2(data))
     // })
     return(convert2(tree_data))

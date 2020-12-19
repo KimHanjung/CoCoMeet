@@ -32,23 +32,23 @@ class ChatView extends Component {
         });
     }
     send(){
-        console.log("client-send_sun: "+this.state.msg+", "+this.state.channel+", "+this.state.uname);
+        // console.log("client-send_sun: "+this.state.msg+", "+this.state.channel+", "+this.state.uname);
         socket.emit('send',{msg:this.state.msg, channel:this.state.channel, uname:this.state.uname});
         this.setState({msg:''});
         document.querySelector(".inputMsg").value="";
     }
     keysend(event){
         if(event.keyCode===13) {
-            console.log("client-keysend_sun: "+this.state.msg+", "+this.state.channel+", "+this.state.uname);
+            // console.log("client-keysend_sun: "+this.state.msg+", "+this.state.channel+", "+this.state.uname);
             socket.emit('send',{msg:this.state.msg, channel:this.state.channel, uname:this.state.uname});
             this.setState({msg:''});
             document.querySelector(".inputMsg").value="";
         }
     }
     inputMSG(event) {
-        //console.log("client-inputMSG");
+        //// console.log("client-inputMSG");
         this.setState({ msg: event.target.value });
-        console.log("event: "+this.state.msg);
+        // console.log("event: "+this.state.msg);
     }
     render() {
         let list = this.state.chatList.map((item, index) =>{

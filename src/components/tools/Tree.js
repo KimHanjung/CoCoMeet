@@ -8,16 +8,17 @@ import Icon from "./down1.svg"
 import ComIcon from "./down2.svg"
 import io from 'socket.io-client';
 
-const socket = io('http://localhost:4002/board_server');
+// const socket = io('http://localhost:4002/board_server');
+const socket = io('http://3.34.138.234:4000/board_server');
 
 const spec = {
   beginDrag(props) {
     const item = { ...props };
-    console.log('beginDrag', item.treeId, typeof(item.treeId))
+    // console.log('beginDrag', item.treeId, typeof(item.treeId))
     return props;
   },
   /*endDrag(props, monitor, component) {
-    console.log('dropped ' + component);
+    // console.log('dropped ' + component);
     if (!monitor.didDrop()) {
       return;
     }
@@ -45,11 +46,11 @@ class Tree extends Component {
     this.emitdata = this.emitdata.bind(this);
   }
   emitdata = () =>{
-    console.log("inside emit data")
+    // console.log("inside emit data")
     socket.emit('download',{channel: this.props.channel, room_id: this.props.room_id, tree_id: this.props.treeId})
   
     // while(this.props.pdfdata.length === 0){
-    //   console.log("props로 아직 안넘어옴")
+    //   // console.log("props로 아직 안넘어옴")
     // }
     this.setState({select:false})
   }
@@ -58,13 +59,13 @@ class Tree extends Component {
     const { isDragging, connectDragSource } = this.props;
     const opacity = isDragging ? 0 : 1;
     // const data = tree_data;
-    // console.log("채널 확인", this.props.channel)
-    // console.log("룸 확인", this.props.room_id)
-    // console.log("트리아이디 확인", this.props.treeId)
+    // // console.log("채널 확인", this.props.channel)
+    // // console.log("룸 확인", this.props.room_id)
+    // // console.log("트리아이디 확인", this.props.treeId)
     const convert =(data)=>{
-      //console.log("aslkfjsalkdj")
+      //// console.log("aslkfjsalkdj")
       // data=tree_data
-      console.log("pdf data", data)
+      // console.log("pdf data", data)
       let i = 0;
       let dic = {};
       let result = [];
@@ -85,7 +86,16 @@ class Tree extends Component {
         else if (level === 1) {title = '● '+title; font = 2;}
         else if (level === 2) {title = '○ '+title; font = 1;}
         else {title = '- '+title}
-    
+        
+        let fontcolor = '#373c47' //black
+        if (data[i].color==='#E98DB3'){fontcolor='#9c1f3a'} //red
+        else if (data[i].color==='#FFD8B0'){fontcolor='#cc8239'} //orange
+        else if (data[i].color==='#FFF1B9'){fontcolor='#be9800'} //yellow
+        else if (data[i].color==='#BBDBBF'){fontcolor='#2c7035'} //green
+        else if (data[i].color==='#59C9B8'){fontcolor='#1e8677'} //lime
+        else if (data[i].color==='#87A8C2'){fontcolor='#04538f'} //blue
+        else if (data[i].color==='#B3B6E9'){fontcolor='#464a94'} //purple
+
         Font.register(
           {
           family: "D2",
@@ -111,7 +121,7 @@ class Tree extends Component {
             justifyContent: 'center',
           
         }}>
-          <Text style={{color:data[i].color, fontFamily:'D2', textOverflow: 'ellipsis', whiteSpace: 'normal'}}>{title}</Text>
+          <Text style={{color:fontcolor, fontFamily:'D2', textOverflow: 'ellipsis', whiteSpace: 'normal'}}>{title}</Text>
         </View>);
         i = i + 1;
       }
@@ -141,14 +151,14 @@ class Tree extends Component {
 
     return connectDragSource(
       <div class="flex">
-        <div class="w-1/2 ml-2" style={{ opacity }}>
+        <div class="w-1/2 ml-2 text-xs" style={{ opacity }}>
           <span>회의록 {this.props.treeId}</span>
         </div>
         <div class="w-1/2 pl-2">
         <div className="App">
           {this.state.select || this.props.pdfdata.treeid === undefined ? <img onClick={this.emitdata} src={Icon} width='16' height='12'/>:
             <PDFDownloadLink document={<MyDoc/>} fileName={"회의록 "+String(this.props.treeId)+"번.pdf"}>
-              {({ blob, url, loading, error }) => <img onClick={()=>{this.setState({select:true});this.props.reset_pdfdata();console.log(loading, error, url)}} src={ComIcon} width='16' height='12'/>}
+              {({ blob, url, loading, error }) => <img onClick={()=>{this.setState({select:true});this.props.reset_pdfdata();}} src={ComIcon} width='16' height='12'/>}
             </PDFDownloadLink>
           }
         </div>

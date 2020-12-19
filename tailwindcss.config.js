@@ -8,6 +8,9 @@ module.exports = {
   purge: [],
   theme: {
     extend: {
+      fontSize:{
+        'xxs': '0.5rem',
+      },
       maxWidth: {
         '4/5': '80%',
         '1/5': '20%',
@@ -46,6 +49,7 @@ module.exports = {
         '7/9': '77.7777777%',
         '8/9': '88.8888888%',
         '9/9': '99.9999999%',
+        '10/9': '72.2222222%',
         'overff': 'calc(100% - 3rem)',
         'overfw': 'calc(95% - 3rem)',
         'fullcalc': 'calc( 100% - 3.75rem)',
