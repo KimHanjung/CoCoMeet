@@ -13,7 +13,7 @@ class Tools extends Component {
 
   render() {
     let treearray = []
-    console.log("here is fine", this.props.pdfdata)
+    //console.log("here is fine", this.props.pdfdata)
     for(let i=0;i<this.props.treenum;i++){
       i = String(i)
       if (i===this.props.tree1) {
